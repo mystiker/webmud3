@@ -2,14 +2,17 @@
   "name": "webmud3.backend",
   "version": "0.5.0",
   "description": "Webmud3 Backend Service",
+  "engines": {
+    "node": "20.12.2"
+  },
   "repository": {
     "type": "git",
     "url": "git://github.com/unitopia-de/webmud3.git"
   },
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon server.js"
+    "format": "prettier --write \"src/**/*.ts\"",
+    "start": "nodemon server.js --env-file=.env"
   },
   "dependencies": {
     "ace-builds": "^1.31.1",
@@ -22,6 +25,11 @@
     "telnet-stream": "^1.1.0",
     "url": "^0.11.3",
     "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "@types/node": "20.12.2",
+    "nodemon": "^3.1.0",
+    "prettier": "^3.2.5"
   },
   "author": "Myonara",
   "license": "MIT"
