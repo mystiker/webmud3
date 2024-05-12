@@ -13,5 +13,13 @@
         "ts": "never"
       }
     ]
-  }
+  },
+  "overrides": [
+    {
+      "files": ["**/*.test.js", "**/*.test.ts", "**/*.spec.js", "**/*.spec.ts"],
+      "rules": {
+        "import/extensions": "off"
+      }
+    }
+  ]
 }
