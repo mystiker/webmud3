@@ -1,7 +1,3 @@
-'use strict'
-
-const url = require('url')
-
 const dbglvl = [
   'TRACE',
   'DEBUG',
@@ -10,21 +6,25 @@ const dbglvl = [
   'WARN',
   'ERROR',
   'FATAL',
-  'OFF'
-]
-const outputlevel = 0 // Errors,Fatals...
+  'OFF',
+];
 
-// var NGXLogger = class NGXLogger {
-module.exports = {
-  addLogEntry: function (log) {},
-  createLogEntry: function (real_ip, lvl, msg, additional) {
-    const isoDate = new Date().toISOString()
-    const posArr = this.getPosition(this.getStackLine(4))
-    let ilvl = 0
+const outputlevel = 0; // Errors,Fatals...
+
+export class NGXLogger {
+  public createLogEntry(
+    real_ip: string,
+    lvl: string | number,
+    msg: unknown,
+    additional: string[],
+  ) {
+    const isoDate = new Date().toISOString();
+    const posArr = this.getPosition(this.getStackLine(4));
+    let ilvl = 0;
     if (typeof lvl === 'string') {
-      ilvl = dbglvl.indexOf(lvl)
+      ilvl = dbglvl.indexOf(lvl);
     } else if (typeof lvl === 'number' && lvl >= 0 && lvl < dbglvl.length) {
-      ilvl = lvl
+      ilvl = lvl;
     }
     const log = {
       timestamp: isoDate,
@@ -33,17 +33,42 @@ module.exports = {
       lineNumber: posArr[1],
       real_ip,
       message: msg,
-      additional
-    }
-    return log
-  },
-  addAndShowLog: function (real_ip, lvl, msg, additional) {
-    const log = this.createLogEntry(real_ip, lvl, msg, additional)
-    this.addLogEntry(log)
-    this.log2console(log)
-  },
+      additional,
+    };
+    return log;
+  }
 
-  log2string: function (log) {
+  public addAndShowLog(
+    real_ip: string,
+    lvl: string | number,
+    msg: unknown,
+    additional: string[],
+  ) {
+    const log = this.createLogEntry(real_ip, lvl, msg, additional);
+    this.addLogEntry(log);
+    this.log2console(log);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public addLogEntry(_log: {
+    timestamp: string;
+    level: number;
+    fileName: string | number;
+    lineNumber: string | number;
+    real_ip: unknown;
+    message: unknown;
+    additional: unknown;
+  }) {}
+
+  public log2string(log: {
+    timestamp: string;
+    level: string | number;
+    fileName: string | number;
+    lineNumber: string | number;
+    real_ip: string;
+    message: unknown;
+    additional: string[];
+  }) {
     // function log2srting(log) {
     let outpline =
       log.timestamp +
@@ -57,77 +82,87 @@ module.exports = {
       log.real_ip +
       '\r\n' +
       (log.message || '(####)') +
-      ' '
-    log.additional.forEach(function (val, idx, arr) {
+      ' ';
+    log.additional.forEach(function (val: string) {
       if (typeof val !== 'string') {
-        outpline = outpline + JSON.stringify(val, undefined, '\r')
+        outpline = outpline + JSON.stringify(val, undefined, '\r');
       } else {
-        outpline = outpline + val
+        outpline = outpline + val;
       }
-    })
-    return outpline
-  },
-  log2console: function (log) {
-    if (log.level < outputlevel) {
-      return
+    });
+    return outpline;
+  }
+
+  public log2console(log: {
+    timestamp: string;
+    level: string | number;
+    fileName: string | number;
+    lineNumber: string | number;
+    real_ip: string;
+    message: unknown;
+    additional: string[];
+  }) {
+    if (parseInt(log.level.toString()) < outputlevel) {
+      return;
     }
-    const outpline = this.log2string(log) + '\r\n'
+    const outpline = this.log2string(log) + '\r\n';
     switch (dbglvl[log.level]) {
       case 'TRACE':
-        console.debug(outpline)
-        break
+        console.debug(outpline);
+        break;
       case 'DEBUG':
-        console.debug(outpline)
-        break
+        console.debug(outpline);
+        break;
       case 'INFO':
-        console.info(outpline)
-        break
+        console.info(outpline);
+        break;
       case 'LOG':
-        console.log(outpline)
-        break
+        console.log(outpline);
+        break;
       case 'WARN':
-        console.warn(outpline)
-        break
+        console.warn(outpline);
+        break;
       case 'ERROR':
-        console.error(outpline)
-        break
+        console.error(outpline);
+        break;
       case 'FATAL':
-        console.error(outpline)
-        break
+        console.error(outpline);
+        break;
       case 'OFF':
-        break
+        break;
     }
-  },
-  getPosition: function (stackLine) {
+  }
+
+  public getPosition(stackLine: string) {
     const position = stackLine.substring(
       stackLine.lastIndexOf('(') + 1,
-      stackLine.indexOf(')')
-    )
-    const dataArray = position.split(':')
+      stackLine.indexOf(')'),
+    );
+    const dataArray = position.split(':');
     // console.log('getPosition',stackLine,position,dataArray);
     if (dataArray.length === 3) {
       // unix
-      return [dataArray[0], +dataArray[1], +dataArray[2]]
+      return [dataArray[0], +dataArray[1], +dataArray[2]];
     } else if (dataArray.length === 4) {
       // windows
-      return [dataArray[0] + ':' + dataArray[1], +dataArray[2], +dataArray[3]]
+      return [dataArray[0] + ':' + dataArray[1], +dataArray[2], +dataArray[3]];
     } else {
-      return ['unknown', 0, 0]
+      return ['unknown', 0, 0];
     }
-  },
+  }
 
-  getStackLine: function (lvl) {
-    const error = new Error()
+  public getStackLine(lvl: string | number) {
+    const error = new Error();
 
     try {
       // noinspection ExceptionCaughtLocallyJS
-      throw error
+      throw error;
     } catch (e) {
       try {
         // console.info('stack',error.stack);
-        return error.stack.split('\n')[lvl]
+        return error.stack.split('\n')[lvl];
       } catch (e) {
-        return null
+        return null;
       }
     }
   }
