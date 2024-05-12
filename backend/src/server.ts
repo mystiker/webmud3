@@ -11,7 +11,6 @@ import bodyParser from 'body-parser';
 import session from 'cookie-session';
 import express from 'express';
 import path from 'path';
-import { NGXLogger } from './ngxlogger/ngxlogger.js';
 
 import { Server } from 'socket.io';
 
@@ -21,14 +20,15 @@ import { Server as HttpsServer } from 'https';
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
 // loads module and registers app specific cleanup callback...
 // const cleanup = require('./cleanup').Cleanup(myCleanup);
 import { Environment } from './environment/environment.class.js';
 
 import sourceMaps from 'source-map-support';
+import { NGXLogger } from './ngxlogger/ngxlogger.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 sourceMaps.install();
 

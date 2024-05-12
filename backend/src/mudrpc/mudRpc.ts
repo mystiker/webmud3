@@ -1,4 +1,4 @@
-import { LDJClient } from './ldjClient.js';
+import EventEmitter from 'events';
 
 // [ Request, ID, App, Funktion, Argumente, ... ]
 // Request ist die Art des Paketes (2: Aufruf, 1: Antwort auf Aufruf, 0: Fehler bei Aufruf)
@@ -7,11 +7,45 @@ import { LDJClient } from './ldjClient.js';
 // Antwort: [ Request, ID, Fehlertext bzw. Rueckgabewert ]
 // Fuer die Authentifizierung haben wir "mud", "password"
 
-export class MudRpc extends LDJClient {
-  constructor(client) {
-    super(client);
+/**
+ * Represents a MudRpc client that connects to a server using a stream.
+ * Emits events for connection, disconnection, error, and message.
+ */
+export class MudRpc extends EventEmitter {
+  /**
+   * Represents the MudRpc class.
+   * @constructor
+   * @param {object} client - The client object used for communication.
+   */
+  private constructor(client) {
+    super();
+
     let i_id = 1000;
     const cache = {};
+
+    let buffer = '';
+
+    client.on('connect', () => {
+      this.emit('connected');
+    });
+
+    client.on('data', (data) => {
+      // console.log('data:',data.toString());
+      buffer += data.toString();
+      let boundary = buffer.indexOf('\n');
+      while (boundary !== -1) {
+        const input = buffer.substring(0, boundary);
+        buffer = buffer.substring(boundary + 1);
+        // console.log('input:',input);
+        this.emit('message', JSON.parse(input));
+        boundary = buffer.indexOf('\n');
+      }
+    });
+
+    client.on('error', (error) => {
+      this.emit('error', error);
+    });
+
     this.on('message', (data) => {
       // console.log("rpc-message: ",data);
       const r_id = data[1];
@@ -52,5 +86,9 @@ export class MudRpc extends LDJClient {
       console.log('MudRpc: disconnected from server');
       this.emit('disconnected');
     });
-  } // constructor
-} // class MudRpc
+  }
+
+  public static connect(stream) {
+    return new MudRpc(stream);
+  }
+}
