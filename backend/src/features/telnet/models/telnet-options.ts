@@ -69,11 +69,13 @@ export const TelnetOptions = {
     TELOPT_ATCP: '200',
     TELOPT_GMCP: '201',
     TELOPT_EXOPL: '255',
-  },
+  } as const,
   num2opt: {} as { [key: string]: string },
 };
 
 // Initialisieren der num2opt durch Umkehrung von opt2num
+// Todo[myst] Ugly, find a better way to do this - remove this property and define an utility function
 for (const key in TelnetOptions.opt2num) {
-  TelnetOptions.num2opt[TelnetOptions.opt2num[key]] = key;
+  const commandKey = key as keyof typeof TelnetOptions.opt2num;
+  TelnetOptions.num2opt[TelnetOptions.opt2num[commandKey]] = key;
 }

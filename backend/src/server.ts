@@ -483,13 +483,13 @@ io.on('connection', (socket) => {
       const mudSocket = new TelnetClient(
         tsocket,
         { bufferSize: 65536 },
+        socket as unknown as Socket,
         {
           debugflag: true,
           id,
           gmcp_support,
           charset,
         },
-        socket as unknown as Socket,
       );
       mudSocket.on('close', function () {
         logger.addAndShowLog(
