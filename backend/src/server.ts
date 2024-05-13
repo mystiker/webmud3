@@ -1,5 +1,4 @@
 import fs from 'fs';
-import authRoutes from './features/auth/authRoutes.js';
 
 import { TelnetClient } from './features/telnet/telnet-client.js';
 
@@ -7,18 +6,12 @@ import net, { Socket } from 'net';
 import tls from 'tls';
 import { v4 as uuidv4 } from 'uuid';
 
-import bodyParser from 'body-parser';
-import session from 'cookie-session';
 import express from 'express';
-import path from 'path';
 
 import { Server } from 'socket.io';
 
 import { Server as HttpServer } from 'http';
 import { Server as HttpsServer } from 'https';
-
-import { dirname } from 'path';
-import { fileURLToPath } from 'url';
 
 // loads module and registers app specific cleanup callback...
 // const cleanup = require('./cleanup').Cleanup(myCleanup);
@@ -28,10 +21,11 @@ import sourceMaps from 'source-map-support';
 import { loadConfig } from './core/config/config.js';
 import { DefaultMudConfig } from './core/config/default-mud-config.js';
 import { DefaultSecretConfig } from './core/config/default-secret-config.js';
+import { useBodyParser } from './core/middleware/body-parser.js';
+import { useCookieSession } from './core/middleware/cookie-session.js';
+import { useStaticFiles } from './core/middleware/static-files.js';
+import { useRoutes } from './core/routes/routes.js';
 import { NGXLogger } from './ngxlogger/ngxlogger.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 sourceMaps.install();
 
@@ -98,102 +92,11 @@ const io = new Server(http, {
 
 const UNIQUE_SERVER_ID = uuidv4(); // changes per install!
 
-// For being able to read request bodies
-app.use(bodyParser.json());
-// app.use(bodyParser.urlencoded({ extended: true }));
-app.use(
-  session({
-    secret: scfg.mySessionKey,
-    // Todo[myst]: Diese beiden Properties gibt es nicht mehr in der neuesten Version von cookie-session - aber ich habe keine Zeit, das jetzt zu fixen
-    // Wir wollen im besten Fall eh auf JWT umsteigen
-    // resave: false,
-    // saveUninitialized: true,
-  }),
-);
+useBodyParser(app);
+useCookieSession(app, scfg.mySessionKey);
+useStaticFiles(app);
 
-app.get('/socket.io-client/dist/*', (req, res) => {
-  const mypath = req.path.substr(0);
-  const ip =
-    req.headers['x-forwarded-for'] ||
-    req.connection.remoteAddress ||
-    req.socket.remoteAddress ||
-    (req.socket ? req.socket.remoteAddress : null);
-  logger.addAndShowLog('SRV:' + ip, 'DEBUG', 'socket-Path:', [mypath]);
-  res.sendFile(path.join(__dirname, 'node_modules' + mypath));
-});
-
-app.get('/manifest.webmanifest', function (req, res) {
-  const ip =
-    req.headers['x-forwarded-for'] ||
-    req.connection.remoteAddress ||
-    req.socket.remoteAddress ||
-    (req.socket ? req.socket.remoteAddress : null);
-  let manif = 'manifest.webmanifest';
-  switch (process.env.WEBMUD3_DISTRIBUTION_TYPE) {
-    case 'unitopia-prod':
-      manif = 'manifest.unitopia.webmanifest';
-      break;
-    case 'unitopia-test':
-      manif = 'manifest.unitopia-test.webmanifest';
-      break;
-    case 'seifenblase':
-      manif = 'manifest.seifenblase.webmanifest';
-      break;
-    default:
-  }
-  logger.addAndShowLog('SRV:' + ip, 'DEBUG', 'manifest:', [manif]);
-  fs.readFile(path.join(__dirname, 'dist', manif), function (err, data) {
-    if (err) {
-      res.sendStatus(404);
-    } else {
-      // modify the data here, then send it
-      res.send(data);
-    }
-  });
-});
-
-app.use(express.static(path.join(__dirname, 'dist')));
-
-app.get('/ace/*', (req, res) => {
-  const ip =
-    req.headers['x-forwarded-for'] ||
-    req.connection.remoteAddress ||
-    req.socket.remoteAddress ||
-    (req.socket ? req.socket.remoteAddress : null);
-  const mypath = req.path.substr(5);
-  logger.addAndShowLog('SRV:' + ip, 'DEBUG', 'ace-Path:', [mypath]);
-  res.sendFile(
-    path.join(
-      __dirname,
-      'node_modules/ace-builds/src-min-noconflict/' + mypath,
-    ),
-  );
-});
-
-app.use('/api/auth', authRoutes);
-
-app.get('/config/mud_config.json', (req, res) => {
-  const ip =
-    req.headers['x-forwarded-for'] ||
-    req.connection.remoteAddress ||
-    req.socket.remoteAddress ||
-    (req.socket ? req.socket.remoteAddress : null);
-  logger.addAndShowLog('SRV:' + ip, 'DEBUG', 'mud_config.json', []);
-  res.json(mcfg);
-  res.status(200);
-});
-
-app.get('*', (req, res) => {
-  const ip =
-    req.headers['x-forwarded-for'] ||
-    req.connection.remoteAddress ||
-    req.socket.remoteAddress ||
-    (req.socket ? req.socket.remoteAddress : null);
-  logger.addAndShowLog('SRV:' + ip, 'DEBUG', 'dist/index.html-Path:', [
-    req.path,
-  ]);
-  res.sendFile(path.join(__dirname, 'dist/index.html'));
-});
+useRoutes(app, mcfg);
 
 const MudConnections = {};
 const Socket2Mud = {};
