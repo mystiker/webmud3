@@ -1,4 +1,4 @@
-import { RPCClient } from './rpcClient.js';
+import { RPCClient } from '../websockets/rpc-client.js';
 
 export const AuthController = {
   logon: function (req, res) {

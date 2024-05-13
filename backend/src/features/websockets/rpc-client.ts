@@ -1,5 +1,5 @@
 import net from 'net';
-import { ClientWebSocket } from '../features/websockets/client-web-socket.js';
+import { ClientWebSocket } from './client-websocket.js';
 
 // Todo[myst]: Macht das überhaupt was?
 const SOCKETFILE = process.env.SOCKETFILE || '/run/sockets/testintern2';
@@ -7,8 +7,8 @@ const SOCKETFILE = process.env.SOCKETFILE || '/run/sockets/testintern2';
 // Todo:[myst]: Evaluieren, ob dir diese Klase überhaupt brauchen. Erscheint mir nur ein schwacher Wrapper um ClientWebSocket zu sein.
 export class RPCClient {
   private static instance: RPCClient;
-  private client: net.Socket;
-  private mudConn: ClientWebSocket;
+  private client?: net.Socket;
+  private mudConn?: ClientWebSocket;
   public connected = false;
 
   private constructor() {}
@@ -46,6 +46,6 @@ export class RPCClient {
     cb: (err: Error | null, result?: { name: string; adminp: boolean }) => void,
   ): void {
     this.ensureConnection();
-    this.mudConn.emit('request', 'webmud3', ['password', name, pw], cb);
+    this.mudConn?.emit('request', 'webmud3', ['password', name, pw], cb);
   }
 }

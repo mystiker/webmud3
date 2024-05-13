@@ -1,5 +1,5 @@
 import net from 'net';
-import { ClientWebSocket } from './client-web-socket';
+import { ClientWebSocket } from './client-websocket';
 
 describe('MudRpc', () => {
   let client: net.Socket;

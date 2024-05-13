@@ -1,5 +1,5 @@
 import fs from 'fs';
-import authRoutes from './mudrpc/authRoutes.js';
+import authRoutes from './features/auth/authRoutes.js';
 
 import { TelnetClient } from './features/telnet/telnet-client.js';
 
