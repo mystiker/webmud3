@@ -8,4 +8,8 @@ module.exports = {
     "^.+\\.(ts|tsx)$": "ts-jest",
   },
   testEnvironment: "node",
+  // Notwendig, damit die Dateiendung .js nicht an den Dateinamen angehängt wird
+  moduleNameMapper: {
+    "^(.+).js$": "$1",
+  },
 };

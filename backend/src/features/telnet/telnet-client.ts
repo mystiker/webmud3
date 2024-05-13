@@ -17,16 +17,16 @@ export class TelnetClient extends TelnetSocket {
     opt2com: TelnetCommands,
   };
 
-  private mudOptions?: MudOptions;
-
   private debugflag: boolean;
+
+  public readonly mudOptions?: MudOptions;
 
   /**
    * Constructs a TelnetClient instance.
-   * @param {Socket} mudConnection - The socket connection to the MUD server.
-   * @param {TelnetSocketOptions} telnetSocketOptions - Options for the Telnet socket.
-   * @param {Socket} clientConnection - The client socket connection.
-   * @param {MudOptions} [mudOptions] - Optional settings for the MUD client.
+   * @param mudConnection - The socket connection to the MUD server.
+   * @param telnetSocketOptions - Options for the Telnet socket.
+   * @param clientConnection - The client socket connection.
+   * @param mudOptions - Optional settings for the MUD client.
    */
   constructor(
     mudConnection: Socket,
@@ -49,10 +49,10 @@ export class TelnetClient extends TelnetSocket {
 
   /**
    * Handles the telnet option based on the action type.
-   * @param {number} chunkData - The data chunk received from the telnet stream.
-   * @param {Socket} socket_io - The socket connection to the client.
-   * @param {'will' | 'do' | 'wont' | 'dont' | 'sub'} action - The telnet action to be handled.
-   * @param {(opt: string, socket_io: Socket) => void} [additionalLogic] - Additional logic to be executed for certain telnet options.
+   * @param chunkData - The data chunk received from the telnet stream.
+   * @param socket_io - The socket connection to the client.
+   * @param action - The telnet action to be handled.
+   * @param additionalLogic - Additional logic to be executed for certain telnet options.
    */
   private handleTelnetOption(
     chunkData: number,
@@ -85,7 +85,7 @@ export class TelnetClient extends TelnetSocket {
 
   /**
    * Sets up event handlers for the socket.
-   * @param {Socket} socket_io - The socket connection to the client.
+   * @param socket_io - The socket connection to the client.
    */
   private setupEventHandlers(socket_io: Socket): void {
     this.on('close', () => this.handleClose(socket_io));

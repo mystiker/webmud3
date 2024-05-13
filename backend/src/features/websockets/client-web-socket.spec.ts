@@ -1,13 +1,13 @@
-import EventEmitter from 'events';
-import { MudRpc } from './mudRpc';
+import net from 'net';
+import { ClientWebSocket } from './client-web-socket';
 
 describe('MudRpc', () => {
-  let client;
-  let mudRpc;
+  let client: net.Socket;
+  let mudRpc: ClientWebSocket;
 
   beforeEach(() => {
-    client = new EventEmitter();
-    mudRpc = MudRpc.connect(client);
+    client = new net.Socket();
+    mudRpc = ClientWebSocket.connect(client);
   });
 
   afterEach(() => {
@@ -57,10 +57,15 @@ describe('MudRpc', () => {
     client.write = jest.fn();
     const writeSpy = jest.spyOn(client, 'write');
 
-    mudRpc.emit('request', request.app, request.data, (error, result) => {
-      expect(error).toBeNull();
-      expect(result).toEqual(response);
-    });
+    mudRpc.emit(
+      'request',
+      request.app,
+      request.data,
+      (error: unknown, result: unknown) => {
+        expect(error).toBeNull();
+        expect(result).toEqual(response);
+      },
+    );
 
     expect(writeSpy).toHaveBeenCalledWith(expect.any(Buffer));
   });

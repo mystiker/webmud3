@@ -604,7 +604,7 @@ io.on('connection', (socket) => {
     }
     const mudConn = MudConnections[id];
     const mudSocket = mudConn.socket;
-    const mudOptions = mudSocket._moptions;
+    const mudOptions = mudSocket?.mudOptions;
     // console.log('mudConn: ',mudConn);
     // console.log('mudSocket: ',mudSocket);
     // console.log('mudOptions: ',mudOptions);
