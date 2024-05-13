@@ -7,6 +7,16 @@ const metadataFormat = winston.format((info) => {
   return info;
 });
 
+/**
+ * Hinweis zu den unterstützen Log-Leveln in der Priotiätsreihenfolge:
+ * - error
+ * - warn
+ * - info
+ * - http
+ * - verbose
+ * - debug
+ * - silly
+ **/
 const logger = winston.createLogger({
   levels: winston.config.npm.levels,
   format: winston.format.combine(

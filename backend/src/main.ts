@@ -50,7 +50,9 @@ const httpServer = createHttpServer(app, environment);
 const UNIQUE_SERVER_ID = uuidv4();
 
 useBodyParser(app);
+
 useCookieSession(app, secretConfig.mySessionKey);
+
 useStaticFiles(app, 'dist');
 
 useRoutes(app, mudConfig);

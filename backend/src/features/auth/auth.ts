@@ -7,6 +7,7 @@ export const AuthController = {
     if (req.body) {
       // TODO captcha...
       console.log('AuthController->logon ', req.body.logonname);
+
       RPCClient.getInstance().logon(
         req.body.logonname,
         req.body.password,
@@ -22,6 +23,7 @@ export const AuthController = {
                 adminp: result?.adminp,
               },
             };
+
             res
               .status(201)
               .send({ logonname: result?.name, adminp: result?.adminp });

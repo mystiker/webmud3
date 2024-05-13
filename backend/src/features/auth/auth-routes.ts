@@ -10,7 +10,9 @@ router.use(function (req, res, next) {
     req.connection.remoteAddress ||
     req.socket.remoteAddress ||
     (req.socket ? req.socket.remoteAddress : null);
+
   console.log(ip, '/api/auth', req.method, req.url);
+
   next();
 });
 

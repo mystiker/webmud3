@@ -23,16 +23,22 @@ export class RPCClient {
   private ensureConnection(): void {
     if (!this.connected) {
       console.log('Attempting to reconnect to MudRpc...');
+
       this.client = net.createConnection({ path: SOCKETFILE }, () => {
         console.log('Connected to MudRpc');
+
         this.connected = true;
       });
+
       this.client.on('error', (error) => {
         console.error('Connection error:', error);
+
         this.connected = false;
       });
+
       this.client.on('end', () => {
         console.log('Disconnected from MudRpc');
+
         this.connected = false;
       });
 
@@ -46,6 +52,7 @@ export class RPCClient {
     cb: (err: Error | null, result?: { name: string; adminp: boolean }) => void,
   ): void {
     this.ensureConnection();
+
     this.mudConn?.emit('request', 'webmud3', ['password', name, pw], cb);
   }
 }

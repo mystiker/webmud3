@@ -19,8 +19,11 @@ export function createHttpServer(
       key: fs.readFileSync(environment.tls_key),
       cert: fs.readFileSync(environment.tls_cert),
     };
+
     console.log('INIT: https active');
+
     logger.addAndShowLog('SRV://5000', 'DEBUG', 'INIT: https active', []);
+
     return new HttpsServer(options, app);
   } else {
     return new HttpServer(app);

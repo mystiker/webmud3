@@ -9,7 +9,9 @@ export class Environment implements IEnvironment {
 
   private constructor() {
     this.tls = Boolean(process.env.TLS) || false;
+
     this.tls_cert = process.env.TLS_CERT || '';
+
     this.tls_key = process.env.TLS_KEY || '';
   }
 

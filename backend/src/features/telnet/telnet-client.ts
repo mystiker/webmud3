@@ -65,7 +65,9 @@ export class TelnetClient extends TelnetSocket {
     // Logik zur Debug-Ausgabe
     if (this.debugflag) {
       const logType = action; // 'do', 'will', etc.
+
       console.log(`MUDSOCKET: ${logType}: ${opt}`);
+
       socket_io.emit('mud.debug', {
         id: this.mudOptions?.id,
         type: logType,
@@ -75,6 +77,7 @@ export class TelnetClient extends TelnetSocket {
 
     // Standardaktionen für den Zustand setzen
     const stateAction = action === 'do' || action === 'will' ? 'do' : 'dont';
+
     this.state[opt] = { server: stateAction, client: 'wont' };
 
     // Ausführen zusätzlicher Logik, falls vorhanden
@@ -89,14 +92,21 @@ export class TelnetClient extends TelnetSocket {
    */
   private setupEventHandlers(socket_io: Socket): void {
     this.on('close', () => this.handleClose(socket_io));
+
     this.on('command', (chunkData) => this.handleCommand(chunkData, socket_io));
+
     this.on('do', (chunkData) => this.handleDo(chunkData, socket_io));
+
     this.on('dont', (chunkData) => this.handleDont(chunkData, socket_io));
+
     this.on('will', (chunkData) => this.handleWill(chunkData, socket_io));
+
     this.on('wont', (chunkData) => this.handleWont(chunkData, socket_io));
+
     this.on('sub', (optin, chunkData) =>
       this.handleSub(optin, chunkData, socket_io),
     );
+
     this.on('error', (chunkData) => this.handleError(chunkData, socket_io));
   }
 
@@ -112,6 +122,7 @@ export class TelnetClient extends TelnetSocket {
 
   private handleCommand(chunkData: number, socket_io: Socket): void {
     const cmd = this.telnetConfig.num2opt[chunkData.toString()];
+
     if (this.debugflag) {
       socket_io.emit('mud.debug', {
         id: this.mudOptions?.id,
@@ -129,13 +140,16 @@ export class TelnetClient extends TelnetSocket {
       } else if (opt === 'TELOPT_NAWS') {
         // Window size
         this.state[opt] = { server: 'do', client: 'will' };
+
         this.writeWill(chunkData);
+
         // Spezielle Logik für NAWS
         socket_io.emit(
           'mud-get-naws',
           this.mudOptions?.id,
           (sizeOb: { width: number; height: number }) => {
             const buf = sizeToBuffer(sizeOb.width, sizeOb.height);
+
             this.writeSub(chunkData, buf);
           },
         );
@@ -153,7 +167,9 @@ export class TelnetClient extends TelnetSocket {
     this.handleTelnetOption(chunkData, socket_io, 'will', (opt, socket_io) => {
       if (opt === 'TELOPT_ECHO') {
         this.writeDo(chunkData);
+
         this.state[opt].client = 'do';
+
         socket_io.emit('mud-signal', {
           signal: 'NOECHO-START',
           id: this.mudOptions?.id,
@@ -163,7 +179,9 @@ export class TelnetClient extends TelnetSocket {
         typeof this.mudOptions?.gmcp_support !== 'undefined'
       ) {
         this.writeDo(chunkData);
+
         this.state[opt].client = 'do';
+
         socket_io.emit(
           'mud-gmcp-start',
           this.mudOptions.id,
@@ -179,6 +197,7 @@ export class TelnetClient extends TelnetSocket {
     this.handleTelnetOption(chunkData, socket_io, 'wont', (opt, socket_io) => {
       if (opt === 'TELOPT_ECHO') {
         this.writeDont(chunkData);
+
         socket_io.emit('mud-signal', {
           signal: 'NOECHO-END',
           id: this.mudOptions?.id,
@@ -191,24 +210,34 @@ export class TelnetClient extends TelnetSocket {
 
   private handleSub(optin: number, chunkData: Buffer, socket_io: Socket): void {
     const opt = this.telnetConfig.num2opt[optin.toString()];
+
     if (this.debugflag) {
       console.log('MUDSOCKET: sub:' + opt + '|' + new Uint8Array(chunkData));
     }
     // Keine weitere Standardlogik; direkt die spezifische Logik implementieren
     if (opt === 'TELOPT_TTYPE' && new Uint8Array(chunkData)[0] === 1) {
       const nullBuf = Buffer.alloc(1, 0); // TELQUAL_IS
+
       const buf = Buffer.from('WebMud3a');
+
       const sendBuf = Buffer.concat([nullBuf, buf], buf.length + 1);
+
       this.writeSub(optin, sendBuf);
     } else if (opt === 'TELOPT_CHARSET' && new Uint8Array(chunkData)[0] === 1) {
       const nullBuf = Buffer.alloc(1, 2); // ACCEPTED
+
       const buf = Buffer.from('UTF-8');
+
       const sendBuf = Buffer.concat([nullBuf, buf], buf.length + 1);
+
       this.writeSub(optin, sendBuf);
     } else if (opt === 'TELOPT_GMCP') {
       const tmpstr = chunkData.toString();
+
       const ix = tmpstr.indexOf(' ');
+
       const jx = tmpstr.indexOf('.');
+
       let jsdata = tmpstr.substr(ix + 1);
       if (ix < 0 || jsdata === '') jsdata = '{}';
       socket_io.emit(
@@ -223,6 +252,7 @@ export class TelnetClient extends TelnetSocket {
 
   private handleError(chunkData: Error, socket_io: Socket): void {
     console.log('mudSocket-error:' + chunkData);
+
     if (this.debugflag) {
       socket_io.emit('mud.debug', {
         id: this.mudOptions?.id,

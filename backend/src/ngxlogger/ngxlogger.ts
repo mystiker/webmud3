@@ -31,6 +31,7 @@ export class NGXLogger {
     additional: string[],
   ) {
     const isoDate = new Date().toISOString();
+
     // const posArr = this.getPosition(this.getStackLine(4));
     let ilvl = 0;
     if (typeof lvl === 'string') {
@@ -47,6 +48,7 @@ export class NGXLogger {
       message: msg,
       additional,
     };
+
     return log;
   }
 
@@ -57,7 +59,9 @@ export class NGXLogger {
     additional: string[],
   ) {
     const log = this.createLogEntry(real_ip, lvl, msg, additional);
+
     this.addLogEntry(log);
+
     this.log2console(log);
   }
 
@@ -97,6 +101,7 @@ export class NGXLogger {
         outpline = outpline + val;
       }
     });
+
     return outpline;
   }
 
@@ -111,27 +116,35 @@ export class NGXLogger {
       return;
     }
     const outpline = this.log2string(log) + '\r\n';
+
     switch (dbglvl[log.level]) {
       case 'TRACE':
         console.debug(outpline);
+
         break;
       case 'DEBUG':
         console.debug(outpline);
+
         break;
       case 'INFO':
         console.info(outpline);
+
         break;
       case 'LOG':
         console.log(outpline);
+
         break;
       case 'WARN':
         console.warn(outpline);
+
         break;
       case 'ERROR':
         console.error(outpline);
+
         break;
       case 'FATAL':
         console.error(outpline);
+
         break;
       case 'OFF':
         break;

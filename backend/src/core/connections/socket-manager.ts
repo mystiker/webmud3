@@ -29,6 +29,7 @@ export const setupSocketIO = (
   serverId: string,
 ) => {
   const MudConnections: MudConnectionsMap = {};
+
   const Socket2Mud: SocketToMudMap = {};
 
   const logger = NGXLogger.getInstance();
@@ -109,6 +110,7 @@ export const setupSocketIO = (
 
     socket.on('ngx-log-producer', (log) => {
       log.real_ip = real_ip;
+
       logger.log2console(log);
     });
 
@@ -120,27 +122,39 @@ export const setupSocketIO = (
           'mud-gmcp-outgoing MudConn undefined',
           [id],
         );
+
         return;
       }
       const mudConn = MudConnections[id];
+
       const mudSocket = mudConn.socket;
+
       const gheader = '' + mod + '.' + msg + ' ';
+
       if (gheader.toLowerCase() == 'core.browserinfo ') {
         data = mudConn.mudOb.browser;
+
         data.client = mudConn.mudOb.client;
+
         data.version = mudConn.mudOb.version;
+
         data.real_ip = real_ip;
       }
       const jsdata = JSON.stringify(data);
+
       const b1 = Buffer.from(gheader);
+
       const b2 = Buffer.from(jsdata);
+
       const buf = Buffer.concat([b1, b2], b1.length + b2.length);
+
       logger.addAndShowLog('SRV:' + real_ip, 'DEBUG', 'mud-gmcp-outgoing', [
         socket.id,
         mod,
         msg,
         data,
       ]);
+
       mudSocket.writeSub(201 /* TELOPT_GMCP */, buf);
     });
 
@@ -152,16 +166,21 @@ export const setupSocketIO = (
           'mud-input MudConn undefined',
           [id],
         );
+
         return;
       }
       const mudConn = MudConnections[id];
+
       const mudSocket = mudConn.socket;
+
       const mudOptions = mudSocket?.mudOptions;
+
       // console.log('mudConn: ',mudConn);
       // console.log('mudSocket: ',mudSocket);
       // console.log('mudOptions: ',mudOptions);
       if (typeof inpline !== 'undefined' && inpline !== null) {
         mudSocket.write(inpline.toString(mudOptions.charset) + '\r\n');
+
         logger.addAndShowLog('SRV:' + real_ip, 'TRACE', 'mud-input', [inpline]);
       }
     });
@@ -174,16 +193,23 @@ export const setupSocketIO = (
           'mud-disconnect MudConn undefined',
           [id],
         );
+
         cb('error', id);
+
         return;
       }
       const mudConn = MudConnections[id];
+
       const mudSocket = mudConn.socket;
+
       const mudOb = mudConn.mudOb;
+
       mudSocket.end();
+
       Socket2Mud[socket.id] = Socket2Mud[socket.id].filter(
         (mid: string) => mid != id,
       );
+
       if (Socket2Mud[socket.id].length == 0) {
         delete Socket2Mud[socket.id];
       }
@@ -191,8 +217,11 @@ export const setupSocketIO = (
         socket.id,
         JSON.stringify(mudOb),
       ]);
+
       socket.emit('mud-disconnected', id);
+
       delete MudConnections[id];
+
       cb(undefined, id);
     });
 
@@ -204,24 +233,32 @@ export const setupSocketIO = (
           'mud-window-size MudConn undefined',
           [id],
         );
+
         return;
       }
       const mudConn = MudConnections[id];
+
       const mudSocket = mudConn.socket;
+
       const mudOb = mudConn.mudOb;
+
       if (mudOb.height == height && mudOb.width == width) {
         return;
       } else {
         mudOb.height = height;
+
         mudOb.width = width;
+
         MudConnections[id].mudOb = mudOb;
       }
       const buf = sizeToBuffer(width, height);
+
       logger.addAndShowLog('SRV:' + real_ip, 'TRACE', 'NAWS-buf', [
         buf,
         width,
         height,
       ]);
+
       mudSocket.writeSub(31 /* TELOPT_NAWS */, buf);
     });
 
@@ -247,6 +284,7 @@ export const setupSocketIO = (
 
     socket.on('add-message', (message) => {
       const timeStamp = new Date().getTime();
+
       socket.emit('message', {
         type: 'new-message',
         text: message,
@@ -256,12 +294,14 @@ export const setupSocketIO = (
 
     socket.on('add-chat-message', (msgOb) => {
       const timeStamp = new Date().getTime();
+
       const chatOB = {
         type: 'new-message',
         from: msgOb.from,
         text: msgOb.text,
         date: timeStamp,
       };
+
       // if (cfg.other.storage.active) {
       //     dbsocket.emit('chat-message', chatOB);
       // }
@@ -273,6 +313,7 @@ export const setupSocketIO = (
         socket.id,
         level,
       ]);
+
       callback(level);
     });
 
@@ -293,6 +334,7 @@ export const setupSocketIO = (
         'S01-socket user disconnected',
         [socket.id],
       );
+
       if (
         typeof Socket2Mud === 'undefined' ||
         typeof Socket2Mud[socket.id] === 'undefined'
@@ -302,12 +344,15 @@ export const setupSocketIO = (
       Socket2Mud[socket.id].forEach(function (id: string | number) {
         let mudSocket, mudOb;
         const mudConn = MudConnections[id];
+
         if (typeof mudConn !== 'undefined') {
           mudSocket = mudConn.socket;
+
           if (typeof mudSocket !== 'undefined') {
             mudSocket.end();
           }
           mudOb = mudConn.mudOb;
+
           if (typeof mudOb !== 'undefined') {
             logger.addAndShowLog(
               'SRV:' + real_ip,
@@ -319,22 +364,27 @@ export const setupSocketIO = (
         }
         delete MudConnections[id];
       });
+
       delete Socket2Mud[socket.id];
     });
 
     socket.on('mud-connect', function (mudOb, callback) {
       const id = uuidv4(); // random, unique id!
+
       let tsocket, mudcfg;
       logger.addAndShowLog('SRV:' + real_ip, 'INFO', 'mud-connect', [
         socket.id,
         mudOb,
       ]);
+
       if (typeof mudOb.mudname === 'undefined') {
         logger.addAndShowLog('SRV:' + real_ip, 'FATAL', 'Undefined mudname', [
           socket.id,
           mudOb,
         ]);
+
         callback({ error: 'Missing mudname' });
+
         return;
       }
       if (mudConfig.muds.hasOwnProperty(mudOb.mudname)) {
@@ -346,9 +396,11 @@ export const setupSocketIO = (
           'Unknown mudnameUnknown mudname',
           [socket.id, mudOb],
         );
+
         return;
       }
       mudOb.real_ip = real_ip;
+
       let gmcp_support;
       let charset = 'ascii';
       if (mudcfg.hasOwnProperty('mudfamily')) {
@@ -362,6 +414,7 @@ export const setupSocketIO = (
             mudConfig.mudfamilies[
               mudcfg.mudfamily as keyof typeof mudConfig.mudfamilies
             ];
+
           if (
             typeof fam.GMCP !== 'undefined' &&
             fam.GMCP === true &&
@@ -380,6 +433,7 @@ export const setupSocketIO = (
           socket.id,
           JSON.stringify(mudcfg),
         ]);
+
         if (mudcfg.ssl === true) {
           tsocket = tls.connect({
             host: mudcfg.host,
@@ -403,6 +457,7 @@ export const setupSocketIO = (
             charset,
           },
         );
+
         mudSocket.on('close', function () {
           logger.addAndShowLog(
             'SRV:' + real_ip,
@@ -410,11 +465,14 @@ export const setupSocketIO = (
             'mud-disconnect=>close',
             [socket.id],
           );
+
           socket.emit('mud-disconnected', id);
         });
+
         mudSocket.on('data', function (buffer) {
           socket.emit('mud-output', id, buffer.toString('utf8'));
         });
+
         // Todo[myst]: 'debug' event is not emitted by MudSocket any more
         // mudSocket.on('debug', function (dbgOb) {
         //   logger.addAndShowLog('SRV:' + real_ip, 'DEBUG', 'mud-debug', [
@@ -427,6 +485,7 @@ export const setupSocketIO = (
           mudOb,
           socketID: socket.id,
         };
+
         if (typeof Socket2Mud[socket.id] === 'undefined') {
           Socket2Mud[socket.id] = [id];
         } else {
@@ -439,6 +498,7 @@ export const setupSocketIO = (
           'S02-socket mud-connect:',
           [socket.id, mudOb],
         );
+
         callback({ id, socketID: socket.id, serverID: serverId });
       } catch (error: unknown) {
         // Todo[myst]: error soll ein string sein?!
@@ -446,6 +506,7 @@ export const setupSocketIO = (
           socket.id,
           error as string,
         ]);
+
         // Todo[myst]Aber hier ist es ein Buffer?!
         callback({ error: (error as Buffer).toString('utf8') });
       }

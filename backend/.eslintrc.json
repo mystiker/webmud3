@@ -12,6 +12,11 @@
         "js": "always",
         "ts": "never"
       }
+    ],
+    "padding-line-between-statements": [
+      "error",
+      { "blankLine": "always", "prev": "expression", "next": "*" },
+      { "blankLine": "always", "prev": "const", "next": "*" }
     ]
   },
   "overrides": [

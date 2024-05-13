@@ -77,5 +77,6 @@ export const TelnetOptions = {
 // Todo[myst] Ugly, find a better way to do this - remove this property and define an utility function
 for (const key in TelnetOptions.opt2num) {
   const commandKey = key as keyof typeof TelnetOptions.opt2num;
+
   TelnetOptions.num2opt[TelnetOptions.opt2num[commandKey]] = key;
 }
