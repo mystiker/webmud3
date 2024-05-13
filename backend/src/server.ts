@@ -25,6 +25,9 @@ import { fileURLToPath } from 'url';
 import { Environment } from './environment/environment.class.js';
 
 import sourceMaps from 'source-map-support';
+import { loadConfig } from './core/config/config.js';
+import { DefaultMudConfig } from './core/config/default-mud-config.js';
+import { DefaultSecretConfig } from './core/config/default-secret-config.js';
 import { NGXLogger } from './ngxlogger/ngxlogger.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -38,107 +41,19 @@ const logger = new NGXLogger();
 
 const cfg = Environment.getInstance();
 
-const scfgfile = process.env.SECRET_CONFIG || '/run/secret_sauce.json';
-let scfg;
-try {
-  scfg = JSON.parse(fs.readFileSync(scfgfile, 'utf8'));
-} catch (error) {
-  console.warn('secret config error', error);
-  scfg = {
-    env: 'local',
-    mySocketPath: '/socket.io',
-    mySocket: '/',
-    mySessionKey: 'FyD32AnErszbmmU3sjTz',
-    myLogDB: undefined,
-  };
-}
+const scfg = loadConfig(
+  process.env.SECRET_CONFIG || '/run/secret_sauce.json',
+  DefaultSecretConfig,
+);
 
 if (typeof scfg.myLogDB !== 'undefined') {
   process.env.MY_LOG_DB = scfg.myLogDB;
 }
 
-const mudcfgfile = process.env.MUD_CONFIG || '/run/mud_config.json';
-let mcfg;
-try {
-  mcfg = JSON.parse(fs.readFileSync(mudcfgfile, 'utf8'));
-} catch (error) {
-  console.warn('mud config error', error);
-  mcfg = {
-    scope: 'server-default',
-    href: '/',
-    mudfamilies: {
-      basistelnet: {
-        charset: 'ascii',
-        MXP: false,
-        GMCP: false,
-        GMCP_Support: {},
-      },
-      unitopia: {
-        charset: 'utf8',
-        MXP: true,
-        GMCP: true,
-        GMCP_Support: {
-          Sound: {
-            version: '1',
-            standard: true,
-            optional: false,
-          },
-          Char: {
-            version: '1',
-            standard: true,
-            optional: false,
-          },
-          'Char.Items': {
-            version: '1',
-            standard: true,
-            optional: false,
-          },
-          Comm: {
-            version: '1',
-            standard: true,
-            optional: false,
-          },
-          Playermap: {
-            version: '1',
-            standard: false,
-            optional: true,
-          },
-          Files: {
-            version: '1',
-            standard: true,
-            optional: false,
-          },
-        },
-      },
-    },
-    muds: {
-      unitopia: {
-        name: 'UNItopia',
-        host: 'unitopia.de',
-        port: 992,
-        ssl: true,
-        rejectUnauthorized: true,
-        description: 'UNItopia via SSL',
-        playerlevel: 'all',
-        mudfamily: 'unitopia',
-      },
-      seifenblase: {
-        name: 'Seifenblase',
-        host: 'seifenblase.de',
-        port: 3333,
-        ssl: false,
-        rejectUnauthorized: false,
-        description: 'Seifenblase',
-        playerlevel: 'all',
-        mudfamily: 'basistelnet',
-      },
-    },
-    routes: {
-      '/': 'unitopia',
-      seifenblase: 'seifenblase',
-    },
-  };
-}
+const mcfg = loadConfig(
+  process.env.MUD_CONFIG || '/run/mud_config.json',
+  DefaultMudConfig,
+);
 
 console.log('central config file', JSON.stringify(cfg, undefined, 2));
 console.log('mud config file', JSON.stringify(mcfg, undefined, 2));
