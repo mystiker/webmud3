@@ -4,7 +4,7 @@ import express from 'express';
 
 // loads module and registers app specific cleanup callback...
 // const cleanup = require('./cleanup').Cleanup(myCleanup);
-import { Environment } from './environment/environment.class.js';
+import { Environment } from './core/environment/environment.class.js';
 
 import sourceMaps from 'source-map-support';
 import { DefaultMudConfig } from './core/config/default-mud-config.js';
