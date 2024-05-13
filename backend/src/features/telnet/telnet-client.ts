@@ -1,10 +1,10 @@
 import { Socket } from 'net';
 import { TelnetSocket, TelnetSocketOptions } from 'telnet-stream';
+import { sizeToBuffer } from '../../shared/utils/size-to-buffer.js';
 import { TelnetCommands } from './models/telnet-commands.js';
 import { TelnetOptions } from './models/telnet-options.js';
 import { MudOptions } from './types/mud-options.js';
 import { TelnetState } from './types/telnet-state.js';
-import { sizeToBuffer } from './utils/size-to-buffer.js';
 
 /**
  * Represents a client for handling telnet communication tailored for MUD games.
@@ -19,7 +19,7 @@ export class TelnetClient extends TelnetSocket {
 
   private debugflag: boolean;
 
-  public readonly mudOptions?: MudOptions;
+  public readonly mudOptions: MudOptions;
 
   /**
    * Constructs a TelnetClient instance.
@@ -32,7 +32,7 @@ export class TelnetClient extends TelnetSocket {
     mudConnection: Socket,
     telnetSocketOptions: TelnetSocketOptions,
     clientConnection: Socket,
-    mudOptions?: MudOptions,
+    mudOptions: MudOptions,
   ) {
     super(mudConnection, telnetSocketOptions);
 

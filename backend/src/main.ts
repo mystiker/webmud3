@@ -7,9 +7,9 @@ import express from 'express';
 import { Environment } from './environment/environment.class.js';
 
 import sourceMaps from 'source-map-support';
-import { loadConfig } from './core/config/config.js';
 import { DefaultMudConfig } from './core/config/default-mud-config.js';
 import { DefaultSecretConfig } from './core/config/default-secret-config.js';
+import { loadConfig } from './core/config/load-config.js';
 import { createHttpServer } from './core/connections/http-server.js';
 import { setupSocketIO } from './core/connections/socket-manager.js';
 import { useBodyParser } from './core/middleware/body-parser.js';
@@ -39,14 +39,14 @@ const mudConfig = loadConfig(
   DefaultMudConfig,
 );
 
-console.log('central config file', JSON.stringify(environment, undefined, 2));
+console.log('environment', JSON.stringify(environment, undefined, 2));
 console.log('mud config file', JSON.stringify(mudConfig, undefined, 2));
 
 const app = express();
 
 const httpServer = createHttpServer(app, environment);
 
-const UNIQUE_SERVER_ID = uuidv4(); // changes per install!
+const UNIQUE_SERVER_ID = uuidv4();
 
 useBodyParser(app);
 useCookieSession(app, secretConfig.mySessionKey);

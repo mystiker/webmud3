@@ -1,10 +1,8 @@
 import fs from 'fs';
-import { DefaultMudConfig } from './default-mud-config.js';
-import { DefaultSecretConfig } from './default-secret-config.js';
+import { MudConfig } from '../../shared/types/mud_config.types.js';
+import { SecretConfig } from '../../shared/types/secure_config.types.js';
 
-export const loadConfig = <
-  T extends typeof DefaultMudConfig | typeof DefaultSecretConfig,
->(
+export const loadConfig = <T extends MudConfig | SecretConfig>(
   path: fs.PathOrFileDescriptor,
   defaultConfig: T,
 ): T => {

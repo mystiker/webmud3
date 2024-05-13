@@ -9,14 +9,14 @@
     "type": "git",
     "url": "git://github.com/unitopia-de/webmud3.git"
   },
-  "main": "server.js",
+  "main": "main.js",
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
     "format": "prettier --write \"src/**/*.ts\"",
     "lint": "eslint ./src --ext .ts",
     "lint:fix": "eslint ./src --ext .ts --fix",
-    "start": "npm run build && node dist/server.js --env-file=.env",
+    "start": "npm run build && node dist/main.js --env-file=.env",
     "test": "jest --config=jest.config.cjs"
   },
   "dependencies": {

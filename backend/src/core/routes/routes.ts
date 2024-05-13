@@ -4,9 +4,9 @@ import fs from 'fs';
 import path from 'path';
 import authRoutes from '../../features/auth/authRoutes.js';
 import { NGXLogger } from '../../ngxlogger/ngxlogger.js';
-import { DefaultMudConfig } from '../config/default-mud-config.js';
+import { MudConfig } from '../../shared/types/mud_config.types.js';
 
-export const useRoutes = (app: Express, mudConfig: typeof DefaultMudConfig) => {
+export const useRoutes = (app: Express, mudConfig: MudConfig) => {
   const logger = NGXLogger.getInstance();
 
   app.use('/api/auth', authRoutes);
@@ -63,7 +63,7 @@ export const useRoutes = (app: Express, mudConfig: typeof DefaultMudConfig) => {
     res.status(200);
   });
 
-  app.get('/ace/*', (req, res) => {
+  app.get('/ace/*', (req: Request, res: Response) => {
     const ip =
       req.headers['x-forwarded-for'] ||
       req.connection.remoteAddress ||

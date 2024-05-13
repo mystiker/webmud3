@@ -31,7 +31,7 @@ export class NGXLogger {
     additional: string[],
   ) {
     const isoDate = new Date().toISOString();
-    const posArr = this.getPosition(this.getStackLine(4));
+    // const posArr = this.getPosition(this.getStackLine(4));
     let ilvl = 0;
     if (typeof lvl === 'string') {
       ilvl = dbglvl.indexOf(lvl);
@@ -41,8 +41,8 @@ export class NGXLogger {
     const log = {
       timestamp: isoDate,
       level: ilvl,
-      fileName: posArr[0],
-      lineNumber: posArr[1],
+      // fileName: posArr[0],
+      // lineNumber: posArr[1],
       real_ip,
       message: msg,
       additional,
@@ -65,8 +65,8 @@ export class NGXLogger {
   public addLogEntry(_log: {
     timestamp: string;
     level: number;
-    fileName: string | number;
-    lineNumber: string | number;
+    // fileName: string | number;
+    // lineNumber: string | number;
     real_ip: unknown;
     message: unknown;
     additional: unknown;
@@ -74,9 +74,9 @@ export class NGXLogger {
 
   public log2string(log: {
     timestamp: string;
-    level: string | number;
-    fileName: string | number;
-    lineNumber: string | number;
+    level: number;
+    // fileName: string | number;
+    // lineNumber: string | number;
     real_ip: string;
     message: unknown;
     additional: string[];
@@ -86,11 +86,6 @@ export class NGXLogger {
       log.timestamp +
       ' ' +
       dbglvl[log.level] +
-      ' [' +
-      log.fileName +
-      ':' +
-      log.lineNumber +
-      ']' +
       log.real_ip +
       '\r\n' +
       (log.message || '(####)') +
@@ -107,9 +102,7 @@ export class NGXLogger {
 
   public log2console(log: {
     timestamp: string;
-    level: string | number;
-    fileName: string | number;
-    lineNumber: string | number;
+    level: number;
     real_ip: string;
     message: unknown;
     additional: string[];
@@ -145,37 +138,38 @@ export class NGXLogger {
     }
   }
 
-  public getPosition(stackLine: string) {
-    const position = stackLine.substring(
-      stackLine.lastIndexOf('(') + 1,
-      stackLine.indexOf(')'),
-    );
-    const dataArray = position.split(':');
-    // console.log('getPosition',stackLine,position,dataArray);
-    if (dataArray.length === 3) {
-      // unix
-      return [dataArray[0], +dataArray[1], +dataArray[2]];
-    } else if (dataArray.length === 4) {
-      // windows
-      return [dataArray[0] + ':' + dataArray[1], +dataArray[2], +dataArray[3]];
-    } else {
-      return ['unknown', 0, 0];
-    }
-  }
+  // public getPosition(stackLine: string) {
+  //   const position = stackLine.substring(
+  //     stackLine.lastIndexOf('(') + 1,
+  //     stackLine.indexOf(')'),
+  //   );
+  //   const dataArray = position.split(':');
+  //   // console.log('getPosition',stackLine,position,dataArray);
+  //   if (dataArray.length === 3) {
+  //     // unix
+  //     return [dataArray[0], +dataArray[1], +dataArray[2]];
+  //   } else if (dataArray.length === 4) {
+  //     // windows
+  //     return [dataArray[0] + ':' + dataArray[1], +dataArray[2], +dataArray[3]];
+  //   } else {
+  //     return ['unknown', 0, 0];
+  //   }
+  // }
 
-  public getStackLine(lvl: string | number) {
-    const error = new Error();
+  // Todo[myst] dafuq was this?
+  // public getStackLine(lvl: number) {
+  //   const error = new Error();
 
-    try {
-      // noinspection ExceptionCaughtLocallyJS
-      throw error;
-    } catch (e) {
-      try {
-        // console.info('stack',error.stack);
-        return error.stack.split('\n')[lvl];
-      } catch (e) {
-        return null;
-      }
-    }
-  }
+  //   try {
+  //     // noinspection ExceptionCaughtLocallyJS
+  //     throw error;
+  //   } catch (e) {
+  //     try {
+  //       // console.info('stack',error.stack);
+  //       return error.stack.split('\n')[lvl];
+  //     } catch (e) {
+  //       return null;
+  //     }
+  //   }
+  // }
 }

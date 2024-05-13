@@ -9,17 +9,40 @@ import { Server as HttpsServer } from 'https';
 
 import { v4 as uuidv4 } from 'uuid';
 import { TelnetClient } from '../../features/telnet/telnet-client.js';
-import { DefaultMudConfig } from '../config/default-mud-config.js';
-import { DefaultSecretConfig } from '../config/default-secret-config.js';
+import { MudConfig } from '../../shared/types/mud_config.types.js';
+import { SecretConfig } from '../../shared/types/secure_config.types.js';
+import { sizeToBuffer } from '../../shared/utils/size-to-buffer.js';
+
+interface MudConnection {
+  socket: TelnetClient;
+  mudOb: {
+    browser: string;
+    client: string;
+    version: string;
+    mudname: string;
+    real_ip: string;
+    height: number;
+    width: number;
+  };
+  socketID: string;
+}
+
+interface SocketToMudMap {
+  [socketId: string]: string[];
+}
+
+interface MudConnectionsMap {
+  [id: string]: MudConnection;
+}
 
 export const setupSocketIO = (
   server: HttpServer | HttpsServer,
-  secretConfig: typeof DefaultSecretConfig,
-  mudConfig: typeof DefaultMudConfig,
+  secretConfig: SecretConfig,
+  mudConfig: MudConfig,
   serverId: string,
 ) => {
-  const MudConnections = {};
-  const Socket2Mud = {};
+  const MudConnections: MudConnectionsMap = {};
+  const Socket2Mud: SocketToMudMap = {};
 
   const logger = NGXLogger.getInstance();
 
@@ -59,7 +82,7 @@ export const setupSocketIO = (
         socket.id,
         real_ip,
         serverId,
-        function (action, oMudOb) {
+        function (action: string, oMudOb: string) {
           logger.addAndShowLog('SRV:' + real_ip, 'INFO', 'S02-connecting:', [
             action,
             oMudOb,
@@ -72,7 +95,7 @@ export const setupSocketIO = (
         socket.id,
         real_ip,
         serverId,
-        function (action) {
+        function (action: string) {
           logger.addAndShowLog('SRV:' + real_ip, 'INFO', 'S02-disconnecting:', [
             action,
           ]);
@@ -115,11 +138,10 @@ export const setupSocketIO = (
       const mudConn = MudConnections[id];
       const mudSocket = mudConn.socket;
       const gheader = '' + mod + '.' + msg + ' ';
-      const mudOb = mudConn.mudOb;
       if (gheader.toLowerCase() == 'core.browserinfo ') {
-        data = mudOb.browser;
-        data.client = mudOb.client;
-        data.version = mudOb.version;
+        data = mudConn.mudOb.browser;
+        data.client = mudConn.mudOb.client;
+        data.version = mudConn.mudOb.version;
         data.real_ip = real_ip;
       }
       const jsdata = JSON.stringify(data);
@@ -157,7 +179,7 @@ export const setupSocketIO = (
       }
     });
 
-    socket.on('mud-disconnect', (id, cb) => {
+    socket.on('mud-disconnect', (id: string, cb) => {
       if (typeof id !== 'string' || typeof MudConnections[id] === 'undefined') {
         logger.addAndShowLog(
           'SRV:' + real_ip,
@@ -172,13 +194,15 @@ export const setupSocketIO = (
       const mudSocket = mudConn.socket;
       const mudOb = mudConn.mudOb;
       mudSocket.end();
-      Socket2Mud[socket.id] = Socket2Mud[socket.id].filter((mid) => mid != id);
+      Socket2Mud[socket.id] = Socket2Mud[socket.id].filter(
+        (mid: string) => mid != id,
+      );
       if (Socket2Mud[socket.id].length == 0) {
         delete Socket2Mud[socket.id];
       }
       logger.addAndShowLog('SRV:' + real_ip, 'INFO', 'mud-disconnected', [
         socket.id,
-        mudOb,
+        JSON.stringify(mudOb),
       ]);
       socket.emit('mud-disconnected', id);
       delete MudConnections[id];
@@ -205,7 +229,7 @@ export const setupSocketIO = (
         mudOb.width = width;
         MudConnections[id].mudOb = mudOb;
       }
-      const buf = mudSocket.sizeToBuffer(width, height);
+      const buf = sizeToBuffer(width, height);
       logger.addAndShowLog('SRV:' + real_ip, 'TRACE', 'NAWS-buf', [
         buf,
         width,
@@ -288,7 +312,7 @@ export const setupSocketIO = (
       ) {
         return;
       }
-      Socket2Mud[socket.id].forEach(function (id) {
+      Socket2Mud[socket.id].forEach(function (id: string | number) {
         let mudSocket, mudOb;
         const mudConn = MudConnections[id];
         if (typeof mudConn !== 'undefined') {
@@ -302,7 +326,7 @@ export const setupSocketIO = (
               'SRV:' + real_ip,
               'ERROR',
               'S01-socket socket-disconnect-mudOb',
-              [socket.id, mudOb],
+              [socket.id, JSON.stringify(mudOb)],
             );
           }
         }
@@ -327,7 +351,7 @@ export const setupSocketIO = (
         return;
       }
       if (mudConfig.muds.hasOwnProperty(mudOb.mudname)) {
-        mudcfg = mudConfig.muds[mudOb.mudname];
+        mudcfg = mudConfig.muds[mudOb.mudname as keyof typeof mudConfig.muds];
       } else {
         logger.addAndShowLog(
           'SRV:' + real_ip,
@@ -343,16 +367,23 @@ export const setupSocketIO = (
       if (mudcfg.hasOwnProperty('mudfamily')) {
         if (
           mudConfig.hasOwnProperty('mudfamilies') &&
-          typeof mudConfig.mudfamilies[mudcfg.mudfamily] !== 'undefined'
+          typeof mudConfig.mudfamilies[
+            mudcfg.mudfamily as keyof typeof mudConfig.mudfamilies
+          ] !== 'undefined'
         ) {
-          const fam = mudConfig.mudfamilies[mudcfg.mudfamily];
+          const fam =
+            mudConfig.mudfamilies[
+              mudcfg.mudfamily as keyof typeof mudConfig.mudfamilies
+            ];
           if (
             typeof fam.GMCP !== 'undefined' &&
             fam.GMCP === true &&
             typeof fam.GMCP_Support !== 'undefined'
           ) {
             gmcp_support = fam.GMCP_Support;
-            gmcp_support.mudfamily = mudcfg.mudfamily;
+
+            // Todo[myst]: was ist das für eine merkwürdige zuweisung - auskommentiert
+            // gmcp_support.mudfamily = mudcfg.mudfamily;
           }
           charset = fam.charset;
         }
@@ -360,7 +391,7 @@ export const setupSocketIO = (
       try {
         logger.addAndShowLog('SRV:' + real_ip, 'INFO', 'S02-socket-open', [
           socket.id,
-          mudcfg,
+          JSON.stringify(mudcfg),
         ]);
         if (mudcfg.ssl === true) {
           tsocket = tls.connect({
@@ -412,7 +443,8 @@ export const setupSocketIO = (
         if (typeof Socket2Mud[socket.id] === 'undefined') {
           Socket2Mud[socket.id] = [id];
         } else {
-          Socket2Mud[socket.id].push[id];
+          // Todo[myst]: Hier wurde vorher ein Array rein gepushed! Checken, ob das sinnig ist!
+          Socket2Mud[socket.id].push(id);
         }
         logger.addAndShowLog(
           'SRV:' + real_ip,
@@ -421,12 +453,14 @@ export const setupSocketIO = (
           [socket.id, mudOb],
         );
         callback({ id, socketID: socket.id, serverID: serverId });
-      } catch (error) {
+      } catch (error: unknown) {
+        // Todo[myst]: error soll ein string sein?!
         logger.addAndShowLog('SRV:' + real_ip, 'ERROR', 'mud-connect catch', [
           socket.id,
-          error,
+          error as string,
         ]);
-        callback({ error: error.toString('utf8') });
+        // Todo[myst]Aber hier ist es ein Buffer?!
+        callback({ error: (error as Buffer).toString('utf8') });
       }
     });
 
@@ -435,7 +469,7 @@ export const setupSocketIO = (
       socket.id,
       real_ip,
       serverId,
-      function (action, oMudOb) {
+      function (action: string, oMudOb: string) {
         logger.addAndShowLog('SRV:' + real_ip, 'INFO', 'S02-connected:', [
           action,
           oMudOb,

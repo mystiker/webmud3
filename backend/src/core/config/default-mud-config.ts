@@ -1,4 +1,6 @@
-export const DefaultMudConfig = {
+import { MudConfig } from '../../shared/types/mud_config.types';
+
+export const DefaultMudConfig: MudConfig = {
   scope: 'server-default',
   href: '/',
   mudfamilies: {

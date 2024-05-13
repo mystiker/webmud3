@@ -1,4 +1,6 @@
-export const DefaultSecretConfig = {
+import { SecretConfig } from '../../shared/types/secure_config.types';
+
+export const DefaultSecretConfig: SecretConfig = {
   env: 'local',
   mySocketPath: '/socket.io',
   mySocket: '/',
