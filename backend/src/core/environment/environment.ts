@@ -1,4 +1,4 @@
-import { IEnvironment } from './environment.interface';
+import { IEnvironment } from '../../shared/types/environment.js';
 
 export class Environment implements IEnvironment {
   private static instance: Environment;

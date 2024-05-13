@@ -1,6 +1,6 @@
 import fs from 'fs';
-import { MudConfig } from '../../shared/types/mud_config.types.js';
-import { SecretConfig } from '../../shared/types/secure_config.types.js';
+import { MudConfig } from '../../shared/types/mud_config.js';
+import { SecretConfig } from '../../shared/types/secure_config.js';
 
 export const loadConfig = <T extends MudConfig | SecretConfig>(
   path: fs.PathOrFileDescriptor,

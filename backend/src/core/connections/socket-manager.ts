@@ -9,31 +9,18 @@ import { Server as HttpsServer } from 'https';
 
 import { v4 as uuidv4 } from 'uuid';
 import { TelnetClient } from '../../features/telnet/telnet-client.js';
-import { MudConfig } from '../../shared/types/mud_config.types.js';
-import { SecretConfig } from '../../shared/types/secure_config.types.js';
+import { MudConfig } from '../../shared/types/mud_config.js';
+import { SecretConfig } from '../../shared/types/secure_config.js';
 import { sizeToBuffer } from '../../shared/utils/size-to-buffer.js';
+import { MudConnection } from './types/mud-connection.js';
 
-interface MudConnection {
-  socket: TelnetClient;
-  mudOb: {
-    browser: string;
-    client: string;
-    version: string;
-    mudname: string;
-    real_ip: string;
-    height: number;
-    width: number;
-  };
-  socketID: string;
-}
-
-interface SocketToMudMap {
-  [socketId: string]: string[];
-}
-
-interface MudConnectionsMap {
+type MudConnectionsMap = {
   [id: string]: MudConnection;
-}
+};
+
+type SocketToMudMap = {
+  [socketId: string]: string[];
+};
 
 export const setupSocketIO = (
   server: HttpServer | HttpsServer,

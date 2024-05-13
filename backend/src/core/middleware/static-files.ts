@@ -5,6 +5,6 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-export const useStaticFiles = (app: Express) => {
-  app.use(express.static(path.join(__dirname, 'dist')));
+export const useStaticFiles = (app: Express, folder: string) => {
+  app.use(express.static(path.join(__dirname, folder)));
 };

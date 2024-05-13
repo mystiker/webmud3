@@ -2,9 +2,9 @@ import { Express, Request, Response } from 'express';
 
 import fs from 'fs';
 import path from 'path';
-import authRoutes from '../../features/auth/authRoutes.js';
+import authRoutes from '../../features/auth/auth-routes.js';
 import { NGXLogger } from '../../ngxlogger/ngxlogger.js';
-import { MudConfig } from '../../shared/types/mud_config.types.js';
+import { MudConfig } from '../../shared/types/mud_config.js';
 
 export const useRoutes = (app: Express, mudConfig: MudConfig) => {
   const logger = NGXLogger.getInstance();

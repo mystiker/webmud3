@@ -6,7 +6,7 @@ import { Server as HttpsServer } from 'https';
 import { Express } from 'express';
 
 import { NGXLogger } from '../../ngxlogger/ngxlogger.js';
-import { IEnvironment } from '../environment/environment.interface';
+import { IEnvironment } from '../../shared/types/environment.js';
 
 export function createHttpServer(
   app: Express,

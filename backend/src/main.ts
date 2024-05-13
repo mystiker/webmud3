@@ -4,7 +4,7 @@ import express from 'express';
 
 // loads module and registers app specific cleanup callback...
 // const cleanup = require('./cleanup').Cleanup(myCleanup);
-import { Environment } from './core/environment/environment.class.js';
+import { Environment } from './core/environment/environment.js';
 
 import sourceMaps from 'source-map-support';
 import { DefaultMudConfig } from './core/config/default-mud-config.js';
@@ -16,20 +16,22 @@ import { useBodyParser } from './core/middleware/body-parser.js';
 import { useCookieSession } from './core/middleware/cookie-session.js';
 import { useStaticFiles } from './core/middleware/static-files.js';
 import { useRoutes } from './core/routes/routes.js';
+import { logger } from './features/logger/winston-logger.js';
 
 const environment = Environment.getInstance();
 
-if (!environment) {
-  sourceMaps.install();
-}
+logger.info('Environment loaded', { environment });
 
-process.stdin.resume(); // Prevents the program from closing instantly
+sourceMaps.install();
 
 const secretConfig = loadConfig(
   process.env.SECRET_CONFIG || '/run/secret_sauce.json',
   DefaultSecretConfig,
 );
 
+logger.info('Secret Config loaded', { secretConfig });
+
+// Todo[myst] check this out
 if (typeof secretConfig.myLogDB !== 'undefined') {
   process.env.MY_LOG_DB = secretConfig.myLogDB;
 }
@@ -39,8 +41,7 @@ const mudConfig = loadConfig(
   DefaultMudConfig,
 );
 
-console.log('environment', JSON.stringify(environment, undefined, 2));
-console.log('mud config file', JSON.stringify(mudConfig, undefined, 2));
+logger.info('Mud Config loaded', { mudConfig });
 
 const app = express();
 
@@ -50,7 +51,7 @@ const UNIQUE_SERVER_ID = uuidv4();
 
 useBodyParser(app);
 useCookieSession(app, secretConfig.mySessionKey);
-useStaticFiles(app);
+useStaticFiles(app, 'dist');
 
 useRoutes(app, mudConfig);
 
@@ -74,11 +75,7 @@ setupSocketIO(httpServer, secretConfig, mudConfig, UNIQUE_SERVER_ID);
 // }
 
 httpServer.listen(5000, () => {
-  // logger.addAndShowLog
-  console.log(
-    'SRV//:5000',
-    'INFO',
-    "INIT: Server'backend' started on port 5000:",
+  logger.info("INIT: Server'backend' started on port 5000", {
     UNIQUE_SERVER_ID,
-  );
+  });
 });
