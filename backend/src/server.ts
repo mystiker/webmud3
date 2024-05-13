@@ -1,7 +1,7 @@
 import fs from 'fs';
 import authRoutes from './mudrpc/authRoutes.js';
 
-import { MudSocket } from './mudSocket.js';
+import { TelnetClient } from './features/telnet/telnet-client.js';
 
 import net, { Socket } from 'net';
 import tls from 'tls';
@@ -480,7 +480,7 @@ io.on('connection', (socket) => {
           port: mudcfg.port,
         });
       }
-      const mudSocket = new MudSocket(
+      const mudSocket = new TelnetClient(
         tsocket,
         { bufferSize: 65536 },
         {
