@@ -12,6 +12,18 @@ const dbglvl = [
 const outputlevel = 0; // Errors,Fatals...
 
 export class NGXLogger {
+  private static instance: NGXLogger;
+
+  private constructor() {}
+
+  public static getInstance(): NGXLogger {
+    if (!NGXLogger.instance) {
+      NGXLogger.instance = new NGXLogger();
+    }
+
+    return NGXLogger.instance;
+  }
+
   public createLogEntry(
     real_ip: string,
     lvl: string | number,

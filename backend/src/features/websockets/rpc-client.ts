@@ -14,10 +14,10 @@ export class RPCClient {
   private constructor() {}
 
   public static getInstance(): RPCClient {
-    if (!this.instance) {
-      this.instance = new RPCClient();
+    if (!RPCClient.instance) {
+      RPCClient.instance = new RPCClient();
     }
-    return this.instance;
+    return RPCClient.instance;
   }
 
   private ensureConnection(): void {

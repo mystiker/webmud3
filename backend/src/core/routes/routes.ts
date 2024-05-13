@@ -7,7 +7,7 @@ import { NGXLogger } from '../../ngxlogger/ngxlogger.js';
 import { DefaultMudConfig } from '../config/default-mud-config.js';
 
 export const useRoutes = (app: Express, mudConfig: typeof DefaultMudConfig) => {
-  const logger = new NGXLogger();
+  const logger = NGXLogger.getInstance();
 
   app.use('/api/auth', authRoutes);
 
