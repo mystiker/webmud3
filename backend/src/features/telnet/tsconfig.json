@@ -1,3 +1,4 @@
+/* Todo[myst]: Remove this file after everything is set to strict mode */
 {
   "extends": "../../../tsconfig.json",
   "compilerOptions": {
