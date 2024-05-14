@@ -1,6 +1,6 @@
 {
-  "name": "@mudlet3/frontend",
-  "version": "0.5.1",
+  "name": "@webmud3/frontend",
+  "version": "1.0.0-alpha",
   "engines": {
     "node": "20.12.2"
   },
