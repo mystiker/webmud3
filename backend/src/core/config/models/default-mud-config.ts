@@ -1,4 +1,4 @@
-import { MudConfig } from '../../shared/types/mud_config.js';
+import { MudConfig } from '../../../shared/types/mud_config.js';
 
 export const DefaultMudConfig: MudConfig = {
   scope: 'server-default',

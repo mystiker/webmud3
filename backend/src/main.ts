@@ -7,9 +7,9 @@ import express from 'express';
 import { Environment } from './core/environment/environment.js';
 
 import sourceMaps from 'source-map-support';
-import { DefaultMudConfig } from './core/config/default-mud-config.js';
-import { DefaultSecretConfig } from './core/config/default-secret-config.js';
 import { loadConfig } from './core/config/load-config.js';
+import { DefaultMudConfig } from './core/config/models/default-mud-config.js';
+import { DefaultSecretConfig } from './core/config/models/default-secret-config.js';
 import { createHttpServer } from './core/connections/http-server.js';
 import { setupSocketIO } from './core/connections/socket-manager.js';
 import { useBodyParser } from './core/middleware/body-parser.js';

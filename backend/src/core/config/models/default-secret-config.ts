@@ -1,4 +1,4 @@
-import { SecretConfig } from '../../shared/types/secure_config.js';
+import { SecretConfig } from '../../../shared/types/secure_config.js';
 
 export const DefaultSecretConfig: SecretConfig = {
   env: 'local',

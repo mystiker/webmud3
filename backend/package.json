@@ -10,6 +10,9 @@
     "url": "git://github.com/unitopia-de/webmud3.git"
   },
   "main": "main.js",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
