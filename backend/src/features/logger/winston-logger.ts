@@ -4,6 +4,7 @@ const metadataFormat = winston.format((info) => {
   if (info.metadata && Object.keys(info.metadata).length > 0) {
     info.message += `\nMetadaten: ${JSON.stringify(info.metadata)}`;
   }
+
   return info;
 });
 

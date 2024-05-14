@@ -18,5 +18,6 @@ export function txtToBuffer(text: string): Buffer {
       result.push(c);
     }
   }
+
   return Buffer.from(result);
 }

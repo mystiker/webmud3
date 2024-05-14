@@ -14,15 +14,18 @@
       }
     ],
     "padding-line-between-statements": [
-      "error",
+      "warn",
       { "blankLine": "always", "prev": "expression", "next": "*" },
-      { "blankLine": "always", "prev": "const", "next": "*" }
+      { "blankLine": "always", "prev": "const", "next": "*" },
+      { "blankLine": "always", "prev": "if", "next": "*" },
+      { "blankLine": "always", "prev": "block-like", "next": "*" }
     ]
   },
   "overrides": [
     {
       "files": ["**/*.test.js", "**/*.test.ts", "**/*.spec.js", "**/*.spec.ts"],
       "rules": {
+        // This is very important since tests do not use the same import extensions as the rest of the codebase
         "import/extensions": "off"
       }
     }

@@ -5,15 +5,13 @@ import { Server as HttpsServer } from 'https';
 
 import { Express } from 'express';
 
-import { NGXLogger } from '../../ngxlogger/ngxlogger.js';
+import { logger } from '../../features/logger/winston-logger.js';
 import { IEnvironment } from '../../shared/types/environment.js';
 
 export function createHttpServer(
   app: Express,
   environment: IEnvironment,
 ): HttpServer | HttpsServer {
-  const logger = NGXLogger.getInstance();
-
   if (environment.tls) {
     const options = {
       key: fs.readFileSync(environment.tls_key),
@@ -22,7 +20,7 @@ export function createHttpServer(
 
     console.log('INIT: https active');
 
-    logger.addAndShowLog('SRV://5000', 'DEBUG', 'INIT: https active', []);
+    logger.debug('SRV://5000 : INIT: https active');
 
     return new HttpsServer(options, app);
   } else {

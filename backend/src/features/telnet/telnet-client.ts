@@ -214,6 +214,7 @@ export class TelnetClient extends TelnetSocket {
     if (this.debugflag) {
       console.log('MUDSOCKET: sub:' + opt + '|' + new Uint8Array(chunkData));
     }
+
     // Keine weitere Standardlogik; direkt die spezifische Logik implementieren
     if (opt === 'TELOPT_TTYPE' && new Uint8Array(chunkData)[0] === 1) {
       const nullBuf = Buffer.alloc(1, 0); // TELQUAL_IS
@@ -240,6 +241,7 @@ export class TelnetClient extends TelnetSocket {
 
       let jsdata = tmpstr.substr(ix + 1);
       if (ix < 0 || jsdata === '') jsdata = '{}';
+
       socket_io.emit(
         'mud-gmcp-incoming',
         this.mudOptions?.id,

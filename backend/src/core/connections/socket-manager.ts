@@ -2,12 +2,12 @@ import net, { Socket } from 'net';
 import tls from 'tls';
 
 import { Server } from 'socket.io';
-import { NGXLogger } from '../../ngxlogger/ngxlogger.js';
 
 import { Server as HttpServer } from 'http';
 import { Server as HttpsServer } from 'https';
 
 import { v4 as uuidv4 } from 'uuid';
+import { logger } from '../../features/logger/winston-logger.js';
 import { TelnetClient } from '../../features/telnet/telnet-client.js';
 import { MudConfig } from '../../shared/types/mud_config.js';
 import { SecretConfig } from '../../shared/types/secure_config.js';
@@ -32,8 +32,6 @@ export const setupSocketIO = (
 
   const Socket2Mud: SocketToMudMap = {};
 
-  const logger = NGXLogger.getInstance();
-
   const io = new Server(server, {
     path: secretConfig.mySocketPath,
     transports: ['websocket'],
@@ -56,10 +54,9 @@ export const setupSocketIO = (
       real_ip = real_ip.slice(0, real_index);
     }
 
-    // console.log('S01-socket:'+socket.id+' user connected: ',real_ip);
-    logger.addAndShowLog('SRV:' + real_ip, 'LOG', 'S01-socket user connected', [
-      socket.id,
-    ]);
+    logger.verbose(`SRV: ${real_ip} S01-socket user connected`, {
+      socketId: socket.id,
+    });
 
     if (
       typeof Socket2Mud === 'undefined' ||
@@ -71,10 +68,10 @@ export const setupSocketIO = (
         real_ip,
         serverId,
         function (action: string, oMudOb: string) {
-          logger.addAndShowLog('SRV:' + real_ip, 'INFO', 'S02-connecting:', [
+          logger.info(`SRV: ${real_ip} S02-connecting`, {
             action,
             oMudOb,
-          ]);
+          });
         },
       );
     } else {
@@ -84,9 +81,9 @@ export const setupSocketIO = (
         real_ip,
         serverId,
         function (action: string) {
-          logger.addAndShowLog('SRV:' + real_ip, 'INFO', 'S02-disconnecting:', [
+          logger.info(`SRV: ${real_ip} S02-disconnecting`, {
             action,
-          ]);
+          });
         },
       );
     }
@@ -111,20 +108,18 @@ export const setupSocketIO = (
     socket.on('ngx-log-producer', (log) => {
       log.real_ip = real_ip;
 
-      logger.log2console(log);
+      logger.info(`SRV ${real_ip} ngx-log-producer`, log);
     });
 
     socket.on('mud-gmcp-outgoing', (id, mod, msg, data) => {
       if (typeof id !== 'string' || typeof MudConnections[id] === 'undefined') {
-        logger.addAndShowLog(
-          'SRV:' + real_ip,
-          'ERROR',
-          'mud-gmcp-outgoing MudConn undefined',
-          [id],
-        );
+        logger.error(`SRV: ${real_ip} mud-gmcp-outgoing MudConn undefined`, {
+          id,
+        });
 
         return;
       }
+
       const mudConn = MudConnections[id];
 
       const mudSocket = mudConn.socket;
@@ -140,6 +135,7 @@ export const setupSocketIO = (
 
         data.real_ip = real_ip;
       }
+
       const jsdata = JSON.stringify(data);
 
       const b1 = Buffer.from(gheader);
@@ -148,56 +144,47 @@ export const setupSocketIO = (
 
       const buf = Buffer.concat([b1, b2], b1.length + b2.length);
 
-      logger.addAndShowLog('SRV:' + real_ip, 'DEBUG', 'mud-gmcp-outgoing', [
-        socket.id,
+      logger.debug(`SRV: ${real_ip} mud-gmcp-outgoing`, {
+        socketId: socket.id,
         mod,
         msg,
         data,
-      ]);
+      });
 
       mudSocket.writeSub(201 /* TELOPT_GMCP */, buf);
     });
 
     socket.on('mud-input', (id, inpline) => {
       if (typeof id !== 'string' || typeof MudConnections[id] === 'undefined') {
-        logger.addAndShowLog(
-          'SRV:' + real_ip,
-          'ERROR',
-          'mud-input MudConn undefined',
-          [id],
-        );
+        logger.error(`SRV: ${real_ip} mud-input MudConn undefined`, { id });
 
         return;
       }
+
       const mudConn = MudConnections[id];
 
       const mudSocket = mudConn.socket;
 
       const mudOptions = mudSocket?.mudOptions;
 
-      // console.log('mudConn: ',mudConn);
-      // console.log('mudSocket: ',mudSocket);
-      // console.log('mudOptions: ',mudOptions);
       if (typeof inpline !== 'undefined' && inpline !== null) {
         mudSocket.write(inpline.toString(mudOptions.charset) + '\r\n');
 
-        logger.addAndShowLog('SRV:' + real_ip, 'TRACE', 'mud-input', [inpline]);
+        logger.verbose(`SRV: ${real_ip} mud-input`, { inpline });
       }
     });
 
     socket.on('mud-disconnect', (id: string, cb) => {
       if (typeof id !== 'string' || typeof MudConnections[id] === 'undefined') {
-        logger.addAndShowLog(
-          'SRV:' + real_ip,
-          'ERROR',
-          'mud-disconnect MudConn undefined',
-          [id],
-        );
+        logger.error(`SRV: ${real_ip} mud-disconnect MudConn undefined`, {
+          id,
+        });
 
         cb('error', id);
 
         return;
       }
+
       const mudConn = MudConnections[id];
 
       const mudSocket = mudConn.socket;
@@ -213,10 +200,11 @@ export const setupSocketIO = (
       if (Socket2Mud[socket.id].length == 0) {
         delete Socket2Mud[socket.id];
       }
-      logger.addAndShowLog('SRV:' + real_ip, 'INFO', 'mud-disconnected', [
-        socket.id,
-        JSON.stringify(mudOb),
-      ]);
+
+      logger.info(`SRV: ${real_ip} S01-socket mud-disconnect`, {
+        socketId: socket.id,
+        mudOb: JSON.stringify(mudOb),
+      });
 
       socket.emit('mud-disconnected', id);
 
@@ -227,15 +215,13 @@ export const setupSocketIO = (
 
     io.on('mud-window-size', (id, height, width) => {
       if (typeof id !== 'string' || typeof MudConnections[id] === 'undefined') {
-        logger.addAndShowLog(
-          'SRV:' + real_ip,
-          'ERROR',
-          'mud-window-size MudConn undefined',
-          [id],
-        );
+        logger.error(`SRV: ${real_ip} mud-window-size MudConn undefined`, {
+          id,
+        });
 
         return;
       }
+
       const mudConn = MudConnections[id];
 
       const mudSocket = mudConn.socket;
@@ -251,13 +237,14 @@ export const setupSocketIO = (
 
         MudConnections[id].mudOb = mudOb;
       }
+
       const buf = sizeToBuffer(width, height);
 
-      logger.addAndShowLog('SRV:' + real_ip, 'TRACE', 'NAWS-buf', [
+      logger.verbose(`SRV: ${real_ip} NAWS-buf`, {
         buf,
         width,
         height,
-      ]);
+      });
 
       mudSocket.writeSub(31 /* TELOPT_NAWS */, buf);
     });
@@ -267,19 +254,17 @@ export const setupSocketIO = (
     });
 
     socket.on('error', function (error) {
-      logger.addAndShowLog('SRV:' + real_ip, 'ERROR', 'S01-socket error', [
-        socket.id,
-        error.message,
-      ]);
+      logger.error(`SRV: ${real_ip} S01-socket error`, {
+        socketId: socket.id,
+        error: error.message,
+      });
     });
 
     socket.on('disconnecting', function (reason) {
-      logger.addAndShowLog(
-        'SRV:' + real_ip,
-        'INFO',
-        'S01-socket disconnecting',
-        [socket.id, reason],
-      );
+      logger.info(`SRV: ${real_ip} S01-socket disconnecting`, {
+        socketId: socket.id,
+        reason,
+      });
     });
 
     socket.on('add-message', (message) => {
@@ -302,38 +287,31 @@ export const setupSocketIO = (
         date: timeStamp,
       };
 
-      // if (cfg.other.storage.active) {
-      //     dbsocket.emit('chat-message', chatOB);
-      // }
       socket.emit('chat-message', chatOB);
     });
 
     socket.on('keep-alive', function (level, callback) {
-      logger.addAndShowLog('SRV:' + real_ip, 'INFO', 'S01-socket keep alive ', [
-        socket.id,
+      logger.info(`SRV: ${real_ip} S01-socket keep alive`, {
+        socketId: socket.id,
         level,
-      ]);
+      });
 
       callback(level);
     });
 
     socket.on('reconnect_attempt', (attemptNumber) => {
-      logger.addAndShowLog(
-        'SRV:' + real_ip,
-        'INFO',
-        'S01-socket reconnect_attempt',
-        [socket.id, attemptNumber],
-      );
+      logger.info(`SRV: ${real_ip} S01-socket reconnect_attempt`, {
+        socketId: socket.id,
+        attemptNumber,
+      });
     });
 
     socket.on('disconnect', function () {
       // TODO disconnect all mudclients...
-      logger.addAndShowLog(
-        'SRV:' + real_ip,
-        'INFO',
-        'S01-socket user disconnected',
-        [socket.id],
-      );
+
+      logger.info(`SRV: ${real_ip} S01-socket user disconnected`, {
+        socketId: socket.id,
+      });
 
       if (
         typeof Socket2Mud === 'undefined' ||
@@ -341,6 +319,7 @@ export const setupSocketIO = (
       ) {
         return;
       }
+
       Socket2Mud[socket.id].forEach(function (id: string | number) {
         let mudSocket, mudOb;
         const mudConn = MudConnections[id];
@@ -351,17 +330,17 @@ export const setupSocketIO = (
           if (typeof mudSocket !== 'undefined') {
             mudSocket.end();
           }
+
           mudOb = mudConn.mudOb;
 
           if (typeof mudOb !== 'undefined') {
-            logger.addAndShowLog(
-              'SRV:' + real_ip,
-              'ERROR',
-              'S01-socket socket-disconnect-mudOb',
-              [socket.id, JSON.stringify(mudOb)],
-            );
+            logger.error(`SRV: ${real_ip} S01-socket socket-disconnect-mudOb`, {
+              socketId: socket.id,
+              mudOb: JSON.stringify(mudOb),
+            });
           }
         }
+
         delete MudConnections[id];
       });
 
@@ -372,33 +351,34 @@ export const setupSocketIO = (
       const id = uuidv4(); // random, unique id!
 
       let tsocket, mudcfg;
-      logger.addAndShowLog('SRV:' + real_ip, 'INFO', 'mud-connect', [
-        socket.id,
+
+      logger.info(`SRV: ${real_ip} S02-socket mud-connect`, {
+        socketId: socket.id,
         mudOb,
-      ]);
+      });
 
       if (typeof mudOb.mudname === 'undefined') {
-        logger.addAndShowLog('SRV:' + real_ip, 'FATAL', 'Undefined mudname', [
-          socket.id,
+        logger.error(`SRV: ${real_ip} Undefined mudname`, {
+          socketId: socket.id,
           mudOb,
-        ]);
+        });
 
         callback({ error: 'Missing mudname' });
 
         return;
       }
+
       if (mudConfig.muds.hasOwnProperty(mudOb.mudname)) {
         mudcfg = mudConfig.muds[mudOb.mudname as keyof typeof mudConfig.muds];
       } else {
-        logger.addAndShowLog(
-          'SRV:' + real_ip,
-          'FATAL',
-          'Unknown mudnameUnknown mudname',
-          [socket.id, mudOb],
-        );
+        logger.error(`SRV: ${real_ip} Unknown mudnameUnknown mudname`, {
+          socketId: socket.id,
+          mudOb,
+        });
 
         return;
       }
+
       mudOb.real_ip = real_ip;
 
       let gmcp_support;
@@ -425,14 +405,17 @@ export const setupSocketIO = (
             // Todo[myst]: was ist das für eine merkwürdige zuweisung - auskommentiert
             // gmcp_support.mudfamily = mudcfg.mudfamily;
           }
+
           charset = fam.charset;
         }
       }
+
       try {
-        logger.addAndShowLog('SRV:' + real_ip, 'INFO', 'S02-socket-open', [
-          socket.id,
-          JSON.stringify(mudcfg),
-        ]);
+        logger.info(`SRV: ${real_ip} S02-socket-open`, {
+          socketId: socket.id,
+          mudOb,
+          mudcfg,
+        });
 
         if (mudcfg.ssl === true) {
           tsocket = tls.connect({
@@ -446,6 +429,7 @@ export const setupSocketIO = (
             port: mudcfg.port,
           });
         }
+
         const mudSocket = new TelnetClient(
           tsocket,
           { bufferSize: 65536 },
@@ -459,12 +443,9 @@ export const setupSocketIO = (
         );
 
         mudSocket.on('close', function () {
-          logger.addAndShowLog(
-            'SRV:' + real_ip,
-            'DEBUG',
-            'mud-disconnect=>close',
-            [socket.id],
-          );
+          logger.debug(`SRV: ${real_ip} mud-disconnect=>close`, {
+            socketId: socket.id,
+          });
 
           socket.emit('mud-disconnected', id);
         });
@@ -492,20 +473,20 @@ export const setupSocketIO = (
           // Todo[myst]: Hier wurde vorher ein Array rein gepushed! Checken, ob das sinnig ist!
           Socket2Mud[socket.id].push(id);
         }
-        logger.addAndShowLog(
-          'SRV:' + real_ip,
-          'INFO',
-          'S02-socket mud-connect:',
-          [socket.id, mudOb],
-        );
+
+        logger.info(`SRV: ${real_ip} S02-socket mud-connect`, {
+          socketId: socket.id,
+          mudOb,
+        });
 
         callback({ id, socketID: socket.id, serverID: serverId });
       } catch (error: unknown) {
         // Todo[myst]: error soll ein string sein?!
-        logger.addAndShowLog('SRV:' + real_ip, 'ERROR', 'mud-connect catch', [
-          socket.id,
-          error as string,
-        ]);
+
+        logger.error(`SRV: ${real_ip} mud-connect catch`, {
+          socketId: socket.id,
+          error: error as string,
+        });
 
         // Todo[myst]Aber hier ist es ein Buffer?!
         callback({ error: (error as Buffer).toString('utf8') });
@@ -518,10 +499,10 @@ export const setupSocketIO = (
       real_ip,
       serverId,
       function (action: string, oMudOb: string) {
-        logger.addAndShowLog('SRV:' + real_ip, 'INFO', 'S02-connected:', [
+        logger.info(`SRV: ${real_ip} S02-connected`, {
           action,
           oMudOb,
-        ]);
+        });
       },
     );
   });

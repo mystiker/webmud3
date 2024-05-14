@@ -67,6 +67,7 @@ export class ClientWebSocket extends EventEmitter {
       } catch (error) {
         this.emit('error', 'Invalid JSON: ' + input);
       }
+
       boundary = this.buffer.indexOf('\n');
     }
   }

@@ -17,6 +17,7 @@ export class RPCClient {
     if (!RPCClient.instance) {
       RPCClient.instance = new RPCClient();
     }
+
     return RPCClient.instance;
   }
 
