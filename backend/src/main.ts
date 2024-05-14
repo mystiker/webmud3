@@ -53,7 +53,7 @@ useBodyParser(app);
 
 useCookieSession(app, secretConfig.mySessionKey);
 
-useStaticFiles(app, 'dist');
+useStaticFiles(app, 'wwwroot');
 
 useRoutes(app, mudConfig);
 

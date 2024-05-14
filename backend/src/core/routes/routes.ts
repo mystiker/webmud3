@@ -99,10 +99,10 @@ export const useRoutes = (app: Express, mudConfig: MudConfig) => {
       req.socket.remoteAddress ||
       (req.socket ? req.socket.remoteAddress : null);
 
-    logger.debug('dist/index.html Path:', { real_ip: ip, path: req.path });
+    logger.debug('wwwroot/index.html Path:', { real_ip: ip, path: req.path });
 
     res.sendFile(
-      path.join(Environment.getInstance().projectRoot, 'dist/index.html'),
+      path.join(Environment.getInstance().projectRoot, 'wwwroot/index.html'),
     );
   });
 };
