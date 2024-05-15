@@ -17,6 +17,6 @@
     "format": "npm run format --workspace frontend && npm run format --workspace backend"
   },
   "devDependencies": {
-    "cpx": "^1.5.0"
+    "cpx": "~1.5.0"
   }
 }
