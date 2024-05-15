@@ -4,6 +4,7 @@ import path from 'path';
 import authRoutes from '../../features/auth/auth-routes.js';
 import { logger } from '../../features/logger/winston-logger.js';
 import { MudConfig } from '../../shared/types/mud_config.js';
+import { Environment } from '../environment/environment.js';
 
 export const useRoutes = (app: Express, mudConfig: MudConfig) => {
   app.use('/api/auth', authRoutes);
@@ -98,8 +99,10 @@ export const useRoutes = (app: Express, mudConfig: MudConfig) => {
       req.socket.remoteAddress ||
       (req.socket ? req.socket.remoteAddress : null);
 
-    logger.debug('dist/index.html Path:', { real_ip: ip, path: req.path });
+    logger.debug('wwwroot/index.html Path:', { real_ip: ip, path: req.path });
 
-    res.sendFile(path.join(__dirname, 'dist/index.html'));
+    res.sendFile(
+      path.join(Environment.getInstance().projectRoot, 'wwwroot/index.html'),
+    );
   });
 };

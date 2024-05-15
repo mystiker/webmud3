@@ -1,4 +1,5 @@
 import fs from 'fs';
+import { logger } from '../../features/logger/winston-logger.js';
 import { MudConfig } from '../../shared/types/mud_config.js';
 import { SecretConfig } from '../../shared/types/secure_config.js';
 
@@ -11,7 +12,7 @@ export const loadConfig = <T extends MudConfig | SecretConfig>(
 
     return JSON.parse(data) as T;
   } catch (error: unknown) {
-    console.warn(`${path} config error`, error);
+    logger.warn(`Could not load config at ${path} - revert to default.`);
 
     return defaultConfig;
   }

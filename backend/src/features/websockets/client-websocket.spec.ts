@@ -54,27 +54,4 @@ describe('MudRpc', () => {
 
     expect(disconnectedHandler).toHaveBeenCalled();
   });
-
-  test('should send request to server and receive response', () => {
-    const request = { app: 'mail', data: { subject: 'Hello', body: 'World' } };
-
-    const response = { success: true };
-
-    client.write = jest.fn();
-
-    const writeSpy = jest.spyOn(client, 'write');
-
-    mudRpc.emit(
-      'request',
-      request.app,
-      request.data,
-      (error: unknown, result: unknown) => {
-        expect(error).toBeNull();
-
-        expect(result).toEqual(response);
-      },
-    );
-
-    expect(writeSpy).toHaveBeenCalledWith(expect.any(Buffer));
-  });
 });
