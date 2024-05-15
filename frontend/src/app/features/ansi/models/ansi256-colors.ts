@@ -1,5 +1,5 @@
-export class Ansi256Colors {
-  static normal = {
+export const Ansi256Colors = {
+  normal: {
     '10': '#000000',
     '11': '#00005f',
     '12': '#000087',
@@ -256,8 +256,9 @@ export class Ansi256Colors {
     fd: '#dadada',
     fe: '#e4e4e4',
     ff: '#eeeeee',
-  };
-  static faint = {
+  },
+
+  faint: {
     '10': '#000000',
     '11': '#00002f',
     '12': '#000043',
@@ -514,5 +515,5 @@ export class Ansi256Colors {
     fd: '#6d6d6d',
     fe: '#727272',
     ff: '#777777',
-  };
-}
+  },
+};

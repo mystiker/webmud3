@@ -1,10 +1,9 @@
 // Todo: Das hat nichts in dieser Util Funktion zu suchen
 import { IoMud, SocketsService } from '@mudlet3/frontend/features/sockets';
 
+import { AnsiData } from '@mudlet3/frontend/features/ansi';
 import { KeypadData } from '@mudlet3/frontend/shared';
-
 // Todo: Wahrscheinlich ist das auch eher shared
-import { AnsiData } from '../ansi-data';
 
 import { localEcho } from './local-echo';
 

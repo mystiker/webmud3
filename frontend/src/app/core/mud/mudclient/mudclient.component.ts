@@ -24,19 +24,16 @@ import { CookieService } from 'ngx-cookie-service';
 import { DialogService } from 'primeng/dynamicdialog';
 import { ColorSettings } from '../../../shared/color-settings';
 import { InventoryList } from '../../../shared/inventory-list';
-import { AnsiData } from '../ansi-data';
-import { AnsiService } from '../ansi.service';
 import { FilesService } from '../files.service';
 import { MudMessage, MudSignalHelpers } from '../mud-signals';
 import { WebmudConfig } from '../webmud-config';
 
+import { AnsiData, AnsiService } from '@mudlet3/frontend/features/ansi';
 import { doFocus } from '../utils/do-focus';
 import { onKeyDown, onKeyUp } from '../utils/keyboard-handler';
-import { localEcho } from '../utils/local-echo';
 import { scroll } from '../utils/scroll';
 import { sendMessage } from '../utils/send-message';
 import { tableOutput } from '../utils/table-output';
-import { wordWrap } from '../utils/word-wrap';
 
 @Component({
   selector: 'app-mudclient',
@@ -229,16 +226,8 @@ export class MudclientComponent implements AfterViewChecked {
     }
   }
 
-  private wordWrap(str: string, cols: number): string {
-    return wordWrap(str, cols);
-  }
-
   public tableOutput(words: string[], screen: number): string {
     return tableOutput(words, screen);
-  }
-
-  private localEcho(other: any, inp: string) {
-    localEcho(other, inp, this.ansiService, this.mudlines);
   }
 
   sendMessage() {

@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
+import { AnsiData } from '@mudlet3/frontend/features/ansi';
 import { BehaviorSubject, Observable } from 'rxjs';
+
 import { ColorSettings } from './../../shared/color-settings';
-import { AnsiData } from './ansi-data';
 import { MudMessage } from './mud-signals';
 
 export interface MudClientState {

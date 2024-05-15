@@ -1,5 +1,4 @@
-import { AnsiData } from '../ansi-data';
-import { AnsiService } from '../ansi.service';
+import { AnsiData, AnsiService } from '@mudlet3/frontend/features/ansi';
 import { wordWrap } from './word-wrap';
 
 export function localEcho(

@@ -1,6 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { AnsiData } from '../ansi-data';
-import { AnsiService } from '../ansi.service';
+import { AnsiData, AnsiService } from '@mudlet3/frontend/features/ansi';
 
 @Component({
   selector: 'app-mudspan',
