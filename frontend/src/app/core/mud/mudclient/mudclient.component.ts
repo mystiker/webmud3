@@ -1,4 +1,3 @@
-/* eslint @typescript-eslint/no-this-alias: "warn" */
 import {
   AfterViewChecked,
   ChangeDetectorRef,
@@ -8,11 +7,6 @@ import {
   Input,
   ViewChild,
 } from '@angular/core';
-import { DialogService } from 'primeng/dynamicdialog';
-import { ColorSettings } from '../../../shared/color-settings';
-import { AnsiData } from '../ansi-data';
-import { AnsiService } from '../ansi.service';
-
 import { Title } from '@angular/platform-browser';
 import { KeypadConfigComponent } from '@mudlet3/frontend/features/modeless';
 import { MudConfig } from '@mudlet3/frontend/features/mudconfig';
@@ -27,10 +21,22 @@ import {
   WindowService,
 } from '@mudlet3/frontend/shared';
 import { CookieService } from 'ngx-cookie-service';
+import { DialogService } from 'primeng/dynamicdialog';
+import { ColorSettings } from '../../../shared/color-settings';
 import { InventoryList } from '../../../shared/inventory-list';
+import { AnsiData } from '../ansi-data';
+import { AnsiService } from '../ansi.service';
 import { FilesService } from '../files.service';
 import { MudMessage, MudSignalHelpers } from '../mud-signals';
 import { WebmudConfig } from '../webmud-config';
+
+import { doFocus } from '../utils/do-focus';
+import { onKeyDown, onKeyUp } from '../utils/keyboard-handler';
+import { localEcho } from '../utils/local-echo';
+import { scroll } from '../utils/scroll';
+import { sendMessage } from '../utils/send-message';
+import { tableOutput } from '../utils/table-output';
+import { wordWrap } from '../utils/word-wrap';
 
 @Component({
   selector: 'app-mudclient',
@@ -104,44 +110,26 @@ export class MudclientComponent implements AfterViewChecked {
   public previousFoxus = 1;
 
   private obs_connect: any;
-  //   private obs_connected:any;
   private obs_data: any;
   private obs_debug: any;
   private obs_signals: any;
 
   scroll() {
-    this.mudBlock?.nativeElement.scrollTo(
-      this.scroller?.nativeElement.scrollLeft,
-      0,
-    );
+    scroll(this.mudBlock, this.scroller);
   }
 
   doFocus() {
-    let FirstFocus = undefined;
-    this.previousFoxus = this.changeFocus;
-    if (this.v.inpType != 'text' && typeof this.mudInputLine !== 'undefined') {
-      FirstFocus = this.mudInputLine.nativeElement;
-      this.changeFocus = 1;
-      console.log('doFocus-2-inputline', this.changeFocus, this.previousFoxus);
-    } else if (
-      this.v.inpType == 'text' &&
-      typeof this.mudInputArea !== 'undefined'
-    ) {
-      FirstFocus = this.mudInputArea.nativeElement;
-      // this.changeFocus = -1;
-      console.log('doFocus-1-inputarea', this.changeFocus, this.previousFoxus);
-    } else if (this.v.inpType != 'text') {
-      this.changeFocus = 2;
-      return;
-    } else if (this.v.inpType == 'text') {
-      this.changeFocus = -2;
-      return;
-    }
-    if (FirstFocus) {
-      FirstFocus.focus();
-      FirstFocus.select();
-    }
+    const result = doFocus(
+      this.v,
+      this.changeFocus,
+      this.previousFoxus,
+      this.mudInputLine,
+      this.mudInputArea,
+    );
+    this.changeFocus = result.changeFocus;
+    this.previousFoxus = result.previousFoxus;
   }
+
   menuAction(act: any) {
     console.log('menuAction', act);
     let numpadOther, other;
@@ -210,7 +198,6 @@ export class MudclientComponent implements AfterViewChecked {
             value: numpadSplit.slice(2).join(':'),
           },
         );
-        // doEvent: act.item.event
         return;
       case 'MUD:VIEW':
         this.dialogService.open(ColorSettingsComponent, {
@@ -234,7 +221,6 @@ export class MudclientComponent implements AfterViewChecked {
           this.v.stdfg = 'white';
           this.v.stdbg = 'black';
         }
-        // console.log('cs=',other.cs,tmpJson,tmp64);
         other.cookieService.set(
           'mudcolors',
           other.ansiService.toBinaryBase64(JSON.stringify(this.cs)),
@@ -244,244 +230,52 @@ export class MudclientComponent implements AfterViewChecked {
   }
 
   private wordWrap(str: string, cols: number): string {
-    let formatedString = '',
-      fstr = '',
-      wordsArray = [];
-    wordsArray = str.split(' ');
-    fstr = wordsArray[0];
-    for (let i = 1; i < wordsArray.length; i++) {
-      if (wordsArray[i].length > cols) {
-        formatedString += fstr + '\r\n';
-        fstr = wordsArray[i];
-      } else {
-        if (fstr.length + wordsArray[i].length > cols) {
-          formatedString += fstr + '\r\n';
-          fstr = wordsArray[i];
-        } else {
-          fstr += ' ' + wordsArray[i];
-        }
-      }
-    }
-    formatedString += fstr + '\r\n';
-    return formatedString;
+    return wordWrap(str, cols);
   }
+
   public tableOutput(words: string[], screen: number): string {
-    let width = 1;
-    words.forEach((word) => {
-      if (word.length > width) {
-        width = word.length;
-      }
-    });
-    width++;
-    const cols = Math.max(1, Math.floor((screen + 1) / (width + 1)));
-    const lines = Math.floor((words.length + cols - 1) / cols);
-    width = Math.max(width + 1, Math.floor((screen + 1) / cols));
-    const r: string[] = [];
-    for (let line = 0; line < lines; line++) {
-      let s = '';
-      const colMin = Math.min(
-        cols,
-        Math.floor((words.length - line + lines - 1) / lines),
-      );
-      for (let col = 0; col < colMin; col++) {
-        const word = words[line + col * lines];
-        const len = width - word.length;
-        s += word + ' '.repeat(len);
-      }
-      r.push(s);
-    }
-    return '\r\n' + r.join('\r\n');
+    return tableOutput(words, screen);
   }
 
   private localEcho(other: any, inp: string) {
-    other.ansiCurrent.ansi = '';
-    other.ansiCurrent.mudEcho = other.wordWrap(inp, 75);
-    // other.messages.push({text:this.inpmessage+'\r\n'});
-    const ts = new Date();
-    other.ansiCurrent.timeString =
-      (ts.getDate() < 10 ? '0' : '') +
-      ts.getDate() +
-      '.' +
-      (ts.getMonth() + 1 < 10 ? '0' : '') +
-      (ts.getMonth() + 1) +
-      '.' +
-      ts.getFullYear() +
-      ' ' +
-      (ts.getHours() < 10 ? '0' : '') +
-      ts.getHours() +
-      ':' +
-      (ts.getMinutes() < 10 ? '0' : '') +
-      ts.getMinutes() +
-      ':' +
-      (ts.getSeconds() < 10 ? '0' : '') +
-      ts.getSeconds();
-    //console.debug('mudclient-sendMessage-ansiCurrent-before',this.mudc_id,other.ansiCurrent);
-    const a2harr = other.ansiService.processAnsi(other.ansiCurrent);
-    //console.debug('mudclient-sendMessage-s2harr after',this.mudc_id,a2harr);
-    for (let ix = 0; ix < a2harr.length; ix++) {
-      if (a2harr[ix].text != '' || typeof a2harr[ix].mudEcho !== 'undefined') {
-        other.mudlines = other.mudlines.concat(a2harr[ix]);
-      }
-    }
-    other.ansiCurrent = a2harr[a2harr.length - 1];
+    localEcho(other, inp, this.ansiService, this.mudlines);
   }
 
   sendMessage() {
-    const other = this;
-
-    if (this.inpmessage === undefined) {
-      throw new Error('inpmessage is undefined');
-    }
-
-    if (this.mudc_id !== undefined) {
-      this.socketsService.mudSendData(this.mudc_id, this.inpmessage);
-    }
-
-    if (this.v.inpType == 'text' && this.inpmessage != '') {
-      this.localEcho(other, this.inpmessage);
-      if (
-        this.inpHistory.length == 0 ||
-        (this.inpHistory.length > 0 && this.inpHistory[0] != this.inpmessage)
-      ) {
-        this.inpHistory.unshift(this.inpmessage);
-      }
-    }
-
-    this.inpmessage = '';
+    sendMessage(
+      this.inpmessage,
+      this.mudc_id,
+      this.v,
+      this.inpHistory,
+      this,
+      this.socketsService,
+    );
   }
 
   onKeyDown(event: KeyboardEvent) {
-    if (this.v.inpType != 'text') return;
-    let modifiers = '';
-    if (event.shiftKey) {
-      modifiers += 'Shift';
-    }
-    if (event.ctrlKey) {
-      modifiers += 'Ctrl';
-    }
-    if (event.altKey) {
-      modifiers += 'Alt';
-    }
-    if (event.metaKey) {
-      modifiers += 'Meta';
-    }
-    if (modifiers == 'CtrlAlt') return;
-    if (modifiers == '' && event.key == 'Enter') {
-      event.returnValue = false;
-      event.preventDefault();
-      this.sendMessage();
-      return;
-    }
-    if (typeof this.keySetters === 'undefined') {
-      console.log('keydown-1', modifiers, event.code);
-      return;
-    }
-    if (event.code.startsWith('Numpad') || event.code.startsWith('F')) {
-      modifiers += '|' + event.code;
-      const inp = this.keySetters.getCompoundKey(modifiers);
-      if (typeof inp !== 'undefined') {
-        if (inp !== '') {
-          if (this.mudc_id !== undefined) {
-            this.socketsService.mudSendData(this.mudc_id, inp);
-          }
-
-          this.localEcho(this, inp); // TODO abschaltbar
-        }
-        event.returnValue = false;
-        event.preventDefault();
-        return;
-      } else {
-        console.log('keydown-2', modifiers, event.code);
-      }
-    }
+    onKeyDown(
+      event,
+      this.v,
+      this.keySetters,
+      this.mudc_id,
+      this.inpmessage,
+      this,
+      this.socketsService,
+      this.sendMessage.bind(this),
+    );
   }
 
   onKeyUp(event: KeyboardEvent) {
-    let a2h: AnsiData;
-    if (this.v.inpType != 'text') return;
-    switch (event.key) {
-      case 'ArrowUp':
-        if (this.inpHistory.length < this.inpPointer) {
-          return; // at the end.....
-        }
-        if (this.inpPointer < 0) {
-          if (this.inpmessage == '') {
-            if (this.inpHistory.length > 0) {
-              this.inpPointer = 0;
-              this.inpmessage = this.inpHistory[0];
-              return;
-            } else {
-              return;
-            }
-          } else {
-            if (
-              this.inpHistory.length > 0 &&
-              this.inpmessage == this.inpHistory[0]
-            ) {
-              return;
-            }
-
-            if (this.inpmessage !== undefined) {
-              this.inpHistory.unshift(this.inpmessage);
-            }
-
-            if (this.inpHistory.length > 1) {
-              this.inpPointer = 1;
-              this.inpmessage = this.inpHistory[1];
-              return;
-            } else {
-              this.inpPointer = 0;
-              return;
-            }
-          }
-        } else {
-          this.inpPointer++;
-          if (this.inpHistory.length < this.inpPointer) {
-            return; // at the end...
-          }
-          this.inpmessage = this.inpHistory[this.inpPointer];
-        }
-        return;
-      case 'ArrowDown':
-        if (this.inpPointer < 0) {
-          return; // at the beginning
-        }
-        this.inpPointer--;
-        if (this.inpPointer < 0) {
-          this.inpmessage = '';
-          return; // at the beginning
-        }
-        this.inpmessage = this.inpHistory[this.inpPointer];
-        return;
-      case 'ArrowLeft':
-        return;
-      case 'ArrowRight':
-      case 'Shift':
-      case 'Ctrl':
-      case 'Alt':
-      case 'AltGraph':
-      case 'Meta':
-        return; // no change to the pointer...
-      case 'Enter':
-        this.inpPointer = -1;
-        a2h = Object.assign({}, this.mudlines[this.mudlines.length - 1]);
-        a2h.text = '\r\n';
-        this.mudlines.push(a2h);
-        return;
-      case 'Tab':
-        if (this.ioMud !== undefined) {
-          this.socketsService.sendGMCP(
-            this.ioMud.MudId,
-            'Input',
-            'Complete',
-            this.inpmessage,
-          );
-        }
-        return;
-      default:
-        this.inpPointer = -1;
-        return;
-    }
+    onKeyUp(
+      event,
+      this.v,
+      this.inpHistory,
+      this.inpPointer,
+      this.inpmessage,
+      this.mudlines,
+      this.ioMud,
+      this.socketsService,
+    );
   }
 
   private connect() {
@@ -528,7 +322,6 @@ export class MudclientComponent implements AfterViewChecked {
               ]);
             }
 
-            // console.warn("S96-check SendToAllMuds",ioResult);
             return;
           case 'IoMud':
             other.ioMud = ioResult.Data as IoMud;
@@ -577,27 +370,6 @@ export class MudclientComponent implements AfterViewChecked {
       },
     );
     return;
-    // this.obs_connect = this.socketService.mudConnect(mudOb).subscribe(_id => {
-    //   console.log("S05-mudclient-connecting-3",_id);
-    //   if (_id == null) {
-    //     other.v.connected = false;
-    //     other.mudc_id = undefined;
-    //     console.error('mudclient-socketService.mudConnect-failed',_id);
-    //     return;
-    //   }
-    //   other.mudc_id = _id;
-    //   other.obs_connected = other.socketService.mudConnectStatus(_id).subscribe(
-    //       flag => {other.v.connected = flag;
-    //       console.log("S05-mudclient-connecting-4",_id,flag);
-    //     });
-    //   other.obs_signals = other.socketService.mudReceiveSignals(_id).subscribe(
-    //       musi => {
-    //         MudSignalHelpers.mudProecessSignals(other,musi,_id);
-    //   });
-    //   other.obs_data = other.socketService.mudReceiveData(_id).subscribe(outline => {
-    //     MudSignalHelpers.mudProcessData(other,_id,outline);
-    //   });
-    // });
   }
 
   getViewPortHeight(): number {
@@ -617,7 +389,6 @@ export class MudclientComponent implements AfterViewChecked {
       throw new Error('mudBlock, mudMenu or mudInputArea is undefined');
     }
 
-    // let oh = this.mudBlock.nativeElement.offsetHeight;
     const ow = this.mudBlock.nativeElement.offsetWidth;
     let tmpheight = this.getViewPortHeight();
     tmpheight -= this.mudMenu.nativeElement.offsetHeight;
@@ -630,7 +401,6 @@ export class MudclientComponent implements AfterViewChecked {
     const other = this;
     setTimeout(function () {
       other.v.ref_height = tmpheight;
-      // other.v.sizeCalculated2 = true;
       other.cdRef.detectChanges();
     });
     if (this.d.mudc_height != Math.floor(tmpheight / this.d.ref_height_ratio)) {
@@ -656,7 +426,6 @@ export class MudclientComponent implements AfterViewChecked {
         this.connect();
       }
       if (typeof this.mudc_id !== undefined) {
-        // this.socketService.setMudOutputSize(this.mudc_id,this.mudc_height,this.mudc_width);
       }
     }
   }
@@ -672,7 +441,6 @@ export class MudclientComponent implements AfterViewChecked {
   ngAfterViewChecked(): void {
     const other = this;
 
-    // [scrollTop]="mudBlock.scrollHeight"
     if (
       this.v.scrollLock &&
       this.mudBlock &&
@@ -722,7 +490,6 @@ export class MudclientComponent implements AfterViewChecked {
     this.mudc_id = 'one';
 
     const ncs = this.cookieService.get('mudcolors');
-    // console.log("mudcolors '"+ncs+"'");
     if (ncs != '') {
       this.cs = JSON.parse(ansiService.fromBinaryBase64(ncs));
     }
@@ -733,6 +500,5 @@ export class MudclientComponent implements AfterViewChecked {
       this.v.stdfg = 'white';
       this.v.stdbg = 'black';
     }
-    // this.connect();
   }
 }
