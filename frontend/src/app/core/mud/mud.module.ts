@@ -1,16 +1,16 @@
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { MudclientComponent } from './mudclient/mudclient.component';
-import { MudmenuComponent } from './mudmenu/mudmenu.component';
-import { MudspanComponent } from './mudspan/mudspan.component';
-import { PrimeModule } from '@mudlet3/frontend/shared';
 import { WidgetsModule } from '@mudlet3/frontend/features/widgets';
+import { PrimeModule } from '@mudlet3/frontend/shared';
+import { MenuModule } from '../menu/menu.module';
+import { MudclientComponent } from './mudclient/mudclient.component';
+import { MudspanComponent } from './mudspan/mudspan.component';
 
 @NgModule({
-  declarations: [MudclientComponent, MudmenuComponent, MudspanComponent],
+  declarations: [MudclientComponent, MudspanComponent],
   imports: [
     CommonModule,
     BrowserModule,
@@ -18,6 +18,7 @@ import { WidgetsModule } from '@mudlet3/frontend/features/widgets';
     BrowserAnimationsModule,
     FormsModule,
     WidgetsModule,
+    MenuModule,
   ],
   exports: [MudclientComponent],
 })

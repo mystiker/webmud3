@@ -1,108 +1,94 @@
-import { Injectable } from '@angular/core';
+import { EventEmitter, Injectable, Output } from '@angular/core';
 import { MenuItem, MenuItemCommandEvent } from 'primeng/api';
-import { MenuType, OneMenu } from './one-menu';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { MenuInputService } from './menu-input.service';
+import { MenuState, MenuType } from './types/menu-state';
 
-/* eslint @typescript-eslint/ban-types: "warn" */
 @Injectable({
   providedIn: 'root',
 })
 export class MenuService {
-  private all_menus: { [key: string]: OneMenu } = ({} = {});
+  private menuStateSubject = new BehaviorSubject<MenuState>({
+    menuType: MenuType.OTHER,
+    items: [],
+  });
 
-  create_menu(menuType: MenuType, menuID: string, callback: Function): boolean {
-    if (Object.prototype.hasOwnProperty.call(this.all_menus, menuID)) {
-      return false;
-    }
-    const myMenu = new OneMenu(menuType, menuID, callback);
-    this.all_menus[menuID] = myMenu;
-    return true;
+  get menuState$(): Observable<MenuState> {
+    return this.menuStateSubject.asObservable();
   }
-  refresh_menu(menuID: string): boolean {
-    if (Object.prototype.hasOwnProperty.call(this.all_menus, menuID)) {
-      this.all_menus[menuID].items = [];
-      return true;
-    }
-    return false;
+
+  @Output()
+  public readonly menuItemClicked = new EventEmitter<MenuItemCommandEvent>();
+
+  constructor(private menuInputService: MenuInputService) {
+    // Subscribe to input service changes and update the menu state
+    this.menuInputService.connected$.subscribe((connected) => {
+      console.log(`MenuService: Connected state changed to ${connected}`);
+      this.updateMenuItems(connected);
+    });
   }
-  get_menu_items(menuID: string): MenuItem[] {
-    if (Object.prototype.hasOwnProperty.call(this.all_menus, menuID)) {
-      return this.all_menus[menuID].items;
-    }
-    return [];
+
+  public updateMenuState(partialState: Partial<MenuState>) {
+    const currentState = this.menuStateSubject.value;
+    const newState = { ...currentState, ...partialState };
+    this.menuStateSubject.next(newState);
+    console.log('MenuService: Updated menu state', newState);
   }
-  add_menu_item(
-    menuID: string,
-    submenu: number,
-    itemId: string,
-    label: string,
-    icon: string,
-    disabled = false,
-    visible = true,
-  ): boolean {
-    if (!Object.prototype.hasOwnProperty.call(this.all_menus, menuID)) {
-      return false;
-    }
-    const myItem: MenuItem = {
-      id: itemId,
-      label: label,
-      icon: icon,
-      disabled: disabled,
-      visible: visible,
-      command: (event: MenuItemCommandEvent) =>
-        this.all_menus[menuID].executer(event),
-    };
-    if (submenu <= 0) {
-      if (
-        !Object.prototype.hasOwnProperty.call(this.all_menus[menuID], 'items')
-      ) {
-        this.all_menus[menuID].items = [];
-      }
-      this.all_menus[menuID].items.push(myItem);
-      return true;
-    }
-    if (
-      !Object.prototype.hasOwnProperty.call(this.all_menus[menuID], 'items')
-    ) {
-      return false; // no previous element to insert to.
-    }
-    const ix1 = this.all_menus[menuID].items.length - 1;
-    if (submenu == 1) {
-      if (
-        !Object.prototype.hasOwnProperty.call(
-          this.all_menus[menuID].items[ix1],
-          'items',
-        )
-      ) {
-        this.all_menus[menuID].items[ix1].items = [];
-      }
-      this.all_menus[menuID]?.items[ix1]?.items?.push(myItem);
-      return true;
-    }
-    if (
-      !Object.prototype.hasOwnProperty.call(
-        this.all_menus[menuID].items[ix1],
-        'items',
-      )
-    ) {
-      return false; // no previous element on level 1 to insert to
-    }
 
-    const ix2 = this.all_menus[menuID]?.items[ix1]?.items?.length;
+  private updateMenuItems(connected: boolean) {
+    const items: MenuItem[] = [
+      {
+        id: 'MUD:MENU',
+        label: 'MUD',
+        icon: 'pi pi-power-off',
+        command: (event: MenuItemCommandEvent) =>
+          this.emitMenuItemClicked(event),
+      },
+      {
+        id: 'MUD:CONNECT',
+        label: 'Verbinden',
+        icon: 'pi pi-sign-in',
+        disabled: connected,
+        command: (event: MenuItemCommandEvent) =>
+          this.emitMenuItemClicked(event),
+      },
+      {
+        id: 'MUD:DISCONNECT',
+        label: 'Trennen',
+        icon: 'pi pi-sign-out',
+        disabled: !connected,
+        command: (event: MenuItemCommandEvent) =>
+          this.emitMenuItemClicked(event),
+      },
+      {
+        id: 'MUD:NUMPAD',
+        label: 'Numpad',
+        icon: 'pi pi-key',
+        command: (event: MenuItemCommandEvent) =>
+          this.emitMenuItemClicked(event),
+      },
+      {
+        id: 'MUD:VIEW',
+        label: 'Farben',
+        icon: 'pi pi-eye',
+        command: (event: MenuItemCommandEvent) =>
+          this.emitMenuItemClicked(event),
+      },
+      {
+        id: 'MUD:SCROLL',
+        label: 'Scroll',
+        icon: connected ? 'pi pi-play' : 'pi pi-pause',
+        command: (event: MenuItemCommandEvent) =>
+          this.emitMenuItemClicked(event),
+      },
+    ];
 
-    if (submenu == 2 && ix2 !== undefined) {
-      if (
-        !Object.prototype.hasOwnProperty.call(
-          this.all_menus[menuID]?.items[ix1]?.items?.[ix2],
-          'items',
-        )
-      ) {
-        this.all_menus[menuID]!.items[ix1]!.items![ix2].items = [];
-      }
+    this.updateMenuState({ items });
+    console.log('MenuService: Menu items updated', items);
+  }
 
-      this.all_menus[menuID]?.items[ix1]?.items?.[ix2]?.items?.push(myItem);
-
-      return true;
-    }
-    return false; // only submenu level 0,1,2 is valid.
+  private emitMenuItemClicked(event: MenuItemCommandEvent) {
+    console.log('MenuService: Menu item event triggered', event);
+    this.menuItemClicked.emit(event);
   }
 }
