@@ -1,6 +1,9 @@
 {
   "name": "webmud3",
   "version": "1.0.0-alpha",
+  "engines": {
+    "node": "20.12.2"
+  },
   "workspaces": [
     "frontend",
     "backend"
@@ -13,8 +16,7 @@
     "postbuild": "npm run integrate-client",
     "start": "npm run build && npm run start --workspace backend",
     "test": "npm run test --workspace frontend && npm run test --workspace backend",
-    "lint": "npm run lint --workspace frontend && npm run lint --workspace backend",
-    "format": "npm run format --workspace frontend && npm run format --workspace backend"
+    "lint": "npm run lint --workspace frontend && npm run lint --workspace backend"
   },
   "devDependencies": {
     "cpx": "~1.5.0"
