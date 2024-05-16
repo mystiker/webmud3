@@ -1,7 +1,7 @@
 // Todo: Das hat nichts in dieser Util Funktion zu suchen
 import { IoMud, SocketsService } from '@mudlet3/frontend/features/sockets';
 
-import { AnsiData } from '@mudlet3/frontend/features/ansi';
+import { IAnsiData } from '@mudlet3/frontend/features/ansi';
 import { KeypadData } from '@mudlet3/frontend/shared';
 // Todo: Wahrscheinlich ist das auch eher shared
 
@@ -68,11 +68,11 @@ export function onKeyUp(
   inpHistory: string[],
   inpPointer: number,
   inpmessage: string | undefined,
-  mudlines: AnsiData[],
+  mudlines: IAnsiData[],
   ioMud: IoMud | undefined,
   socketsService: SocketsService,
 ) {
-  let a2h: AnsiData;
+  let a2h: IAnsiData;
   if (v.inpType != 'text') return;
   switch (event.key) {
     case 'ArrowUp':

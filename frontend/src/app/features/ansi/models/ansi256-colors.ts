@@ -516,4 +516,4 @@ export const Ansi256Colors = {
     fe: '#727272',
     ff: '#777777',
   },
-};
+} as const;

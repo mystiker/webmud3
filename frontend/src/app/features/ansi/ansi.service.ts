@@ -1,15 +1,11 @@
 import { Injectable } from '@angular/core';
-import { AnsiData } from './ansi-data';
 import { Ansi256Colors } from './models/ansi256-colors';
 
 import { ESCAPE_SEQUENCES } from './models/escape-sequences';
-import { blackToWhite } from './utils/colors/black-to-white';
-import { extractColors } from './utils/colors/extract-color';
+import { IAnsiData } from './types/ansi-data';
 import { invColor } from './utils/colors/inv-color';
 import { rgbToHex } from './utils/colors/rgb-to-hex';
 import { toHex2 } from './utils/colors/to-hex2';
-import { fromBinaryBase64 } from './utils/from-binary-base64';
-import { toBinaryBase64 } from './utils/to-binary-base64';
 
 @Injectable({
   providedIn: 'root',
@@ -23,39 +19,13 @@ export class AnsiService {
   public ESC_VALID = ESCAPE_SEQUENCES.VALID;
   public ESC_ENDCHAR = ESCAPE_SEQUENCES.ENDCHAR;
 
-  public toBinaryBase64(u: string): string {
-    return toBinaryBase64(u);
-  }
-
-  public fromBinaryBase64(encoded: string): string {
-    return fromBinaryBase64(encoded);
-  }
-
-  public invColor(s: string): string {
-    return invColor(s);
-  }
-
-  public blackToWhite(s: string): string {
-    return blackToWhite(s);
-  }
-
-  public extractColors(
-    a2h: AnsiData,
-    colors: string[],
-    bow: boolean,
-    invert: boolean,
-    colorOff: boolean,
-  ): string[] {
-    return extractColors(a2h, colors, bow, invert, colorOff);
-  }
-
-  public ansiCode(data: AnsiData): AnsiData {
+  public ansiCode(data: IAnsiData): IAnsiData {
     // Refaktorisierte Logik zur Verarbeitung von ANSI-Codes
     return this.handleAnsiCodes(data);
   }
 
-  public processAnsi(data: AnsiData): AnsiData[] {
-    const result: AnsiData[] = [];
+  public processAnsi(data: IAnsiData): IAnsiData[] {
+    const result: IAnsiData[] = [];
     data = { ...data, text: '' };
 
     if (typeof data.mudEcho !== 'undefined' && data.ansi === '') {
@@ -111,7 +81,7 @@ export class AnsiService {
     return result;
   }
 
-  private handleAnsiCodes(data: AnsiData): AnsiData {
+  private handleAnsiCodes(data: IAnsiData): IAnsiData {
     // Refaktorierte Methode zum Umgang mit ANSI-Codes
     data = { ...data };
     if (data.ansiPos >= data.ansi.length - 1) {
@@ -168,11 +138,11 @@ export class AnsiService {
   }
 
   private applyAnsiCodes(
-    data: AnsiData,
+    data: IAnsiData,
     escape: string,
     codes: string[],
     i: number,
-  ): AnsiData {
+  ): IAnsiData {
     // Methode zur Anwendung von ANSI-Codes
     switch (escape[escape.length - 1]) {
       case 'J':
@@ -204,10 +174,10 @@ export class AnsiService {
   }
 
   private setAnsiAttributes(
-    data: AnsiData,
+    data: IAnsiData,
     codes: string[],
     i: number,
-  ): AnsiData {
+  ): IAnsiData {
     let setcolor256fg = '';
     let setcolor256bg = '';
     switch (codes[i]) {
@@ -424,7 +394,7 @@ export class AnsiService {
     return data;
   }
 
-  private resetAttributes(data: AnsiData): AnsiData {
+  private resetAttributes(data: IAnsiData): IAnsiData {
     return {
       ...data,
       bold: false,

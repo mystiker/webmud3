@@ -28,12 +28,14 @@ import { FilesService } from '../files.service';
 import { MudMessage, MudSignalHelpers } from '../mud-signals';
 import { WebmudConfig } from '../webmud-config';
 
-import { AnsiData, AnsiService } from '@mudlet3/frontend/features/ansi';
+import { AnsiService, fromBinaryBase64 } from '@mudlet3/frontend/features/ansi';
 import { doFocus } from '../utils/do-focus';
 import { onKeyDown, onKeyUp } from '../utils/keyboard-handler';
 import { scroll } from '../utils/scroll';
 import { sendMessage } from '../utils/send-message';
 import { tableOutput } from '../utils/table-output';
+
+import { DefaultAnsiData, IAnsiData } from '@mudlet3/frontend/features/ansi';
 
 @Component({
   selector: 'app-mudclient',
@@ -92,8 +94,8 @@ export class MudclientComponent implements AfterViewChecked {
   private mudName = 'disconnect';
   public mudc_id: string | undefined;
   private ioMud?: IoMud;
-  public mudlines: AnsiData[] = [];
-  private ansiCurrent: AnsiData;
+  public mudlines: IAnsiData[] = [];
+  private ansiCurrent: IAnsiData;
   public inpmessage?: string;
   private inpHistory: string[] = [];
   public togglePing = false;
@@ -475,12 +477,12 @@ export class MudclientComponent implements AfterViewChecked {
     private cookieService: CookieService,
   ) {
     this.invlist = new InventoryList();
-    this.ansiCurrent = new AnsiData();
+    this.ansiCurrent = DefaultAnsiData;
     this.mudc_id = 'one';
 
     const ncs = this.cookieService.get('mudcolors');
     if (ncs != '') {
-      this.cs = JSON.parse(ansiService.fromBinaryBase64(ncs));
+      this.cs = JSON.parse(fromBinaryBase64(ncs));
     }
     if (this.cs.blackOnWhite) {
       this.v.stdfg = 'black';

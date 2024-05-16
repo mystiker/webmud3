@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
-import { AnsiData, AnsiService } from '@mudlet3/frontend/features/ansi';
+import { blackToWhite, invColor } from '@mudlet3/frontend/features/ansi';
+import { IAnsiData } from 'src/app/features/ansi/types/ansi-data';
 
 @Component({
   selector: 'app-mudspan',
@@ -9,9 +10,7 @@ import { AnsiData, AnsiService } from '@mudlet3/frontend/features/ansi';
   styleUrls: ['./mudspan.component.scss'],
 })
 export class MudspanComponent {
-  constructor(private ansiService: AnsiService) {}
-
-  private a2h?: AnsiData;
+  private a2h?: IAnsiData;
 
   public myclasses: string = '';
   public fg: string = '';
@@ -45,8 +44,8 @@ export class MudspanComponent {
       lbg = this.a2h.bgcolor;
     }
     if (this.invert) {
-      lfg = this.ansiService.invColor(lfg);
-      lbg = this.ansiService.invColor(lbg);
+      lfg = invColor(lfg);
+      lbg = invColor(lbg);
     }
     if (typeof this.a2h.text !== 'undefined' && this.a2h.text != '') {
       // no change
@@ -63,8 +62,8 @@ export class MudspanComponent {
       this.fg = lfg;
       this.bg = lbg;
     } else {
-      this.fg = this.ansiService.blackToWhite(lfg);
-      this.bg = this.ansiService.blackToWhite(lbg);
+      this.fg = blackToWhite(lfg);
+      this.bg = blackToWhite(lbg);
     }
 
     if (this.a2h.concealed) {
@@ -120,7 +119,7 @@ export class MudspanComponent {
     this.calcFgBg();
   }
 
-  @Input() set ansi2html(ansi: AnsiData) {
+  @Input() set ansi2html(ansi: IAnsiData) {
     this.a2h = ansi;
     this.tt = ansi.timeString;
     this.calcFgBg();

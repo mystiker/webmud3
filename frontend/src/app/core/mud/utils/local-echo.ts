@@ -1,11 +1,11 @@
-import { AnsiData, AnsiService } from '@mudlet3/frontend/features/ansi';
+import { AnsiService, IAnsiData } from '@mudlet3/frontend/features/ansi';
 import { wordWrap } from './word-wrap';
 
 export function localEcho(
   other: any,
   inp: string,
   ansiService: AnsiService,
-  mudlines: AnsiData[],
+  mudlines: IAnsiData[],
 ) {
   other.ansiCurrent.ansi = '';
   other.ansiCurrent.mudEcho = wordWrap(inp, 75);

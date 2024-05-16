@@ -1,10 +1,10 @@
 // Todo:[myst]: Fix import to interface
-import { AnsiData } from '../../ansi-data';
+import { IAnsiData } from '../../types/ansi-data';
 import { blackToWhite } from './black-to-white';
 import { invColor } from './inv-color';
 
 export function extractColors(
-  a2h: AnsiData,
+  a2h: IAnsiData,
   colors: string[],
   bow: boolean,
   invert: boolean,
