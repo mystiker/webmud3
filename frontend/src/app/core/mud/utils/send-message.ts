@@ -18,7 +18,9 @@ export function sendMessage(
   }
 
   if (v.inpType == 'text' && inpmessage != '') {
-    localEcho(other, inpmessage, other.ansiService, other.mudlines);
+    // Todo[myst]: THis got called with 4 parameters but only 3 are defined?
+    // localEcho(other, inpmessage, other.ansiService, other.mudlines);
+    localEcho(other, inpmessage, other.ansiService);
     if (
       inpHistory.length == 0 ||
       (inpHistory.length > 0 && inpHistory[0] != inpmessage)

@@ -1,3 +1,4 @@
+// Todo[myst]: The object from this thing is used und reasigned everywhere. Make props readonly and see what breaks
 export interface IAnsiData {
   fontheight: number;
   fontwidth: number;

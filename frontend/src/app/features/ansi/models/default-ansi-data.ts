@@ -20,4 +20,4 @@ export const DefaultAnsiData: IAnsiData = {
   optionInvert: false,
   timeString: '',
   text: '',
-};
+} as const;

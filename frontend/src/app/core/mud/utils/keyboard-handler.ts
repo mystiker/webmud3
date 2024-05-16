@@ -50,8 +50,9 @@ export function onKeyDown(
         if (mudc_id !== undefined) {
           socketsService.mudSendData(mudc_id, inp);
         }
-
-        localEcho(other, inp, other.ansiService, other.mudlines); // TODO abschaltbar
+        // Todo[myst]: THis got called with 4 parameters but only 3 are defined?
+        // localEcho(other, inpmessage, other.ansiService, other.mudlines);
+        localEcho(other, inp, other.ansiService); // TODO abschaltbar
       }
       event.returnValue = false;
       event.preventDefault();

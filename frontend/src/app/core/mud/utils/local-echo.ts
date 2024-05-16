@@ -1,12 +1,7 @@
-import { AnsiService, IAnsiData } from '@mudlet3/frontend/features/ansi';
+import { IAnsiData, processAnsi } from '@mudlet3/frontend/features/ansi';
 import { wordWrap } from './word-wrap';
 
-export function localEcho(
-  other: any,
-  inp: string,
-  ansiService: AnsiService,
-  mudlines: IAnsiData[],
-) {
+export function localEcho(other: any, inp: string, mudlines: IAnsiData[]) {
   other.ansiCurrent.ansi = '';
   other.ansiCurrent.mudEcho = wordWrap(inp, 75);
   const ts = new Date();
@@ -27,7 +22,7 @@ export function localEcho(
     ':' +
     (ts.getSeconds() < 10 ? '0' : '') +
     ts.getSeconds();
-  const a2harr = ansiService.processAnsi(other.ansiCurrent);
+  const a2harr = processAnsi(other.ansiCurrent);
   for (let ix = 0; ix < a2harr.length; ix++) {
     if (a2harr[ix].text != '' || typeof a2harr[ix].mudEcho !== 'undefined') {
       mudlines = mudlines.concat(a2harr[ix]);

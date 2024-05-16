@@ -25,17 +25,23 @@ import { DialogService } from 'primeng/dynamicdialog';
 import { ColorSettings } from '../../../shared/color-settings';
 import { InventoryList } from '../../../shared/inventory-list';
 import { FilesService } from '../files.service';
-import { MudMessage, MudSignalHelpers } from '../mud-signals';
 import { WebmudConfig } from '../webmud-config';
 
-import { AnsiService, fromBinaryBase64 } from '@mudlet3/frontend/features/ansi';
+import {
+  DefaultAnsiData,
+  IAnsiData,
+  fromBinaryBase64,
+  toBinaryBase64,
+} from '@mudlet3/frontend/features/ansi';
+
+import { mudProcessData } from 'src/app/core/mud/utils/mud-process-data';
+import { mudProcessSignals } from 'src/app/core/mud/utils/mud-process-signals';
+import { IMudMessage } from '../types/mud-message';
 import { doFocus } from '../utils/do-focus';
 import { onKeyDown, onKeyUp } from '../utils/keyboard-handler';
 import { scroll } from '../utils/scroll';
 import { sendMessage } from '../utils/send-message';
 import { tableOutput } from '../utils/table-output';
-
-import { DefaultAnsiData, IAnsiData } from '@mudlet3/frontend/features/ansi';
 
 @Component({
   selector: 'app-mudclient',
@@ -95,15 +101,15 @@ export class MudclientComponent implements AfterViewChecked {
   public mudc_id: string | undefined;
   private ioMud?: IoMud;
   public mudlines: IAnsiData[] = [];
-  private ansiCurrent: IAnsiData;
-  public inpmessage?: string;
+  public ansiCurrent: IAnsiData;
+  public inpmessage: string = ''; // Todo[myst]: nonsense
   private inpHistory: string[] = [];
   public togglePing = false;
   private inpPointer = -1;
-  public messages: MudMessage[] = [];
-  public filesWindow?: WindowConfig;
-  public charStatsWindow?: WindowConfig;
-  public charData?: CharacterData;
+  public messages: IMudMessage[] = [];
+  public filesWindow: WindowConfig = new WindowConfig(); // Todo[myst]: nonsense;
+  public charStatsWindow: WindowConfig = new WindowConfig(); // Todo[myst]: nonsense;
+  public charData: CharacterData = new CharacterData(''); // Todo[myst]: nonsense
   public invlist: InventoryList;
   public changeFocus = 1;
   public previousFoxus = 1;
@@ -222,7 +228,7 @@ export class MudclientComponent implements AfterViewChecked {
         }
         other.cookieService.set(
           'mudcolors',
-          other.ansiService.toBinaryBase64(JSON.stringify(this.cs)),
+          toBinaryBase64(JSON.stringify(this.cs)),
         );
         return;
     }
@@ -307,7 +313,7 @@ export class MudclientComponent implements AfterViewChecked {
         switch (ioResult.IdType) {
           case 'IoMud:SendToAllMuds':
             if (other.ioMud !== undefined) {
-              MudSignalHelpers.mudProcessData(other, other.ioMud.MudId, [
+              mudProcessData(other, other.ioMud.MudId, [
                 ioResult.MsgType,
                 undefined,
               ]);
@@ -329,21 +335,17 @@ export class MudclientComponent implements AfterViewChecked {
                 other.v.connected = true;
                 return;
               case 'mud-signal':
-                MudSignalHelpers.mudProecessSignals(
-                  other,
-                  ioResult.musi,
-                  other.ioMud.MudId,
-                );
+                mudProcessSignals(other.ioMud.MudId, other, ioResult.musi);
                 return;
               case 'mud-output':
-                MudSignalHelpers.mudProcessData(other, other.ioMud.MudId, [
+                mudProcessData(other, other.ioMud.MudId, [
                   ioResult.ErrorType,
                   undefined,
                 ]);
                 return;
               case 'mud-disconnect':
                 other.v.connected = false;
-                MudSignalHelpers.mudProcessData(other, other.ioMud.MudId, [
+                mudProcessData(other, other.ioMud.MudId, [
                   ioResult.ErrorType,
                   undefined,
                 ]);
@@ -467,13 +469,12 @@ export class MudclientComponent implements AfterViewChecked {
   constructor(
     @Inject(WINDOW) private window: Window,
     private cdRef: ChangeDetectorRef,
-    private ansiService: AnsiService,
     private dialogService: DialogService,
-    private socketsService: SocketsService,
+    public socketsService: SocketsService,
     public filesrv: FilesService,
     public wincfg: WindowService,
     private srvcfgService: ServerConfigService,
-    private titleService: Title,
+    public titleService: Title,
     private cookieService: CookieService,
   ) {
     this.invlist = new InventoryList();
