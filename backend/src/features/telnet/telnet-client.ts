@@ -1,6 +1,7 @@
 import { Socket } from 'net';
 import { TelnetSocket, TelnetSocketOptions } from 'telnet-stream';
 import { sizeToBuffer } from '../../shared/utils/size-to-buffer.js';
+import { logger } from '../logger/winston-logger.js';
 import { TelnetCommands } from './models/telnet-commands.js';
 import { TelnetOptions } from './models/telnet-options.js';
 import { MudOptions } from './types/mud-options.js';
@@ -19,44 +20,48 @@ export class TelnetClient extends TelnetSocket {
 
   private debugflag: boolean;
 
-  public readonly mudOptions: MudOptions;
+  private readonly mudOptions: MudOptions;
 
   /**
    * Constructs a TelnetClient instance.
-   * @param mudConnection - The socket connection to the MUD server.
+   * @param telnetConnection - The socket connection to the MUD server.
    * @param telnetSocketOptions - Options for the Telnet socket.
    * @param clientConnection - The client socket connection.
    * @param mudOptions - Optional settings for the MUD client.
    */
   constructor(
-    mudConnection: Socket,
+    telnetConnection: Socket,
     telnetSocketOptions: TelnetSocketOptions,
+    // Todo[myst]: Remove this dependency
     clientConnection: Socket,
+    // Todo[myst]: Remove this dependency
     mudOptions: MudOptions,
   ) {
-    super(mudConnection, telnetSocketOptions);
+    super(telnetConnection, telnetSocketOptions);
 
-    console.log('MUDSOCKET: creating');
-
+    // Todo[myst]: Remove this dependency
     this.mudOptions = mudOptions;
 
     this.debugflag = this.mudOptions?.debugflag || false;
 
     this.setupEventHandlers(clientConnection);
 
-    console.log('MUDSOCKET: created');
+    logger.info(`[Telnet-Client] Created`, {
+      ...telnetSocketOptions,
+      ...mudOptions,
+    });
   }
 
   /**
    * Handles the telnet option based on the action type.
    * @param chunkData - The data chunk received from the telnet stream.
-   * @param socket_io - The socket connection to the client.
+   * @param clientConnection - The socket connection to the client.
    * @param action - The telnet action to be handled.
    * @param additionalLogic - Additional logic to be executed for certain telnet options.
    */
   private handleTelnetOption(
     chunkData: number,
-    socket_io: Socket,
+    clientConnection: Socket,
     action: 'will' | 'do' | 'wont' | 'dont' | 'sub',
     additionalLogic?: (opt: string, socket_io: Socket) => void,
   ): void {
@@ -66,9 +71,13 @@ export class TelnetClient extends TelnetSocket {
     if (this.debugflag) {
       const logType = action; // 'do', 'will', etc.
 
-      console.log(`MUDSOCKET: ${logType}: ${opt}`);
+      logger.info(`[Telnet-Client] [Client] Emit 'mud.debug'`, {
+        id: this.mudOptions?.id,
+        type: logType,
+        data: opt,
+      });
 
-      socket_io.emit('mud.debug', {
+      clientConnection.emit('mud.debug', {
         id: this.mudOptions?.id,
         type: logType,
         data: opt,
@@ -82,35 +91,47 @@ export class TelnetClient extends TelnetSocket {
 
     // Ausführen zusätzlicher Logik, falls vorhanden
     if (additionalLogic) {
-      additionalLogic(opt, socket_io);
+      additionalLogic(opt, clientConnection);
     }
   }
 
   /**
    * Sets up event handlers for the socket.
-   * @param socket_io - The socket connection to the client.
+   * @param clientConnection - The socket connection to the client.
    */
-  private setupEventHandlers(socket_io: Socket): void {
-    this.on('close', () => this.handleClose(socket_io));
+  private setupEventHandlers(clientConnection: Socket): void {
+    this.on('close', () => this.handleClose(clientConnection));
 
-    this.on('command', (chunkData) => this.handleCommand(chunkData, socket_io));
-
-    this.on('do', (chunkData) => this.handleDo(chunkData, socket_io));
-
-    this.on('dont', (chunkData) => this.handleDont(chunkData, socket_io));
-
-    this.on('will', (chunkData) => this.handleWill(chunkData, socket_io));
-
-    this.on('wont', (chunkData) => this.handleWont(chunkData, socket_io));
-
-    this.on('sub', (optin, chunkData) =>
-      this.handleSub(optin, chunkData, socket_io),
+    this.on('command', (chunkData) =>
+      this.handleCommand(chunkData, clientConnection),
     );
 
-    this.on('error', (chunkData) => this.handleError(chunkData, socket_io));
+    this.on('do', (chunkData) => this.handleDo(chunkData, clientConnection));
+
+    this.on('dont', (chunkData) =>
+      this.handleDont(chunkData, clientConnection),
+    );
+
+    this.on('will', (chunkData) =>
+      this.handleWill(chunkData, clientConnection),
+    );
+
+    this.on('wont', (chunkData) =>
+      this.handleWont(chunkData, clientConnection),
+    );
+
+    this.on('sub', (optin, chunkData) =>
+      this.handleSub(optin, chunkData, clientConnection),
+    );
+
+    this.on('error', (chunkData) =>
+      this.handleError(chunkData, clientConnection),
+    );
   }
 
   private handleClose(socket_io: Socket): void {
+    logger.info(`[Telnet-Client] [Telnet] Received message 'close'`);
+
     if (this.debugflag) {
       socket_io.emit('mud.debug', {
         id: this.mudOptions?.id,
@@ -121,6 +142,8 @@ export class TelnetClient extends TelnetSocket {
   }
 
   private handleCommand(chunkData: number, socket_io: Socket): void {
+    logger.info(`[Telnet-Client] [Telnet] Received message 'command'`);
+
     const cmd = this.telnetConfig.num2opt[chunkData.toString()];
 
     if (this.debugflag) {
@@ -133,6 +156,8 @@ export class TelnetClient extends TelnetSocket {
   }
 
   private handleDo(chunkData: number, socket_io: Socket): void {
+    logger.info(`[Telnet-Client] [Telnet] Received message 'do'`);
+
     this.handleTelnetOption(chunkData, socket_io, 'do', (opt, socket_io) => {
       if (opt === 'TELOPT_TM') {
         // Timing Mark
@@ -160,10 +185,14 @@ export class TelnetClient extends TelnetSocket {
   }
 
   private handleDont(chunkData: number, socket_io: Socket): void {
+    logger.info(`[Telnet-Client] [Telnet] Received message 'dont'`);
+
     this.handleTelnetOption(chunkData, socket_io, 'dont');
   }
 
   private handleWill(chunkData: number, socket_io: Socket): void {
+    logger.info(`[Telnet-Client] [Telnet] Received message 'will'`);
+
     this.handleTelnetOption(chunkData, socket_io, 'will', (opt, socket_io) => {
       if (opt === 'TELOPT_ECHO') {
         this.writeDo(chunkData);
@@ -194,6 +223,8 @@ export class TelnetClient extends TelnetSocket {
   }
 
   private handleWont(chunkData: number, socket_io: Socket): void {
+    logger.info(`[Telnet-Client] [Telnet] Received message 'wont'`);
+
     this.handleTelnetOption(chunkData, socket_io, 'wont', (opt, socket_io) => {
       if (opt === 'TELOPT_ECHO') {
         this.writeDont(chunkData);
@@ -209,6 +240,8 @@ export class TelnetClient extends TelnetSocket {
   }
 
   private handleSub(optin: number, chunkData: Buffer, socket_io: Socket): void {
+    logger.info(`[Telnet-Client] [Telnet] Received message 'sub'`);
+
     const opt = this.telnetConfig.num2opt[optin.toString()];
 
     if (this.debugflag) {
@@ -253,6 +286,8 @@ export class TelnetClient extends TelnetSocket {
   }
 
   private handleError(chunkData: Error, socket_io: Socket): void {
+    logger.info(`[Telnet-Client] [Telnet] Received message 'error'`);
+
     console.log('mudSocket-error:' + chunkData);
 
     if (this.debugflag) {

@@ -1,7 +1,16 @@
 export interface IEnvironment {
-  tls: boolean;
-  tls_cert: string;
-  tls_key: string;
+  readonly host: string;
+  readonly port: number;
+
+  readonly tls?: {
+    cert: string;
+    key: string;
+  };
+
+  readonly projectRoot: string;
+
+  readonly charset: string;
+
   // backend: {
   //   host: string;
   //   port: number;

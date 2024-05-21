@@ -1,29 +1,53 @@
-import { dirname } from 'path';
-import { fileURLToPath } from 'url';
-import { IEnvironment } from '../../shared/types/environment.js';
+import { IEnvironment } from './types/environment.js';
+import { getEnvironmentVariable } from './utils/get-environment-variable.js';
+import { resolveModulePath } from './utils/resolve-modulepath.js';
 
+/**
+ * Environment class to handle environment variables and application settings.
+ * Reads the environment variables once oppon initialisation and provides them as properties.
+ */
 export class Environment implements IEnvironment {
   private static instance: Environment;
 
-  public readonly tls: boolean;
-  public readonly tls_cert: string;
-  public readonly tls_key: string;
-
+  public readonly host: string;
+  public readonly port: number;
+  public readonly tls?: {
+    cert: string;
+    key: string;
+  };
+  public readonly charset: string;
   public readonly projectRoot: string;
 
+  /**
+   * Private constructor to enforce singleton pattern.
+   * Initializes the environment variables.
+   */
   private constructor() {
-    this.tls = Boolean(process.env.TLS) || false;
+    const tls_cert = getEnvironmentVariable('TLS_CERT', false);
 
-    this.tls_cert = process.env.TLS_CERT || '';
+    const tls_key = getEnvironmentVariable('TLS_KEY', false);
 
-    this.tls_key = process.env.TLS_KEY || '';
+    if (tls_cert !== null && tls_key !== null) {
+      this.tls = {
+        cert: tls_cert,
+        key: tls_key,
+      };
+    }
 
-    const __filename = fileURLToPath(import.meta.resolve('../../main.js'));
+    this.host = String(getEnvironmentVariable('HOST'));
 
-    this.projectRoot = dirname(__filename);
+    this.port = Number(getEnvironmentVariable('PORT'));
+
+    this.charset = String(getEnvironmentVariable('CHARSET', false, 'utf8'));
+
+    this.projectRoot = resolveModulePath('../../main.js');
   }
 
-  public static getInstance() {
+  /**
+   * Gets the singleton instance of the Environment class.
+   * @returns {Environment} The instance of the Environment class.
+   */
+  public static getInstance(): Environment {
     return this.instance || (this.instance = new this());
   }
 }
