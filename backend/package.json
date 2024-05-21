@@ -21,8 +21,8 @@
     "lint": "eslint ./src --ext .ts",
     "lint:fix": "eslint ./src --ext .ts --fix",
     "postbuild": "cpx package.json dist",
-    "start": "node dist/main.js --env-file=.env",
-    "serve": "npm run build && node dist/main.js --env-file=.env",
+    "start": "npm run build && node --env-file .env dist/main.js",
+    "serve": "node --env-file .env dist/main.js",
     "test": "jest --config=jest.config.cjs"
   },
   "dependencies": {
@@ -57,7 +57,8 @@
     "source-map-support": "~0.5.21",
     "ts-jest": "~29.1.2",
     "typescript": "~5.4.5",
-    "winston": "~3.13.0"
+    "winston": "~3.13.0",
+    "ts-jest-mock-import-meta": "^1.2.0"
   },
   "type": "module",
   "author": "Myonara",

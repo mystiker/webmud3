@@ -2,17 +2,24 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "[frontend] Launch Chrome Debugger",
+      "request": "launch",
+      "type": "chrome",
+      "url": "http://localhost:4200",
+      "webRoot": "${workspaceFolder}/frontend"
+    },
+    {
+      "name": "[backend] Launch node debugger",
       "type": "node",
       "request": "launch",
-      "name": "Debug Backend",
       "program": "${workspaceFolder}/backend/src/server.ts",
       "outFiles": ["${workspaceFolder}/backend/dist/**/*.js"],
       "sourceMaps": true
     },
     {
+      "name": "[backend] Attach node debugger",
       "type": "node",
       "request": "attach",
-      "name": "Attach to Backend",
       "processId": "${command:PickProcess}"
     }
   ]
