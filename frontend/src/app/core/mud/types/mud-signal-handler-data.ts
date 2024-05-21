@@ -7,6 +7,7 @@ import {
 import { IAnsiData } from '@mudlet3/frontend/features/ansi';
 import { IMudMessage } from './mud-message';
 
+// Todo[myst] very bad interface since it is the mudemenu.component. Use composition over inheritance.
 export interface MudSignalHandlerData {
   v: { inpType: string };
   titleService: { setTitle: (title: string) => void };
@@ -32,7 +33,6 @@ export interface MudSignalHandlerData {
   };
   keySetters: { setLevel: (level: any) => void };
   messages: IMudMessage[];
-  mudlines: any[];
   ansiCurrent: IAnsiData;
   togglePing: boolean;
   inpmessage: string;

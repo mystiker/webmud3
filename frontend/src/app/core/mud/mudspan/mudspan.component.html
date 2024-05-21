@@ -1,1 +1,1 @@
-<span display="inline" [ngClass]="myclasses" [style.color]="fg" [style.background]="bg"><span>{{txt}}</span>
+<span *ngIf="this.line$ | async as mudLine" [ngClass]="this.classes$ | async" display="inline">{{(mudLine.text)}}</span>

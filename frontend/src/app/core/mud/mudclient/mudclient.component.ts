@@ -8,9 +8,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { KeypadConfigComponent } from '@mudlet3/frontend/features/modeless';
 import { MudConfig } from '@mudlet3/frontend/features/mudconfig';
-import { ColorSettingsComponent } from '@mudlet3/frontend/features/settings';
 import { IoMud, SocketsService } from '@mudlet3/frontend/features/sockets';
 import {
   CharacterData,
@@ -28,18 +26,18 @@ import { FilesService } from '../files.service';
 import { WebmudConfig } from '../webmud-config';
 
 import {
-  DefaultAnsiData,
+  DefaultFormattingData,
   IAnsiData,
-  fromBinaryBase64,
-  toBinaryBase64,
+  decodeBinaryBase64,
 } from '@mudlet3/frontend/features/ansi';
 
+import { Observable } from 'rxjs';
 import { mudProcessData } from 'src/app/core/mud/utils/mud-process-data';
 import { mudProcessSignals } from 'src/app/core/mud/utils/mud-process-signals';
+import { MudService } from '../mud.service';
 import { IMudMessage } from '../types/mud-message';
 import { doFocus } from '../utils/do-focus';
 import { onKeyDown, onKeyUp } from '../utils/keyboard-handler';
-import { scroll } from '../utils/scroll';
 import { sendMessage } from '../utils/send-message';
 import { tableOutput } from '../utils/table-output';
 
@@ -49,7 +47,8 @@ import { tableOutput } from '../utils/table-output';
   styleUrls: ['./mudclient.component.scss'],
 })
 export class MudclientComponent implements AfterViewChecked {
-  @Input({ required: true }) cfg!: WebmudConfig;
+  @Input({ required: true })
+  public cfg!: WebmudConfig;
 
   @ViewChild('mudBlock', { static: false })
   public mudBlock?: ElementRef;
@@ -69,6 +68,17 @@ export class MudclientComponent implements AfterViewChecked {
   @ViewChild('scroller', { static: false })
   public scroller?: ElementRef;
 
+  // aktuelle probleme:
+  private mudName = 'disconnect';
+  public mudc_id: string | undefined;
+  public ansiCurrent: IAnsiData;
+  public inpmessage: string = ''; // Todo[myst]: nonsense
+  private inpHistory: string[] = [];
+  public messages: IMudMessage[] = [];
+
+  // lösungen
+  public readonly mudLines$: Observable<IAnsiData[]>;
+
   public v = {
     // visualize-parameters
     connected: false,
@@ -82,6 +92,7 @@ export class MudclientComponent implements AfterViewChecked {
     stdbg: 'black',
     scrolltop: 0,
   };
+
   public cs: ColorSettings = {
     invert: false,
     blackOnWhite: false,
@@ -90,23 +101,19 @@ export class MudclientComponent implements AfterViewChecked {
     localEchoBackground: '#000000',
     localEchoActive: true,
   };
-  public keySetters: KeypadData = new KeypadData();
+
+  public keySetters: KeypadData = new KeypadData(); // Todo[myst]: nonsense;
+
   private d = {
     ref_height_ratio: 1,
     mudc_height: 90,
     mudc_width: 80,
     startCnt: 0,
   };
-  private mudName = 'disconnect';
-  public mudc_id: string | undefined;
+
   private ioMud?: IoMud;
-  public mudlines: IAnsiData[] = [];
-  public ansiCurrent: IAnsiData;
-  public inpmessage: string = ''; // Todo[myst]: nonsense
-  private inpHistory: string[] = [];
   public togglePing = false;
   private inpPointer = -1;
-  public messages: IMudMessage[] = [];
   public filesWindow: WindowConfig = new WindowConfig(); // Todo[myst]: nonsense;
   public charStatsWindow: WindowConfig = new WindowConfig(); // Todo[myst]: nonsense;
   public charData: CharacterData = new CharacterData(''); // Todo[myst]: nonsense
@@ -119,9 +126,9 @@ export class MudclientComponent implements AfterViewChecked {
   private obs_debug: any;
   private obs_signals: any;
 
-  scroll() {
-    scroll(this.mudBlock, this.scroller);
-  }
+  // scroll() {
+  //   scroll(this.mudBlock, this.scroller);
+  // }
 
   doFocus() {
     const result = doFocus(
@@ -136,100 +143,100 @@ export class MudclientComponent implements AfterViewChecked {
   }
 
   menuAction(act: any) {
-    console.log('menuAction', act);
     let numpadOther, other;
     let numpadSplit: string[] = [];
     switch (act.item.id) {
-      case 'MUD:MENU':
-        return; // no action/with submenu!
-      default:
-        if (act.item.id.startsWith('MUD:CONNECT:')) {
-          const mudkey = act.item.id.split(':')[2];
-          console.log(act.item.id);
-          this.mudName = mudkey;
-          this.connect();
-          this.changeFocus = -3;
-        }
-        return;
+      // case 'MUD:MENU':
+      //   return; // no action/with submenu!
+
       case 'MUD:CONNECT':
-        if (
-          typeof this.cfg !== 'undefined' &&
-          typeof this.cfg.mudname !== 'undefined' &&
-          this.cfg.mudname !== ''
-        ) {
-          this.mudName = this.cfg.mudname;
-          this.connect();
-          this.changeFocus = -4;
-        }
-        return;
-      case 'MUD:DISCONNECT':
-        this.mudName = 'disconnect';
+        this.changeFocus = -4;
         this.connect();
+
         return;
-      case 'MUD:SCROLL':
-        this.v.scrollLock = !this.v.scrollLock;
+
+      case 'MUD:DISCONNECT':
+        this.disconnect();
+
         return;
-      case 'MUD:NUMPAD':
-        this.dialogService.open(KeypadConfigComponent, {
-          data: {
-            keypad: this.keySetters,
-            cb: this.menuAction,
-            cbThis: this,
-          },
-          header: 'NumPad-Belegung',
-          width: '90%',
-        });
-        return;
-      case 'MUD:NUMPAD:RETURN':
-        numpadOther = act.item.cbThis;
-        numpadOther.keySetters = act.item.keypad;
-        console.log('MUD:NUMPAD:RETURN', act.item.event);
-        numpadSplit = act.item.event.split(':');
-        if (numpadSplit[2] == 'undefined') {
-          numpadSplit[2] = '';
-        }
-        numpadOther.keySetters.addKey(
-          numpadSplit[0],
-          numpadSplit[1],
-          numpadSplit.slice(2).join(':'),
-        );
-        numpadOther.socketsService.sendGMCP(
-          numpadOther.mudc_id,
-          'Numpad',
-          'Update',
-          {
-            prefix: numpadSplit[0],
-            key: numpadSplit[1],
-            value: numpadSplit.slice(2).join(':'),
-          },
-        );
-        return;
-      case 'MUD:VIEW':
-        this.dialogService.open(ColorSettingsComponent, {
-          data: {
-            cs: this.cs,
-            cb: this.menuAction,
-            v: this.v,
-            cbThis: this,
-          },
-          header: 'Change Colors',
-          width: '40%',
-        });
-        return;
-      case 'MUD_VIEW:COLOR:RETURN':
-        this.cs = act.item.cs;
-        other = act.item.cbThis;
-        if (this.cs.blackOnWhite) {
-          this.v.stdfg = 'black';
-          this.v.stdbg = 'white';
-        } else {
-          this.v.stdfg = 'white';
-          this.v.stdbg = 'black';
-        }
-        other.cookieService.set(
-          'mudcolors',
-          toBinaryBase64(JSON.stringify(this.cs)),
-        );
+
+      // case 'MUD:SCROLL':
+      //   this.v.scrollLock = !this.v.scrollLock;
+      //   return;
+
+      // case 'MUD:NUMPAD':
+      //   this.dialogService.open(KeypadConfigComponent, {
+      //     data: {
+      //       keypad: this.keySetters,
+      //       cb: this.menuAction,
+      //       cbThis: this,
+      //     },
+      //     header: 'NumPad-Belegung',
+      //     width: '90%',
+      //   });
+
+      //   return;
+
+      // case 'MUD:NUMPAD:RETURN':
+      //   numpadOther = act.item.cbThis;
+      //   numpadOther.keySetters = act.item.keypad;
+      //   console.log('MUD:NUMPAD:RETURN', act.item.event);
+      //   numpadSplit = act.item.event.split(':');
+      //   if (numpadSplit[2] == 'undefined') {
+      //     numpadSplit[2] = '';
+      //   }
+      //   numpadOther.keySetters.addKey(
+      //     numpadSplit[0],
+      //     numpadSplit[1],
+      //     numpadSplit.slice(2).join(':'),
+      //   );
+      //   numpadOther.socketsService.sendGMCP(
+      //     numpadOther.mudc_id,
+      //     'Numpad',
+      //     'Update',
+      //     {
+      //       prefix: numpadSplit[0],
+      //       key: numpadSplit[1],
+      //       value: numpadSplit.slice(2).join(':'),
+      //     },
+      //   );
+
+      //   return;
+
+      // case 'MUD:VIEW':
+      //   this.dialogService.open(ColorSettingsComponent, {
+      //     data: {
+      //       cs: this.cs,
+      //       cb: this.menuAction,
+      //       v: this.v,
+      //       cbThis: this,
+      //     },
+      //     header: 'Change Colors',
+      //     width: '40%',
+      //   });
+
+      //   return;
+
+      // case 'MUD_VIEW:COLOR:RETURN':
+      //   this.cs = act.item.cs;
+      //   other = act.item.cbThis;
+      //   if (this.cs.blackOnWhite) {
+      //     this.v.stdfg = 'black';
+      //     this.v.stdbg = 'white';
+      //   } else {
+      //     this.v.stdfg = 'white';
+      //     this.v.stdbg = 'black';
+      //   }
+      //   other.cookieService.set(
+      //     'mudcolors',
+      //     toBinaryBase64(JSON.stringify(this.cs)),
+      //   );
+
+      //   return;
+
+      default:
+        console.info('No registered menu entry for ', act.item.id);
+
         return;
     }
   }
@@ -269,86 +276,90 @@ export class MudclientComponent implements AfterViewChecked {
       this.inpHistory,
       this.inpPointer,
       this.inpmessage,
-      this.mudlines,
+      this.mudService.getCurrentOutputLines(),
       this.ioMud,
       this.socketsService,
     );
   }
 
+  private disconnect() {
+    if (this.mudc_id) {
+      if (this.ioMud !== undefined) {
+        this.ioMud.disconnectFromMudClient(this.mudc_id);
+        this.ioMud = undefined;
+      }
+      console.info('S95-mudclient-disconnect', this.mudc_id);
+      if (this.obs_debug) this.obs_debug.unsubscribe();
+      if (this.obs_data) this.obs_data.unsubscribe();
+      if (this.obs_signals) this.obs_signals.unsubscribe();
+      if (this.obs_connect) this.obs_connect.unsubscribe(); // including disconnect
+      this.v.connected = false;
+      this.mudc_id = undefined;
+      return;
+    }
+  }
+
   private connect() {
     console.log('S95-mudclient-connecting-1', this.mudName);
-    if (this.mudName.toLowerCase() == 'disconnect') {
-      if (this.mudc_id) {
-        if (this.ioMud !== undefined) {
-          this.ioMud.disconnectFromMudClient(this.mudc_id);
-          this.ioMud = undefined;
-        }
-        console.info('S95-mudclient-disconnect', this.mudc_id);
-        if (this.obs_debug) this.obs_debug.unsubscribe();
-        if (this.obs_data) this.obs_data.unsubscribe();
-        if (this.obs_signals) this.obs_signals.unsubscribe();
-        if (this.obs_connect) this.obs_connect.unsubscribe(); // including disconnect
-        this.v.connected = false;
-        this.mudc_id = undefined;
-        return;
-      }
-    }
-    const other = this;
+
     const mudOb: MudConfig = {
       mudname: this.mudName,
       height: this.d.mudc_height,
       width: this.d.mudc_width,
     }; // TODO options???
+
     this.titleService.setTitle(
       this.srvcfgService.getWebmudName() + ' ' + this.mudName,
     ); // TODO portal!!!
+
     if (this.cfg.autoUser != '') {
       mudOb['user'] = this.cfg.autoUser;
       mudOb['token'] = this.cfg.autoToken;
       mudOb['password'] = this.cfg.autoPw || '';
     }
+
     console.log('S95-mudclient-connecting-2', mudOb);
+
     this.obs_connect = this.socketsService.mudConnect(mudOb).subscribe(
       (ioResult) => {
+        console.info('[myst] SocketsService recieved message:', ioResult);
+
         switch (ioResult.IdType) {
           case 'IoMud:SendToAllMuds':
-            if (other.ioMud !== undefined) {
-              mudProcessData(other, other.ioMud.MudId, [
-                ioResult.MsgType,
-                undefined,
-              ]);
+            // Todo: dafuq?
+            if (this.ioMud !== undefined) {
+              mudProcessData(ioResult.MsgType ?? '');
             }
 
             return;
           case 'IoMud':
-            other.ioMud = ioResult.Data as IoMud;
+            this.ioMud = ioResult.Data as IoMud;
 
             if (this.ioMud === undefined) {
               return;
             }
 
-            other.v.connected = this.ioMud.connected;
+            this.v.connected = this.ioMud.connected;
 
             switch (ioResult.MsgType) {
               case 'mud-connect':
-                other.mudc_id = other.ioMud.MudId;
-                other.v.connected = true;
+                console.info('[myst] SocketsService connected to mud');
+
+                this.mudc_id = this.ioMud.MudId;
+                this.v.connected = true;
                 return;
               case 'mud-signal':
-                mudProcessSignals(other.ioMud.MudId, other, ioResult.musi);
+                mudProcessSignals(this.ioMud.MudId, this, ioResult.musi);
                 return;
               case 'mud-output':
-                mudProcessData(other, other.ioMud.MudId, [
-                  ioResult.ErrorType,
-                  undefined,
-                ]);
+                // Todo: ErrorType ist wohl eher nicht der korrekte Terminus
+                const ansiData = mudProcessData(ioResult.ErrorType ?? '');
+                this.mudService.addOutputLine(...ansiData);
+
                 return;
               case 'mud-disconnect':
-                other.v.connected = false;
-                mudProcessData(other, other.ioMud.MudId, [
-                  ioResult.ErrorType,
-                  undefined,
-                ]);
+                this.v.connected = false;
+                mudProcessData(ioResult.ErrorType ?? '');
                 return;
               default:
                 console.warn('S96-unknown MsgType with IoMud', ioResult);
@@ -365,14 +376,6 @@ export class MudclientComponent implements AfterViewChecked {
     return;
   }
 
-  getViewPortHeight(): number {
-    return this.window.innerHeight;
-  }
-
-  getViewPortWidth(): number {
-    return this.window.innerWidth;
-  }
-
   calculateSizing() {
     if (
       this.mudBlock === undefined ||
@@ -383,7 +386,7 @@ export class MudclientComponent implements AfterViewChecked {
     }
 
     const ow = this.mudBlock.nativeElement.offsetWidth;
-    let tmpheight = this.getViewPortHeight();
+    let tmpheight = this.wincfg.getViewPortHeight();
     tmpheight -= this.mudMenu.nativeElement.offsetHeight;
     tmpheight -= 2 * this.mudInputArea.nativeElement.offsetHeight;
     tmpheight = Math.floor(
@@ -423,14 +426,6 @@ export class MudclientComponent implements AfterViewChecked {
     }
   }
 
-  focusFunction(what: string) {
-    console.log('get focus', what);
-  }
-
-  focusOutFunction(what: string) {
-    console.log('out focus', what);
-  }
-
   ngAfterViewChecked(): void {
     const other = this;
 
@@ -448,7 +443,7 @@ export class MudclientComponent implements AfterViewChecked {
       });
     }
 
-    let tmpwidth = this.getViewPortWidth() / 1.0125;
+    let tmpwidth = this.wincfg.getViewPortWidth() / 1.0125;
     if (!this.v.sizeCalculated) {
       this.doFocus();
       tmpwidth = this.mudTest?.nativeElement.offsetWidth * 1.0125;
@@ -476,14 +471,25 @@ export class MudclientComponent implements AfterViewChecked {
     private srvcfgService: ServerConfigService,
     public titleService: Title,
     private cookieService: CookieService,
+    private readonly mudService: MudService,
   ) {
+    this.mudLines$ = this.mudService.outputLines$;
+
+    this.mudLines$.subscribe((lines) => {
+      console.log('lines', lines);
+    });
+
     this.invlist = new InventoryList();
-    this.ansiCurrent = DefaultAnsiData;
+    this.ansiCurrent = {
+      // Todo: Text eventuell als optional markieren
+      text: '',
+      ...DefaultFormattingData,
+    };
     this.mudc_id = 'one';
 
     const ncs = this.cookieService.get('mudcolors');
     if (ncs != '') {
-      this.cs = JSON.parse(fromBinaryBase64(ncs));
+      this.cs = JSON.parse(decodeBinaryBase64(ncs));
     }
     if (this.cs.blackOnWhite) {
       this.v.stdfg = 'black';

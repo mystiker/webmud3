@@ -5,20 +5,16 @@ import {
 } from '@mudlet3/frontend/shared';
 
 import { MudSignalHandlerData } from '../types/mud-signal-handler-data';
-import { mudProcessData } from './mud-process-data';
-import { tableOutput } from './table-output';
 
 export function mudProcessSignals(
   id: string,
   data: MudSignalHandlerData,
   musi?: MudSignals,
 ) {
-  console.debug('mudclient-socketService.mudReceiveSignals', id, musi?.signal);
+  console.log('mudclient-socketService.mudReceiveSignals', id, musi?.signal);
 
   if (musi === undefined) {
-    throw new Error(
-      'mudclient-socketService.mudReceiveSignals: musi is undefined and shall not be?!',
-    );
+    return;
   }
 
   let audio: any, newfile: any, filewincfg: WindowConfig;
@@ -53,7 +49,8 @@ export function mudProcessSignals(
       data.inpmessage = musi.id;
       return;
     case 'Input.CompleteChoice':
-      mudProcessData(data, id, [null, tableOutput([musi.id.toString()], 78)]);
+      // Todo: Re-Enable
+      // mudProcessData(data, id, [null, tableOutput([musi.id.toString()], 78)]);
       return;
     case 'Input.CompleteNone':
       return;

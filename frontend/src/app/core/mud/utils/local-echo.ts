@@ -1,4 +1,4 @@
-import { IAnsiData, processAnsi } from '@mudlet3/frontend/features/ansi';
+import { IAnsiData, processAnsiData } from '@mudlet3/frontend/features/ansi';
 import { wordWrap } from './word-wrap';
 
 export function localEcho(other: any, inp: string, mudlines: IAnsiData[]) {
@@ -22,11 +22,12 @@ export function localEcho(other: any, inp: string, mudlines: IAnsiData[]) {
     ':' +
     (ts.getSeconds() < 10 ? '0' : '') +
     ts.getSeconds();
-  const a2harr = processAnsi(other.ansiCurrent);
-  for (let ix = 0; ix < a2harr.length; ix++) {
-    if (a2harr[ix].text != '' || typeof a2harr[ix].mudEcho !== 'undefined') {
-      mudlines = mudlines.concat(a2harr[ix]);
-    }
-  }
-  other.ansiCurrent = a2harr[a2harr.length - 1];
+  const a2harr = processAnsiData(other.ansiCurrent);
+  // Todo: Hier wurden die Mudlines zusammengebaselt
+  // for (let ix = 0; ix < a2harr.length; ix++) {
+  //   if (a2harr[ix].text != '' || typeof a2harr[ix].mudEcho !== 'undefined') {
+  //     mudlines = mudlines.concat(a2harr[ix]);
+  //   }
+  // }
+  // other.ansiCurrent = a2harr[a2harr.length - 1];
 }

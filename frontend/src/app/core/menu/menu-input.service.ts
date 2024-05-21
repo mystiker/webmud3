@@ -15,7 +15,7 @@ export class MenuInputService {
   }
 
   setConnected(value: boolean): void {
-    console.log('setConnected', value);
+    console.log('[myst] MenuInputService:setConnected set', value);
     this.connectedSubject.next(value);
   }
 }
