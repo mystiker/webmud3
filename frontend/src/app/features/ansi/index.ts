@@ -1,8 +1,8 @@
-export { DefaultAnsiData } from './models/default-ansi-data';
+export { DefaultFormattingData } from './models/default-formatting-data';
 export { ESCAPE_SEQUENCES } from './models/escape-sequences';
 export { IAnsiData } from './types/ansi-data';
-export { blackToWhite } from './utils/colors/black-to-white';
 export { invColor } from './utils/colors/inv-color';
-export { fromBinaryBase64 } from './utils/from-binary-base64';
-export { processAnsi } from './utils/process-ansi';
-export { toBinaryBase64 } from './utils/to-binary-base64';
+export { invertGrayscale } from './utils/colors/invert-grayscale';
+export { decodeBinaryBase64 } from './utils/converter/decode-binary-base64';
+export { encodeBinaryBase64 } from './utils/converter/encode-binary-base64';
+export { processAnsiData as processAnsiData } from './utils/process-ansi-data';
