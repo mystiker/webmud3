@@ -50,8 +50,8 @@ export class SocketsService {
     }
   }
 
-  public mudSendData(id: string, data: string) {
-    this.platform.mudSendData(id, data);
+  public mudSendData(data: string) {
+    this.platform.mudSendData(data);
   }
 
   public sendGMCP(id: string, mod: string, msg: string, data: any): boolean {

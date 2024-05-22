@@ -4,6 +4,14 @@ import { processAnsiSequences } from './process-ansi-sequences';
 export function processAnsiData(text: string): Partial<IAnsiData>[] {
   const parts = text.split('\x1b');
 
+  if (parts.length === 1) {
+    return [
+      {
+        text: parts[0],
+      },
+    ];
+  }
+
   const results = parts
     .filter((part) => part !== '' && part !== undefined)
     .map((part) => processAnsiSequences(part))

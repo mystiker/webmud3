@@ -48,7 +48,7 @@ export function onKeyDown(
     if (typeof inp !== 'undefined') {
       if (inp !== '') {
         if (mudc_id !== undefined) {
-          socketsService.mudSendData(mudc_id, inp);
+          socketsService.mudSendData(inp);
         }
         // Todo[myst]: THis got called with 4 parameters but only 3 are defined?
         // localEcho(other, inpmessage, other.ansiService, other.mudlines);

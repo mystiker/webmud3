@@ -44,13 +44,23 @@ export class IoPlatform {
     }
     return ioMud.sendGMCP(id, mod, msg, data);
   }
-  public mudSendData(id: string, data: string) {
-    const ioMud = this.querIdObject('IoMud', id) as IoMud;
-    if (typeof ioMud === 'undefined') {
-      console.warn('G11: Unknown Mud-Id', id);
-      return false;
+  public mudSendData(data: string) {
+    // Todo[myst]: Breaking change: we allow only for one connection
+    const keys = Object.keys(this.idLookup).filter((key) =>
+      key.startsWith('IoMud'),
+    );
+
+    if (keys.length === 0) {
+      throw new Error('No connection to mud.');
     }
-    return ioMud.mudSendData(id, data);
+
+    if (keys.length > 1) {
+      throw new Error('Only one mud connection is allowed.');
+    }
+
+    const ioMud = this.idLookup[keys[0]] as IoMud;
+
+    return ioMud.mudSendData(data);
   }
 
   public sendPing(_id: string): boolean {

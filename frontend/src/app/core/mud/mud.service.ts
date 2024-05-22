@@ -21,7 +21,7 @@ export class MudService {
 
   // Todo[myst]: make this private
   public ioMud?: IoMud;
-  private mudc_id?: string;
+  private mudc_id?: string = 'one'; //Test
 
   // Todo[myst]: Make socketsService private
   constructor(public socketsService: SocketsService) {}
@@ -36,6 +36,12 @@ export class MudService {
       ...this.outputLines.value,
       ...(line as IAnsiData[]),
     ]);
+  }
+
+  public sendMessage(message: string): void {
+    if (message && this.mudc_id) {
+      this.socketsService.mudSendData(message);
+    }
   }
 
   public connect(mudName: string, cfg: MudConfig): void {

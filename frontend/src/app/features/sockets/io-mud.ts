@@ -495,14 +495,10 @@ export class IoMud {
       return this.sendGMCP(_id, 'Core', 'Supports.Remove', [mod]);
     }
   }
-  public mudSendData(id: string, data: string) {
-    if (id != this.MudId) {
-      console.warn('G01: failed[GMCP_Send_packet].mudconn=', id, this.MudId);
-      return false;
-    }
+  public mudSendData(data: string) {
     // console.debug('mudSendData-id ',id);
     // console.debug('mudSendData-data',id,data);
-    this.uplink?.socket.emit('mud-input', id, data);
+    this.uplink?.socket.emit('mud-input', this.MudId, data);
     return true;
   }
   public setMudOutputSize(height: number, width: number) {

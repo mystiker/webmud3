@@ -14,7 +14,7 @@ export function sendMessage(
   }
 
   if (mudc_id !== undefined) {
-    socketsService.mudSendData(mudc_id, inpmessage);
+    socketsService.mudSendData(inpmessage);
   }
 
   if (v.inpType == 'text' && inpmessage != '') {
