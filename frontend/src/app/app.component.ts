@@ -36,6 +36,4 @@ export class AppComponent {
   onResize(event?: undefined) {
     this.wincfg.setWindowsSize(window.innerHeight, window.innerWidth);
   }
-
-  title = 'webmud3/UI12';
 }

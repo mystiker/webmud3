@@ -1,46 +1,45 @@
 import { Injectable } from '@angular/core';
-import { IAnsiData } from '@mudlet3/frontend/features/ansi';
 import { MudConfig } from '@mudlet3/frontend/features/mudconfig';
 import { IoMud, SocketsService } from '@mudlet3/frontend/features/sockets';
+import { wordWrap } from '@mudlet3/frontend/shared';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { IMudMessage } from 'src/app/core/mud/types/mud-message';
 import { mudProcessData } from './utils/mud-process-data';
+
+const ECHO = true;
 
 @Injectable({
   providedIn: 'root',
 })
 export class MudService {
-  private readonly outputLines = new BehaviorSubject<IAnsiData[]>([]);
-
+  private readonly outputLines = new BehaviorSubject<IMudMessage[]>([]);
   private readonly connected$ = new BehaviorSubject<boolean>(false);
 
-  public readonly outputLines$: Observable<IAnsiData[]> =
+  // Todo: Remove this Reference and diconnect from mud via socketsservive
+  private ioMud?: IoMud;
+
+  public readonly outputLines$: Observable<IMudMessage[]> =
     this.outputLines.asObservable();
 
   public readonly connectedStatus$: Observable<boolean> =
     this.connected$.asObservable();
 
-  // Todo[myst]: make this private
-  public ioMud?: IoMud;
-  private mudc_id?: string = 'one'; //Test
+  constructor(private readonly socketsService: SocketsService) {}
 
-  // Todo[myst]: Make socketsService private
-  constructor(public socketsService: SocketsService) {}
-
-  // Todo[myst]: make this protected
-  public getCurrentOutputLines(): IAnsiData[] {
-    return this.outputLines.value;
-  }
-
-  public addOutputLine(...line: Partial<IAnsiData>[]): void {
-    this.outputLines.next([
-      ...this.outputLines.value,
-      ...(line as IAnsiData[]),
-    ]);
+  public addOutputLine(...line: IMudMessage[]): void {
+    this.outputLines.next([...this.outputLines.value, ...line]);
   }
 
   public sendMessage(message: string): void {
-    if (message && this.mudc_id) {
-      this.socketsService.mudSendData(message);
+    this.socketsService.mudSendData(message);
+
+    if (ECHO) {
+      const echoLine: IMudMessage = {
+        type: 'echo',
+        text: wordWrap(message, 75) + '\r\n',
+      };
+
+      this.addOutputLine(echoLine);
     }
   }
 
@@ -81,16 +80,21 @@ export class MudService {
             switch (ioResult.MsgType) {
               case 'mud-connect':
                 console.info('Connected to MUD');
-                this.mudc_id = this.ioMud.MudId;
                 this.connected$.next(true);
                 return;
               case 'mud-signal':
-                // Todo: Refacor in
+                // Todo: Refacor
                 // mudProcessSignals(this.ioMud.MudId, this, ioResult.musi);
                 return;
               case 'mud-output':
                 const ansiData = mudProcessData(ioResult.ErrorType ?? '');
-                this.addOutputLine(...ansiData);
+
+                const mudLines: IMudMessage[] = ansiData.map((ansi) => ({
+                  ...ansi,
+                  type: 'mud',
+                }));
+
+                this.addOutputLine(...mudLines);
                 return;
               case 'mud-disconnect':
                 this.connected$.next(false);
@@ -111,11 +115,10 @@ export class MudService {
   }
 
   public disconnect(): void {
-    if (this.mudc_id && this.ioMud) {
-      this.ioMud.disconnectFromMudClient(this.mudc_id);
+    if (this.ioMud) {
+      this.ioMud.disconnectFromMudClient('refactor and remove this parameter');
       this.ioMud = undefined;
       this.connected$.next(false);
-      this.mudc_id = undefined;
     }
   }
 }

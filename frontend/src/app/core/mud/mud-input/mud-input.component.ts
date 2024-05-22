@@ -6,10 +6,13 @@ import { Component, EventEmitter, Output } from '@angular/core';
   styleUrls: ['./mud-input.component.scss'],
 })
 export class MudInputComponent {
-  @Output() messageSent = new EventEmitter<string>();
-  public inpmessage: string = '';
   private inpHistory: string[] = [];
   private inpPointer = -1;
+
+  @Output()
+  public messageSent = new EventEmitter<string>();
+
+  public inpmessage: string = '';
 
   constructor() {}
 

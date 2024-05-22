@@ -29,8 +29,6 @@ import { Observable } from 'rxjs';
 import { MudService } from '../mud.service';
 import { IMudMessage } from '../types/mud-message';
 import { doFocus } from '../utils/do-focus';
-import { onKeyDown, onKeyUp } from '../utils/keyboard-handler';
-import { sendMessage } from '../utils/send-message';
 import { tableOutput } from '../utils/table-output';
 
 @Component({
@@ -62,9 +60,8 @@ export class MudclientComponent implements AfterViewChecked {
   public ansiCurrent: IAnsiData;
   public inpmessage: string = ''; // Todo[myst]: nonsense
   private inpHistory: string[] = [];
-  public messages: IMudMessage[] = [];
 
-  public readonly mudLines$: Observable<IAnsiData[]>;
+  protected readonly output$: Observable<IMudMessage[]>;
 
   public v = {
     connected: false,
@@ -115,7 +112,7 @@ export class MudclientComponent implements AfterViewChecked {
     // Todo: Make this private
     public readonly mudService: MudService,
   ) {
-    this.mudLines$ = this.mudService.outputLines$;
+    this.output$ = this.mudService.outputLines$;
 
     this.mudService.connectedStatus$.subscribe((connected) => {
       this.v.connected = connected;
@@ -178,42 +175,35 @@ export class MudclientComponent implements AfterViewChecked {
     return tableOutput(words, screen);
   }
 
-  sendMessage() {
-    sendMessage(
-      this.inpmessage,
-      this.mudc_id,
-      this.v,
-      this.inpHistory,
-      this,
-      this.mudService.socketsService,
-    );
+  onInputReceived(message: string) {
+    this.mudService.sendMessage(message);
   }
 
-  onKeyDown(event: KeyboardEvent) {
-    onKeyDown(
-      event,
-      this.v,
-      this.keySetters,
-      this.mudc_id,
-      this.inpmessage,
-      this,
-      this.mudService.socketsService,
-      this.sendMessage.bind(this),
-    );
-  }
+  // onKeyDown(event: KeyboardEvent) {
+  //   onKeyDown(
+  //     event,
+  //     this.v,
+  //     this.keySetters,
+  //     this.mudc_id,
+  //     this.inpmessage,
+  //     this,
+  //     this.mudService.socketsService,
+  //     this.sendMessage.bind(this),
+  //   );
+  // }
 
-  onKeyUp(event: KeyboardEvent) {
-    onKeyUp(
-      event,
-      this.v,
-      this.inpHistory,
-      this.inpPointer,
-      this.inpmessage,
-      this.mudService.getCurrentOutputLines(),
-      this.mudService.ioMud,
-      this.mudService.socketsService,
-    );
-  }
+  // onKeyUp(event: KeyboardEvent) {
+  //   onKeyUp(
+  //     event,
+  //     this.v,
+  //     this.inpHistory,
+  //     this.inpPointer,
+  //     this.inpmessage,
+  //     this.mudService.getCurrentOutputLines(),
+  //     this.mudService.ioMud,
+  //     this.mudService.socketsService,
+  //   );
+  // }
 
   // calculateSizing() {
   //   if (

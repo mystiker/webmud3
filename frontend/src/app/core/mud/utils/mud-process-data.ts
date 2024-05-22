@@ -1,6 +1,9 @@
 import { IAnsiData, processAnsiData } from '@mudlet3/frontend/features/ansi';
+import { WithRequired } from '@mudlet3/frontend/shared';
 
-export function mudProcessData(data: string): Partial<IAnsiData>[] {
+export function mudProcessData(
+  data: string,
+): WithRequired<Partial<IAnsiData>, 'text'>[] {
   // if (typeof outp !== 'undefined') {
   //   const idx = outp?.indexOf(ESCAPE_SEQUENCES.CLEAR_SCREEN);
 

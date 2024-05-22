@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { BehaviorSubject, Observable, map, startWith } from 'rxjs';
-import { IAnsiData } from 'src/app/features/ansi/types/ansi-data';
+import { IMudMessage } from '../types/mud-message';
 
 @Component({
   selector: 'app-mudspan',
@@ -8,21 +8,7 @@ import { IAnsiData } from 'src/app/features/ansi/types/ansi-data';
   styleUrls: ['./mudspan.component.scss'],
 })
 export class MudspanComponent {
-  // private a2h?: IAnsiData;
-
-  // public myclasses: string = '';
-  // public fg: string = '';
-  // public bg: string = '';
-  // public txt: string = '';
-  // public bow = false;
-  // public invert = false;
-  // public _colorOff = false;
-  // public echoFlag = true;
-  // public echoCol = '#a8ff00';
-  // public echoBak = '#000000';
-  // public tt = '';
-
-  private lineSubject = new BehaviorSubject<IAnsiData | null>(null);
+  private readonly lineSubject = new BehaviorSubject<IMudMessage | null>(null);
 
   public readonly line$ = this.lineSubject.asObservable();
 
@@ -59,12 +45,12 @@ export class MudspanComponent {
     );
   }
 
-  public get line(): IAnsiData | null {
+  public get line(): IMudMessage | null {
     return this.lineSubject.value;
   }
 
   @Input()
-  public set line(value: IAnsiData | null) {
+  public set line(value: IMudMessage | null) {
     this.lineSubject.next(value);
   }
 
@@ -161,45 +147,5 @@ export class MudspanComponent {
   //   }
   //   this.echoBak = col;
   //   this.calcFgBg();
-  // }
-
-  // @Input() set ansi2html(ansi: IAnsiData) {
-  //   if (ansi === undefined) {
-  //     return;
-  //   }
-
-  //   this.a2h = ansi;
-  //   // this.tt = ansi.timeString;
-  //   this.calcFgBg();
-  //   this.myclasses = '';
-  //   if (ansi.bold) {
-  //     this.myclasses += ' bold';
-  //   }
-  //   if (ansi.italic) {
-  //     this.myclasses += ' italic';
-  //   }
-  //   if (ansi.underline) {
-  //     this.myclasses += ' underline';
-  //   }
-  //   if (ansi.blink) {
-  //     this.myclasses += ' blink';
-  //   }
-  //   if (ansi.crossedout) {
-  //     this.myclasses += ' crossedout';
-  //   }
-  //   if (ansi.faint) {
-  //     this.myclasses += ' faint';
-  //   }
-  //   if (this.myclasses != '') {
-  //     this.myclasses = this.myclasses.substr(1);
-  //   }
-  //   // Todo: MudEcho Mudspan handling überarbeiten
-  //   // if (typeof ansi.text !== 'undefined' && ansi.text != '') {
-  //   //   this.txt = ansi.text;
-  //   // } else if (typeof ansi.mudEcho !== 'undefined' && this.echoFlag) {
-  //   //   this.txt = ansi.mudEcho;
-  //   // } else {
-  //   //   this.txt = '';
-  //   // }
   // }
 }

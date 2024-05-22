@@ -12,7 +12,7 @@
       <!-- Output des Clients-->
       <div class="mud-block doselect" #mudBlock *ngIf='v.sizeCalculated' [style.width.px]='v.ref_width'
         [style.height.px]='v.ref_height' [style.background-color]="v.stdbg" [style.color]="v.stdfg">
-        <div class="mud-message" display="inline" *ngFor="let mudLine of this.mudLines$ | async">
+        <div class="mud-message" display="inline" *ngFor="let mudLine of this.output$ | async">
           <app-mudspan [line]="mudLine">
           </app-mudspan>
           <!-- <app-mudspan [line]="mudLine" [colorOff]='cs.colorOff' [blackToWhite]='cs.blackOnWhite'
@@ -22,7 +22,7 @@
         </div>
       </div>
     </div>
-    <app-mud-input (messageSent)="onMessageSent($event)"></app-mud-input>
+    <app-mud-input (messageSent)="onInputReceived($event)"></app-mud-input>
   </div>
   <p-divider layout="vertical"></p-divider>
   <app-inventory [inv]="invlist" [vheight]='v.ref_height'></app-inventory>

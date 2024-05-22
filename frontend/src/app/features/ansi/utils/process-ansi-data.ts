@@ -1,7 +1,16 @@
 import { IAnsiData } from '@mudlet3/frontend/features/ansi';
+import { WithRequired } from '@mudlet3/frontend/shared';
 import { processAnsiSequences } from './process-ansi-sequences';
 
-export function processAnsiData(text: string): Partial<IAnsiData>[] {
+function isAnsiDataWithText(
+  ansiData: Partial<IAnsiData>[],
+): ansiData is WithRequired<Partial<IAnsiData>, 'text'>[] {
+  return ansiData.every((data) => data.text !== undefined);
+}
+
+export function processAnsiData(
+  text: string,
+): WithRequired<Partial<IAnsiData>, 'text'>[] {
   const parts = text.split('\x1b');
 
   if (parts.length === 1) {
@@ -17,7 +26,7 @@ export function processAnsiData(text: string): Partial<IAnsiData>[] {
     .map((part) => processAnsiSequences(part))
     .filter((part) => part !== null) as Partial<IAnsiData>[];
 
-  const test = results.reduce<Partial<IAnsiData>[]>((acc, part) => {
+  const reducedUntilText = results.reduce<Partial<IAnsiData>[]>((acc, part) => {
     const lastText = acc[acc.length - 1]?.text;
 
     if (lastText === undefined) {
@@ -36,5 +45,10 @@ export function processAnsiData(text: string): Partial<IAnsiData>[] {
     return acc;
   }, []);
 
-  return test;
+  // reducedUntilText should have an text property by now
+  if (!isAnsiDataWithText(reducedUntilText)) {
+    throw new Error('Ansi data is missing text property');
+  }
+
+  return reducedUntilText;
 }
