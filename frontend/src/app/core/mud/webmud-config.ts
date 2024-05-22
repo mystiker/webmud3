@@ -6,4 +6,6 @@ export class WebmudConfig {
   autoToken = '';
   autoPw? = '';
   localEcho = false;
+  witdh = 0;
+  height = 0;
 }

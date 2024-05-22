@@ -16,6 +16,8 @@ export class AppComponent {
     autoUser: '',
     autoToken: '',
     localEcho: true,
+    height: 24,
+    witdh: 80,
   };
 
   constructor(
