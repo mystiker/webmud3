@@ -141,6 +141,10 @@ export class MudclientComponent implements AfterViewChecked {
     }
   }
 
+  onMessageSent(message: string) {
+    this.mudService.sendMessage(message);
+  }
+
   doFocus() {
     const result = doFocus(
       this.v,
@@ -211,43 +215,43 @@ export class MudclientComponent implements AfterViewChecked {
     );
   }
 
-  calculateSizing() {
-    if (
-      this.mudBlock === undefined ||
-      this.mudMenu === undefined ||
-      this.mudInputArea === undefined
-    ) {
-      throw new Error('mudBlock, mudMenu or mudInputArea is undefined');
-    }
+  // calculateSizing() {
+  //   if (
+  //     this.mudBlock === undefined ||
+  //     this.mudMenu === undefined ||
+  //     this.mudInputArea === undefined
+  //   ) {
+  //     throw new Error('mudBlock, mudMenu or mudInputArea is undefined');
+  //   }
 
-    const ow = this.mudBlock.nativeElement.offsetWidth;
-    let tmpheight = this.wincfg.getViewPortHeight();
-    tmpheight -= this.mudMenu.nativeElement.offsetHeight;
-    tmpheight -= 2 * this.mudInputArea.nativeElement.offsetHeight;
-    tmpheight = Math.floor(
-      Math.floor(tmpheight / this.d.ref_height_ratio) *
-        this.d.ref_height_ratio +
-        0.5,
-    );
-    const other = this;
-    setTimeout(function () {
-      other.v.ref_height = tmpheight;
-      other.cdRef.detectChanges();
-    });
-    if (this.d.mudc_height != Math.floor(tmpheight / this.d.ref_height_ratio)) {
-      this.d.mudc_height = Math.floor(
-        tmpheight / (this.d.ref_height_ratio + 1),
-      );
-      this.d.startCnt++;
-      if (
-        this.d.startCnt == 1 &&
-        typeof this.mudc_id === 'undefined'
-        //  && this.cfg.autoConnect
-      ) {
-        this.mudService.connect(this.mudName, this.cfg);
-      }
-    }
-  }
+  //   const ow = this.mudBlock.nativeElement.offsetWidth;
+  //   let tmpheight = this.wincfg.getViewPortHeight();
+  //   tmpheight -= this.mudMenu.nativeElement.offsetHeight;
+  //   tmpheight -= 2 * this.mudInputArea.nativeElement.offsetHeight;
+  //   tmpheight = Math.floor(
+  //     Math.floor(tmpheight / this.d.ref_height_ratio) *
+  //       this.d.ref_height_ratio +
+  //       0.5,
+  //   );
+  //   const other = this;
+  //   setTimeout(function () {
+  //     other.v.ref_height = tmpheight;
+  //     other.cdRef.detectChanges();
+  //   });
+  //   if (this.d.mudc_height != Math.floor(tmpheight / this.d.ref_height_ratio)) {
+  //     this.d.mudc_height = Math.floor(
+  //       tmpheight / (this.d.ref_height_ratio + 1),
+  //     );
+  //     this.d.startCnt++;
+  //     if (
+  //       this.d.startCnt == 1 &&
+  //       typeof this.mudc_id === 'undefined'
+  //       //  && this.cfg.autoConnect
+  //     ) {
+  //       this.mudService.connect(this.mudName, this.cfg);
+  //     }
+  //   }
+  // }
 
   ngAfterViewChecked(): void {
     const other = this;
@@ -277,7 +281,7 @@ export class MudclientComponent implements AfterViewChecked {
         other.cdRef.detectChanges();
       });
     } else if (this.d.startCnt <= 0) {
-      this.calculateSizing();
+      // this.calculateSizing();
     }
     if (this.changeFocus != this.previousFoxus) {
       this.doFocus();

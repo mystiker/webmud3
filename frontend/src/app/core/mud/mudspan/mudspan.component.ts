@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { BehaviorSubject, Observable, map } from 'rxjs';
+import { BehaviorSubject, Observable, map, startWith } from 'rxjs';
 import { IAnsiData } from 'src/app/features/ansi/types/ansi-data';
 
 @Component({
@@ -28,6 +28,10 @@ export class MudspanComponent {
 
   public readonly classes$: Observable<string | null>;
 
+  public readonly foreground$: Observable<string>;
+
+  public readonly background$: Observable<string>;
+
   constructor() {
     this.classes$ = this.line$.pipe(
       map((line) => {
@@ -44,9 +48,15 @@ export class MudspanComponent {
       }),
     );
 
-    this.line$.subscribe((line) => {
-      console.log('line', line);
-    });
+    this.foreground$ = this.line$.pipe(
+      map((line) => line?.fgcolor || '#ffffff'),
+      startWith('#ffffff'),
+    );
+
+    this.background$ = this.line$.pipe(
+      map((line) => line?.bgcolor || '#000000'),
+      startWith('#000000'),
+    );
   }
 
   public get line(): IAnsiData | null {
