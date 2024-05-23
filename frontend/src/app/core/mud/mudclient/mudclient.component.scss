@@ -1,4 +1,3 @@
-.mud-client {
 //   table {
 //     width: 100%;
 //   }
@@ -13,35 +12,21 @@
 //     margin-bottom: 0;
 //     display: inline-block;
 //   }
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 100%;
+  overflow: hidden;
 
-  .above-scroller {
-    overflow-x: scroll;
-    overflow-y: hidden;
-    display: block;
-    height: 20px;
-  }
-  .scroller {
-    height: 20px;
-  }
-
-  .mud-block {
-    min-height: 400px;
-    overflow-x: scroll;
-    overflow-y: scroll;
-    flex-direction: column;
-    flex-wrap: wrap;
-    font-family: monospace;
-    font-size: 14px;
-    padding: 0.5ex;
-    margin-top: 0;
-    margin-bottom: 0;
-    border-style: solid;
-    border-color: grey;
-    border-bottom-width: thin;
+  app-mudmenu {
+    flex: 0 1 auto;
   }
 
-  .mud-message {
-    max-width: 100%;
-    display: inline;
+  app-mud-output {
+    flex: 0 1 100%;
+  }
+
+  app-mud-input {
+    flex: 0 1 auto;
   }
 }

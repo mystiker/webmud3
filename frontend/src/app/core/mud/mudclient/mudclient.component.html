@@ -1,40 +1,9 @@
-<div class="mud-client">
-  <app-mudmenu (menuAction)="menuAction($event)"></app-mudmenu>
-  <div>
-    <!-- Output des Clients-->
-    <div class="mud-heigth">
-      <div
-        class="above-scroller"
-        *ngIf="v.sizeCalculated2"
-        #scroller
-        (scroll)="scroll()"
-        [style.width.px]="v.ref_width"
-      >
-        <div
-          class="scroller"
-          [style.min-width.px]="mudBlock.nativeElement.scrollWidth"
-        ></div>
-      </div>
-      <div
-        class="mud-block doselect"
-        #mudBlock
-        *ngIf="v.sizeCalculated"
-        [style.width.px]="v.ref_width"
-        [style.height.px]="v.ref_height"
-        [style.background-color]="v.stdbg"
-        [style.color]="v.stdfg"
-      >
-        <div class="mud-message" *ngFor="let mudLine of this.output$ | async">
-          <app-mudspan [line]="mudLine"> </app-mudspan>
-          <!-- <app-mudspan [line]="mudLine" [colorOff]='cs.colorOff' [blackToWhite]='cs.blackOnWhite'
-            [invertFlag]="cs.invert" [localEchoColor]="cs.localEchoColor" [localEchoBackground]="cs.localEchoBackground"
-            [localEchoActive]="cs.localEchoActive">
-          </app-mudspan> -->
-        </div>
-      </div>
-    </div>
-    <app-mud-input (messageSent)="onInputReceived($event)"></app-mud-input>
-  </div>
-  <!-- <p-divider layout="vertical"></p-divider>
-  <app-inventory [inv]="invlist" [vheight]="v.ref_height"></app-inventory> -->
-</div>
+<app-mudmenu (menuAction)="menuAction($event)"></app-mudmenu>
+<app-mud-output
+  [lines]="this.output$ | async"
+  [stdfg]="this.v.stdfg"
+  [stdbg]="this.v.stdbg"
+></app-mud-output>
+<app-mud-input (messageSent)="onInputReceived($event)"></app-mud-input>
+<!--<p-divider layout="vertical"></p-divider>
+  <app-inventory [inv]="invlist" [vheight]="v.ref_height"></app-inventory>-->

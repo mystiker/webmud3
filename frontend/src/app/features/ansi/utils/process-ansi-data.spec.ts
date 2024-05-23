@@ -30,7 +30,7 @@ describe('processAnsiData', () => {
   });
 
   it('should work with multiple lines', () => {
-    const input = '\u001b[37m\u001b[31m\u001b[1mHi\u001b[0m\u001b[0m';
+    const input = '\u001b[37m\u001b[31m\u001b[1mHi\u001b[0m\u001b[0m\r\n';
 
     const result = processAnsiData(input);
 
@@ -43,6 +43,7 @@ describe('processAnsiData', () => {
       // Command 0 resets everthing to default
       {
         ...DefaultFormattingData,
+        text: '\r\n',
       },
     ];
 

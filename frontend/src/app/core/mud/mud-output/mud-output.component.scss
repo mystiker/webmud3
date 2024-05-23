@@ -1,0 +1,39 @@
+// .above-scroller {
+//   overflow-x: scroll;
+//   overflow-y: hidden;
+//   display: block;
+//   height: 20px;
+// }
+
+// .scroller {
+//   height: 20px;
+// }
+
+:host {
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+
+.mud-output {
+  flex: 0 1 100%;
+
+  min-height: 400px;
+  overflow-x: auto;
+  overflow-y: auto;
+  flex-direction: column;
+  flex-wrap: wrap;
+  font-family: monospace;
+  font-size: 14px;
+  padding: 0.5ex;
+  margin-top: 0;
+  margin-bottom: 0;
+  border-style: solid;
+  border-color: grey;
+  border-bottom-width: thin;
+
+  .mud-message {
+    max-width: 100%;
+    display: inline;
+  }
+}
