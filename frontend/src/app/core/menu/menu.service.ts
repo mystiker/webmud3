@@ -1,7 +1,7 @@
 import { EventEmitter, Injectable, Output } from '@angular/core';
 import { MenuItem, MenuItemCommandEvent } from 'primeng/api';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { MenuInputService } from './menu-input.service';
+import { MudService } from '../../core/mud/mud.service';
 import { MenuState, MenuType } from './types/menu-state';
 
 @Injectable({
@@ -20,12 +20,8 @@ export class MenuService {
   @Output()
   public readonly menuItemClicked = new EventEmitter<MenuItemCommandEvent>();
 
-  constructor(private menuInputService: MenuInputService) {
-    // Subscribe to input service changes and update the menu state
-    this.menuInputService.connected$.subscribe((connected) => {
-      // console.info(
-      //   `[myst] MenuService: Connected state changed to ${connected} updating menu items`,
-      // );
+  constructor(private readonly mudService: MudService) {
+    this.mudService.connectedStatus$.subscribe((connected) => {
       this.updateMenuItems(connected);
     });
   }
@@ -34,8 +30,6 @@ export class MenuService {
     const currentState = this.menuStateSubject.value;
     const newState = { ...currentState, ...partialState };
     this.menuStateSubject.next(newState);
-
-    // console.info('[myst] MenuService: State updated to', newState);
   }
 
   private updateMenuItems(connected: boolean) {

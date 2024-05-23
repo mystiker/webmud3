@@ -1,3 +1,11 @@
-<textarea pFocusTrap pInputTextarea class="mud-input" #mudInputArea (keydown)="onKeyDown($event)"
-  (keyup)="onKeyUp($event)" [(ngModel)]="inpmessage"></textarea>
-<input pFocusTrap pInputText class="mud-input" #mudInputLine (keydown.enter)="sendMessage()" [(ngModel)]="inpmessage" />
+<form [formGroup]="form">
+  <textarea
+    pFocusTrap
+    pInputTextarea
+    class="mud-input"
+    (keydown)="onKeyDown($event)"
+    (keyup)="onKeyUp($event)"
+    formControlName="inpmessage"
+  >
+  </textarea>
+</form>

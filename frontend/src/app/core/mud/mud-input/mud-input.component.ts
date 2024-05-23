@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Output } from '@angular/core';
+import { FormBuilder, FormGroup } from '@angular/forms';
 
 @Component({
   selector: 'app-mud-input',
@@ -10,73 +11,62 @@ export class MudInputComponent {
   private inpPointer = -1;
 
   @Output()
-  public messageSent = new EventEmitter<string>();
+  public readonly messageSent = new EventEmitter<string>();
 
-  public inpmessage: string = '';
+  protected readonly form: FormGroup;
 
-  constructor() {}
-
-  sendMessage() {
-    this.messageSent.emit(this.inpmessage);
-    if (
-      this.inpHistory.length == 0 ||
-      (this.inpHistory.length > 0 && this.inpHistory[0] != this.inpmessage)
-    ) {
-      this.inpHistory.unshift(this.inpmessage);
-    }
-    this.inpmessage = '';
+  constructor(private fb: FormBuilder) {
+    this.form = this.fb.group({
+      inpmessage: [''],
+    });
   }
 
-  onKeyDown(event: KeyboardEvent) {
+  protected onKeyDown(event: KeyboardEvent) {
     if (event.key === 'Enter') {
       event.preventDefault();
       this.sendMessage();
     }
   }
 
-  onKeyUp(event: KeyboardEvent) {
-    // Handling key up events for history navigation, etc.
+  protected onKeyUp(event: KeyboardEvent) {
     if (event.key === 'ArrowUp') {
-      if (this.inpHistory.length <= this.inpPointer) {
-        return;
-      }
-      if (this.inpPointer < 0) {
-        if (this.inpmessage === '') {
-          if (this.inpHistory.length > 0) {
-            this.inpPointer = 0;
-            this.inpmessage = this.inpHistory[0];
-          }
-        } else {
-          if (
-            this.inpHistory.length > 0 &&
-            this.inpmessage === this.inpHistory[0]
-          ) {
-            return;
-          }
-          this.inpHistory.unshift(this.inpmessage);
-          if (this.inpHistory.length > 1) {
-            this.inpPointer = 1;
-            this.inpmessage = this.inpHistory[1];
-          } else {
-            this.inpPointer = 0;
-          }
-        }
-      } else {
-        this.inpPointer++;
-        if (this.inpHistory.length > this.inpPointer) {
-          this.inpmessage = this.inpHistory[this.inpPointer];
-        }
-      }
+      this.navigateHistory(-1);
     } else if (event.key === 'ArrowDown') {
-      if (this.inpPointer < 0) {
-        return;
-      }
+      this.navigateHistory(1);
+    }
+  }
+
+  private sendMessage() {
+    const message = this.form.get('inpmessage')?.value;
+    this.messageSent.emit(message);
+    if (
+      this.inpHistory.length == 0 ||
+      (this.inpHistory.length > 0 && this.inpHistory[0] !== message)
+    ) {
+      this.inpHistory.unshift(message);
+    }
+    this.form.get('inpmessage')?.setValue('');
+    this.inpPointer = -1;
+  }
+
+  private navigateHistory(direction: number) {
+    const messageControl = this.form.get('inpmessage');
+
+    if (!messageControl) return;
+
+    if (direction === -1 && this.inpPointer < this.inpHistory.length - 1) {
+      this.inpPointer++;
+    } else if (direction === 1 && this.inpPointer > -1) {
       this.inpPointer--;
-      if (this.inpPointer < 0) {
-        this.inpmessage = '';
-      } else {
-        this.inpmessage = this.inpHistory[this.inpPointer];
-      }
+    }
+
+    if (this.inpPointer === -1) {
+      messageControl.setValue('');
+    } else if (
+      this.inpPointer >= 0 &&
+      this.inpPointer < this.inpHistory.length
+    ) {
+      messageControl.setValue(this.inpHistory[this.inpPointer]);
     }
   }
 }

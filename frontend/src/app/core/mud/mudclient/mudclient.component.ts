@@ -13,23 +13,17 @@ import {
   WindowConfig,
   WindowService,
 } from '@mudlet3/frontend/shared';
-import { CookieService } from 'ngx-cookie-service';
-import { ColorSettings } from '../../../shared/color-settings';
 import { InventoryList } from '../../../shared/inventory-list';
 import { FilesService } from '../files.service';
-
-import {
-  DefaultFormattingData,
-  IAnsiData,
-  decodeBinaryBase64,
-} from '@mudlet3/frontend/features/ansi';
 
 import { MudConfig } from '@mudlet3/frontend/features/mudconfig';
 import { Observable } from 'rxjs';
 import { MudService } from '../mud.service';
 import { IMudMessage } from '../types/mud-message';
-import { doFocus } from '../utils/do-focus';
 import { tableOutput } from '../utils/table-output';
+
+// Todo: Sollte nicht mehr notwendig sein
+const MUD_NAME = 'unitopia';
 
 @Component({
   selector: 'app-mudclient',
@@ -43,28 +37,9 @@ export class MudclientComponent implements AfterViewChecked {
   @ViewChild('mudBlock', { static: false })
   public mudBlock?: ElementRef;
 
-  @ViewChild('mudInputLine', { static: false })
-  public mudInputLine?: ElementRef;
-
-  @ViewChild('mudInputArea', { static: false })
-  public mudInputArea?: ElementRef;
-
-  @ViewChild('mudMenu', { static: false })
-  public mudMenu?: ElementRef;
-
-  @ViewChild('scroller', { static: false })
-  public scroller?: ElementRef;
-
-  private mudName = 'disconnect';
-  public mudc_id: string | undefined;
-  public ansiCurrent: IAnsiData;
-  public inpmessage: string = ''; // Todo[myst]: nonsense
-  private inpHistory: string[] = [];
-
   protected readonly output$: Observable<IMudMessage[]>;
 
   public v = {
-    connected: false,
     scrollLock: true,
     sizeCalculated: false,
     sizeCalculated2: false,
@@ -76,91 +51,43 @@ export class MudclientComponent implements AfterViewChecked {
     scrolltop: 0,
   };
 
-  public cs: ColorSettings = {
-    invert: false,
-    blackOnWhite: false,
-    colorOff: false,
-    localEchoColor: '#a8ff00',
-    localEchoBackground: '#000000',
-    localEchoActive: true,
-  };
-
   public keySetters: KeypadData = new KeypadData(); // Todo[myst]: nonsense;
-
-  private d = {
-    ref_height_ratio: 1,
-    mudc_height: 90,
-    mudc_width: 80,
-    startCnt: 0,
-  };
-
-  public togglePing = false;
-  private inpPointer = -1;
   public filesWindow: WindowConfig = new WindowConfig(); // Todo[myst]: nonsense;
   public charStatsWindow: WindowConfig = new WindowConfig(); // Todo[myst]: nonsense;
   public charData: CharacterData = new CharacterData(''); // Todo[myst]: nonsense
   public invlist: InventoryList;
-  public changeFocus = 1;
-  public previousFoxus = 1;
 
   constructor(
+    private readonly mudService: MudService,
     private cdRef: ChangeDetectorRef,
     public filesrv: FilesService,
     public wincfg: WindowService,
     public titleService: Title,
-    private cookieService: CookieService,
-    // Todo: Make this private
-    public readonly mudService: MudService,
+    // private cookieService: CookieService,
   ) {
     this.output$ = this.mudService.outputLines$;
 
-    this.mudService.connectedStatus$.subscribe((connected) => {
-      this.v.connected = connected;
-    });
-
     this.invlist = new InventoryList();
-    this.ansiCurrent = {
-      text: '',
-      ...DefaultFormattingData,
-    };
-    this.mudc_id = 'one';
 
-    const ncs = this.cookieService.get('mudcolors');
-    if (ncs != '') {
-      this.cs = JSON.parse(decodeBinaryBase64(ncs));
-    }
-    if (this.cs.blackOnWhite) {
-      this.v.stdfg = 'black';
-      this.v.stdbg = 'white';
-    } else {
-      this.v.stdfg = 'white';
-      this.v.stdbg = 'black';
-    }
+    // Todo[myst]: Herausfinden, was der cookieService alles unter 'mudcolors' gespeichert hat
+    // const ncs = this.cookieService.get('mudcolors');
+    // if (ncs != '') {
+    //   this.cs = JSON.parse(decodeBinaryBase64(ncs));
+    // }
+    // if (this.cs.blackOnWhite) {
+    //   this.v.stdfg = 'black';
+    //   this.v.stdbg = 'white';
+    // } else {
+    //   this.v.stdfg = 'white';
+    //   this.v.stdbg = 'black';
+    // }
   }
 
-  onMessageSent(message: string) {
-    this.mudService.sendMessage(message);
-  }
-
-  doFocus() {
-    const result = doFocus(
-      this.v,
-      this.changeFocus,
-      this.previousFoxus,
-      this.mudInputLine,
-      this.mudInputArea,
-    );
-    this.changeFocus = result.changeFocus;
-    this.previousFoxus = result.previousFoxus;
-  }
-
-  menuAction(act: any) {
-    let numpadOther, other;
-    let numpadSplit: string[] = [];
+  // Todo: Typisieren
+  protected menuAction(act: any) {
     switch (act.item.id) {
       case 'MUD:CONNECT':
-        this.changeFocus = -4;
-        this.mudService.connect(this.mudName, this.cfg);
+        this.mudService.connect(MUD_NAME, this.cfg);
         return;
       case 'MUD:DISCONNECT':
         this.mudService.disconnect();
@@ -175,9 +102,49 @@ export class MudclientComponent implements AfterViewChecked {
     return tableOutput(words, screen);
   }
 
-  onInputReceived(message: string) {
+  protected onInputReceived(message: string) {
     this.mudService.sendMessage(message);
   }
+
+  // Old Features
+
+  // @ViewChild('mudInputLine', { static: false })
+  // public mudInputLine?: ElementRef;
+
+  // @ViewChild('mudInputArea', { static: false })
+  // public mudInputArea?: ElementRef;
+
+  // public cs: ColorSettings = {
+  //   invert: false,
+  //   blackOnWhite: false,
+  //   colorOff: false,
+  //   localEchoColor: '#a8ff00',
+  //   localEchoBackground: '#000000',
+  //   localEchoActive: true,
+  // };
+
+  // private d = {
+  //   ref_height_ratio: 1,
+  //   mudc_height: 90,
+  //   mudc_width: 80,
+  //   startCnt: 0,
+  // };
+
+  // public togglePing = false;
+  // public changeFocus = 1;
+  // public previousFoxus = 1;
+
+  // doFocus() {
+  //   const result = doFocus(
+  //     this.v,
+  //     this.changeFocus,
+  //     this.previousFoxus,
+  //     this.mudInputLine,
+  //     this.mudInputArea,
+  //   );
+  //   this.changeFocus = result.changeFocus;
+  //   this.previousFoxus = result.previousFoxus;
+  // }
 
   // onKeyDown(event: KeyboardEvent) {
   //   onKeyDown(
@@ -262,7 +229,7 @@ export class MudclientComponent implements AfterViewChecked {
 
     let tmpwidth = this.wincfg.getViewPortWidth() / 1.0125;
     if (!this.v.sizeCalculated) {
-      this.doFocus();
+      // this.doFocus();
       // tmpwidth = this.mudTest?.nativeElement.offsetWidth * 1.0125;
       // this.d.ref_height_ratio = this.mudTest?.nativeElement.offsetHeight / 25.0;
       setTimeout(function () {
@@ -270,11 +237,11 @@ export class MudclientComponent implements AfterViewChecked {
         other.v.sizeCalculated = true;
         other.cdRef.detectChanges();
       });
-    } else if (this.d.startCnt <= 0) {
+      // } else if (this.d.startCnt <= 0) {
       // this.calculateSizing();
     }
-    if (this.changeFocus != this.previousFoxus) {
-      this.doFocus();
-    }
+    // if (this.changeFocus != this.previousFoxus) {
+    //   this.doFocus();
+    // }
   }
 }

@@ -58,6 +58,7 @@ export class MudService {
     //   mudOb['password'] = cfg.autoPw || '';
     // }
 
+    // Todo: Refactor in den socketsService
     this.socketsService.mudConnect(mudOb).subscribe(
       (ioResult) => {
         console.info('Received message:', ioResult);

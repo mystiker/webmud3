@@ -1,20 +1,31 @@
-<div class="flex">
+<div class="mud-client">
+  <app-mudmenu (menuAction)="menuAction($event)"></app-mudmenu>
   <div>
-    <div #mudMenu [style.width.px]='v.ref_width'>
-      <app-mudmenu [connected]="v.connected" (menuAction)="menuAction($event)"></app-mudmenu>
-    </div>
-    <div class='mud-heigth'>
-      <div class="above-scroller" *ngIf='v.sizeCalculated2' #scroller (scroll)="scroll()"
-        [style.width.px]='v.ref_width'>
-        <div class="scroller" [style.min-width.px]='mudBlock.nativeElement.scrollWidth'></div>
+    <!-- Output des Clients-->
+    <div class="mud-heigth">
+      <div
+        class="above-scroller"
+        *ngIf="v.sizeCalculated2"
+        #scroller
+        (scroll)="scroll()"
+        [style.width.px]="v.ref_width"
+      >
+        <div
+          class="scroller"
+          [style.min-width.px]="mudBlock.nativeElement.scrollWidth"
+        ></div>
       </div>
-      <!-- *ngIf='v.sizeCalculated' vorher -->
-      <!-- Output des Clients-->
-      <div class="mud-block doselect" #mudBlock *ngIf='v.sizeCalculated' [style.width.px]='v.ref_width'
-        [style.height.px]='v.ref_height' [style.background-color]="v.stdbg" [style.color]="v.stdfg">
-        <div class="mud-message" display="inline" *ngFor="let mudLine of this.output$ | async">
-          <app-mudspan [line]="mudLine">
-          </app-mudspan>
+      <div
+        class="mud-block doselect"
+        #mudBlock
+        *ngIf="v.sizeCalculated"
+        [style.width.px]="v.ref_width"
+        [style.height.px]="v.ref_height"
+        [style.background-color]="v.stdbg"
+        [style.color]="v.stdfg"
+      >
+        <div class="mud-message" *ngFor="let mudLine of this.output$ | async">
+          <app-mudspan [line]="mudLine"> </app-mudspan>
           <!-- <app-mudspan [line]="mudLine" [colorOff]='cs.colorOff' [blackToWhite]='cs.blackOnWhite'
             [invertFlag]="cs.invert" [localEchoColor]="cs.localEchoColor" [localEchoBackground]="cs.localEchoBackground"
             [localEchoActive]="cs.localEchoActive">
@@ -24,6 +35,6 @@
     </div>
     <app-mud-input (messageSent)="onInputReceived($event)"></app-mud-input>
   </div>
-  <p-divider layout="vertical"></p-divider>
-  <app-inventory [inv]="invlist" [vheight]='v.ref_height'></app-inventory>
+  <!-- <p-divider layout="vertical"></p-divider>
+  <app-inventory [inv]="invlist" [vheight]="v.ref_height"></app-inventory> -->
 </div>
