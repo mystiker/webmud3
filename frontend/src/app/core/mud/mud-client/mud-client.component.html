@@ -4,8 +4,8 @@
 ></app-mud-menu>
 <app-mud-output
   [lines]="this.output$ | async"
-  [stdfg]="this.v.stdfg"
-  [stdbg]="this.v.stdbg"
+  [foregroundColor]="this.v.stdfg"
+  [backgroundColor]="this.v.stdbg"
 ></app-mud-output>
 <app-mud-input (messageSent)="onInputReceived($event)"></app-mud-input>
 <!--<p-divider layout="vertical"></p-divider>

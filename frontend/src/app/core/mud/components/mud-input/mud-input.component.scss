@@ -1,7 +1,13 @@
-.mud-input {
-  font-family: monospace;
-  font-size: 14px;
-  border-style: solid;
-  border-color: black;
-  border-bottom-width: thick;
+form {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+
+  .mud-input {
+    font-family: monospace;
+    font-size: 14px;
+    flex: 1 1 auto;
+    resize: none;
+    max-height: 200px;
+  }
 }
