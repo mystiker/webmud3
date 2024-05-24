@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { IMudMessage } from '../types/mud-message';
+import { IMudMessage } from '../../types/mud-message';
 
 @Component({
   selector: 'app-mud-output',

@@ -8,6 +8,6 @@
   [style.color]="stdfg"
 >
   <div class="mud-message" *ngFor="let mudLine of this.lines$ | async">
-    <app-mudspan [line]="mudLine"> </app-mudspan>
+    <app-mud-span [line]="mudLine"> </app-mud-span>
   </div>
 </div>

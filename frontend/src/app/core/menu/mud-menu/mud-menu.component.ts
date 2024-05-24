@@ -5,9 +5,9 @@ import { MenuService } from '../menu.service';
 import { MenuState } from '../types/menu-state';
 
 @Component({
-  selector: 'app-mudmenu',
-  templateUrl: './mudmenu.component.html',
-  styleUrls: ['./mudmenu.component.scss'],
+  selector: 'app-mud-menu',
+  templateUrl: './mud-menu.component.html',
+  styleUrls: ['./mud-menu.component.scss'],
 })
 export class MudmenuComponent {
   public readonly menuState$: Observable<MenuState>;

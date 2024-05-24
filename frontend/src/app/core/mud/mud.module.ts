@@ -6,10 +6,10 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { WidgetsModule } from '@mudlet3/frontend/features/widgets';
 import { PrimeModule } from '@mudlet3/frontend/shared';
 import { MenuModule } from '../menu/menu.module';
-import { MudInputComponent } from './mud-input/mud-input.component';
-import { MudOutputComponent } from './mud-output/mud-output.component';
-import { MudclientComponent } from './mudclient/mudclient.component';
-import { MudspanComponent } from './mudspan/mudspan.component';
+import { MudInputComponent } from './components/mud-input/mud-input.component';
+import { MudOutputComponent } from './components/mud-output/mud-output.component';
+import { MudspanComponent } from './components/mud-span/mud-span.component';
+import { MudclientComponent } from './mud-client/mud-client.component';
 
 @NgModule({
   declarations: [

@@ -1,11 +1,11 @@
 import { Component, Input } from '@angular/core';
 import { BehaviorSubject, Observable, map, startWith } from 'rxjs';
-import { IMudMessage } from '../types/mud-message';
+import { IMudMessage } from '../../types/mud-message';
 
 @Component({
-  selector: 'app-mudspan',
-  templateUrl: './mudspan.component.html',
-  styleUrls: ['./mudspan.component.scss'],
+  selector: 'app-mud-span',
+  templateUrl: './mud-span.component.html',
+  styleUrls: ['./mud-span.component.scss'],
 })
 export class MudspanComponent {
   private readonly lineSubject = new BehaviorSubject<IMudMessage | null>(null);

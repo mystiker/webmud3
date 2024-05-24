@@ -1,11 +1,9 @@
-import { AfterViewChecked, ChangeDetectorRef, Component } from '@angular/core';
-import { Title } from '@angular/platform-browser';
+import { Component } from '@angular/core';
 import {
   CharacterData,
   InventoryList,
   KeypadData,
   WindowConfig,
-  WindowService,
 } from '@mudlet3/frontend/shared';
 
 import { Observable } from 'rxjs';
@@ -14,11 +12,11 @@ import { IMudMessage } from '../types/mud-message';
 import { tableOutput } from '../utils/table-output';
 
 @Component({
-  selector: 'app-mudclient',
-  templateUrl: './mudclient.component.html',
-  styleUrls: ['./mudclient.component.scss'],
+  selector: 'app-mud-client',
+  templateUrl: './mud-client.component.html',
+  styleUrls: ['./mud-client.component.scss'],
 })
-export class MudclientComponent implements AfterViewChecked {
+export class MudclientComponent {
   protected readonly output$: Observable<IMudMessage[]>;
 
   public v = {
@@ -41,10 +39,10 @@ export class MudclientComponent implements AfterViewChecked {
 
   constructor(
     private readonly mudService: MudService,
-    private cdRef: ChangeDetectorRef,
+    // private cdRef: ChangeDetectorRef,
     // public filesrv: FilesService,
-    public wincfg: WindowService,
-    public titleService: Title,
+    // public wincfg: WindowService,
+    // public titleService: Title,
     // private cookieService: CookieService,
   ) {
     this.output$ = this.mudService.outputLines$;
@@ -185,38 +183,38 @@ export class MudclientComponent implements AfterViewChecked {
   //   }
   // }
 
-  ngAfterViewChecked(): void {
-    const other = this;
+  // ngAfterViewChecked(): void {
+  // const other = this;
 
-    // if (
-    //   this.v.scrollLock &&
-    //   this.mudBlock &&
-    //   this.mudBlock.nativeElement.scrollTop !=
-    //     this.mudBlock.nativeElement.scrollHeight
-    // ) {
-    //   setTimeout(() => {
-    //     if (this.mudBlock !== undefined) {
-    //       this.mudBlock.nativeElement.scrollTop =
-    //         this.mudBlock.nativeElement.scrollHeight;
-    //     }
-    //   });
-    // }
+  // if (
+  //   this.v.scrollLock &&
+  //   this.mudBlock &&
+  //   this.mudBlock.nativeElement.scrollTop !=
+  //     this.mudBlock.nativeElement.scrollHeight
+  // ) {
+  //   setTimeout(() => {
+  //     if (this.mudBlock !== undefined) {
+  //       this.mudBlock.nativeElement.scrollTop =
+  //         this.mudBlock.nativeElement.scrollHeight;
+  //     }
+  //   });
+  // }
 
-    let tmpwidth = this.wincfg.getViewPortWidth() / 1.0125;
-    if (!this.v.sizeCalculated) {
-      // this.doFocus();
-      // tmpwidth = this.mudTest?.nativeElement.offsetWidth * 1.0125;
-      // this.d.ref_height_ratio = this.mudTest?.nativeElement.offsetHeight / 25.0;
-      setTimeout(function () {
-        other.v.ref_width = tmpwidth;
-        other.v.sizeCalculated = true;
-        other.cdRef.detectChanges();
-      });
-      // } else if (this.d.startCnt <= 0) {
-      // this.calculateSizing();
-    }
-    // if (this.changeFocus != this.previousFoxus) {
-    //   this.doFocus();
-    // }
-  }
+  // let tmpwidth = this.wincfg.getViewPortWidth() / 1.0125;
+  // if (!this.v.sizeCalculated) {
+  //   // this.doFocus();
+  //   // tmpwidth = this.mudTest?.nativeElement.offsetWidth * 1.0125;
+  //   // this.d.ref_height_ratio = this.mudTest?.nativeElement.offsetHeight / 25.0;
+  //   setTimeout(function () {
+  //     other.v.ref_width = tmpwidth;
+  //     other.v.sizeCalculated = true;
+  //     other.cdRef.detectChanges();
+  //   });
+  //   // } else if (this.d.startCnt <= 0) {
+  //   // this.calculateSizing();
+  // }
+  // if (this.changeFocus != this.previousFoxus) {
+  //   this.doFocus();
+  // }
+  // }
 }
