@@ -1,20 +1,22 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { MudConfig } from './mud-config';
+import { IMudConfig } from './types/mud-config';
 
-import config from '../../../mud_config.json';
+import { DefaultWebmudConfig } from './models/default-webmud-config';
+import config from './models/mud_config.json';
+import { IWebmudConfig } from './types/webmud-config';
 
 @Injectable({
   providedIn: 'root',
 })
 export class MudConfigService {
-  data: MudConfig = {};
+  public readonly webConfig: IWebmudConfig = DefaultWebmudConfig;
 
-  constructor(private http: HttpClient) {}
+  public data: IMudConfig = {};
 
-  load(): Promise<MudConfig> {
-    return new Promise<MudConfig>((resolve) => {
+  constructor() {}
 
+  load(): Promise<IMudConfig> {
+    return new Promise<IMudConfig>((resolve) => {
       this.data = config;
 
       resolve(config);

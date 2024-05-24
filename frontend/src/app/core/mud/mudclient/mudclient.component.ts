@@ -1,29 +1,17 @@
-import {
-  AfterViewChecked,
-  ChangeDetectorRef,
-  Component,
-  ElementRef,
-  Input,
-  ViewChild,
-} from '@angular/core';
+import { AfterViewChecked, ChangeDetectorRef, Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import {
   CharacterData,
+  InventoryList,
   KeypadData,
   WindowConfig,
   WindowService,
 } from '@mudlet3/frontend/shared';
-import { InventoryList } from '../../../shared/inventory-list';
-import { FilesService } from '../files.service';
 
-import { MudConfig } from '@mudlet3/frontend/features/mudconfig';
 import { Observable } from 'rxjs';
 import { MudService } from '../mud.service';
 import { IMudMessage } from '../types/mud-message';
 import { tableOutput } from '../utils/table-output';
-
-// Todo: Sollte nicht mehr notwendig sein
-const MUD_NAME = 'unitopia';
 
 @Component({
   selector: 'app-mudclient',
@@ -31,12 +19,6 @@ const MUD_NAME = 'unitopia';
   styleUrls: ['./mudclient.component.scss'],
 })
 export class MudclientComponent implements AfterViewChecked {
-  @Input({ required: true })
-  public cfg!: MudConfig;
-
-  @ViewChild('mudBlock', { static: false })
-  public mudBlock?: ElementRef;
-
   protected readonly output$: Observable<IMudMessage[]>;
 
   public v = {
@@ -60,7 +42,7 @@ export class MudclientComponent implements AfterViewChecked {
   constructor(
     private readonly mudService: MudService,
     private cdRef: ChangeDetectorRef,
-    public filesrv: FilesService,
+    // public filesrv: FilesService,
     public wincfg: WindowService,
     public titleService: Title,
     // private cookieService: CookieService,
@@ -87,7 +69,7 @@ export class MudclientComponent implements AfterViewChecked {
   protected menuAction(act: any) {
     switch (act.item.id) {
       case 'MUD:CONNECT':
-        this.mudService.connect(MUD_NAME, this.cfg);
+        this.mudService.connect();
         return;
       case 'MUD:DISCONNECT':
         this.mudService.disconnect();
@@ -213,19 +195,19 @@ export class MudclientComponent implements AfterViewChecked {
   ngAfterViewChecked(): void {
     const other = this;
 
-    if (
-      this.v.scrollLock &&
-      this.mudBlock &&
-      this.mudBlock.nativeElement.scrollTop !=
-        this.mudBlock.nativeElement.scrollHeight
-    ) {
-      setTimeout(() => {
-        if (this.mudBlock !== undefined) {
-          this.mudBlock.nativeElement.scrollTop =
-            this.mudBlock.nativeElement.scrollHeight;
-        }
-      });
-    }
+    // if (
+    //   this.v.scrollLock &&
+    //   this.mudBlock &&
+    //   this.mudBlock.nativeElement.scrollTop !=
+    //     this.mudBlock.nativeElement.scrollHeight
+    // ) {
+    //   setTimeout(() => {
+    //     if (this.mudBlock !== undefined) {
+    //       this.mudBlock.nativeElement.scrollTop =
+    //         this.mudBlock.nativeElement.scrollHeight;
+    //     }
+    //   });
+    // }
 
     let tmpwidth = this.wincfg.getViewPortWidth() / 1.0125;
     if (!this.v.sizeCalculated) {

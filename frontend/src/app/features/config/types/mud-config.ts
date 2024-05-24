@@ -1,4 +1,4 @@
-export interface MudConfig {
+export interface IMudConfig {
   scope?: string;
   href?: string;
   mudfamilies?: any;

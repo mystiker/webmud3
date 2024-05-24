@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { MudConfigService } from '@mudlet3/frontend/features/config';
 import { MudConfig } from '@mudlet3/frontend/features/mudconfig';
 import { IoMud, SocketsService } from '@mudlet3/frontend/features/sockets';
 import { wordWrap } from '@mudlet3/frontend/shared';
@@ -24,7 +25,10 @@ export class MudService {
   public readonly connectedStatus$: Observable<boolean> =
     this.connected$.asObservable();
 
-  constructor(private readonly socketsService: SocketsService) {}
+  constructor(
+    private readonly socketsService: SocketsService,
+    private readonly mudConfigService: MudConfigService,
+  ) {}
 
   public addOutputLine(...line: IMudMessage[]): void {
     this.outputLines.next([...this.outputLines.value, ...line]);
@@ -43,11 +47,13 @@ export class MudService {
     }
   }
 
-  public connect(mudName: string, cfg: MudConfig): void {
-    console.log('Connecting to MUD:', mudName);
+  public connect(): void {
+    const cfg = this.mudConfigService.webConfig;
+
+    console.log('Connecting to MUD:', cfg.mudname);
 
     const mudOb: MudConfig = {
-      mudname: mudName,
+      mudname: cfg.mudname,
       height: cfg.height,
       width: cfg.width,
     };
