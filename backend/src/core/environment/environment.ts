@@ -1,3 +1,4 @@
+import { logger } from '../../features/logger/winston-logger.js';
 import { IEnvironment } from './types/environment.js';
 import { getEnvironmentVariable } from './utils/get-environment-variable.js';
 import { resolveModulePath } from './utils/resolve-modulepath.js';
@@ -40,7 +41,9 @@ export class Environment implements IEnvironment {
 
     this.charset = String(getEnvironmentVariable('CHARSET', false, 'utf8'));
 
-    this.projectRoot = resolveModulePath('../../main.js');
+    this.projectRoot = resolveModulePath('../../../main.js');
+
+    logger.info('Environment initialized:', this);
   }
 
   /**

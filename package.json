@@ -15,8 +15,8 @@
     "integrate-client": "cpx frontend/dist/frontend/**/* backend/dist/wwwroot",
     "postbuild": "npm run integrate-client",
     "start": "npm run build && npm run serve --workspace backend",
-    "test": "npm run test --workspace frontend && npm run test --workspace backend",
-    "lint": "npm run lint --workspace frontend && npm run lint --workspace backend"
+    "test": "npm run test --workspaces",
+    "lint": "npm run lint --workspaces"
   },
   "devDependencies": {
     "cpx": "~1.5.0"
