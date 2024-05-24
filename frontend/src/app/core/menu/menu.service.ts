@@ -18,9 +18,13 @@ export class MenuService {
   }
 
   @Output()
-  public readonly menuItemClicked = new EventEmitter<MenuItemCommandEvent>();
+  public readonly disconnectClicked = new EventEmitter<MenuItemCommandEvent>();
+
+  @Output()
+  public readonly connectClicked = new EventEmitter<MenuItemCommandEvent>();
 
   constructor(private readonly mudService: MudService) {
+    // Todo[myst]: Entweder direkt berechnen ohne Subscribe oder Unsubscribe onDestroy
     this.mudService.connectedStatus$.subscribe((connected) => {
       this.updateMenuItems(connected);
     });
@@ -33,6 +37,21 @@ export class MenuService {
   }
 
   private updateMenuItems(connected: boolean) {
+    const connectItem: MenuItem = {
+      id: 'MUD:CONNECT',
+      label: 'Verbinden',
+      icon: 'pi pi-sign-in',
+      command: (event: MenuItemCommandEvent) => this.connectClicked.emit(event),
+    };
+
+    const disconnectItem: MenuItem = {
+      id: 'MUD:DISCONNECT',
+      label: 'Trennen',
+      icon: 'pi pi-sign-out',
+      command: (event: MenuItemCommandEvent) =>
+        this.disconnectClicked.emit(event),
+    };
+
     const items: MenuItem[] = [
       // {
       //   id: 'MUD:MENU',
@@ -41,22 +60,7 @@ export class MenuService {
       //   command: (event: MenuItemCommandEvent) =>
       //     this.emitMenuItemClicked(event),
       // },
-      {
-        id: 'MUD:CONNECT',
-        label: 'Verbinden',
-        icon: 'pi pi-sign-in',
-        disabled: connected,
-        command: (event: MenuItemCommandEvent) =>
-          this.emitMenuItemClicked(event),
-      },
-      {
-        id: 'MUD:DISCONNECT',
-        label: 'Trennen',
-        icon: 'pi pi-sign-out',
-        disabled: !connected,
-        command: (event: MenuItemCommandEvent) =>
-          this.emitMenuItemClicked(event),
-      },
+      connected ? disconnectItem : connectItem,
       // {
       //   id: 'MUD:NUMPAD',
       //   label: 'Numpad',
@@ -83,10 +87,5 @@ export class MenuService {
     this.updateMenuState({ items });
 
     console.log('[myst] MenuService: Menu items updated', items);
-  }
-
-  private emitMenuItemClicked(event: MenuItemCommandEvent) {
-    console.log('[myst] MenuService: Menu item clicked', event);
-    this.menuItemClicked.emit(event);
   }
 }

@@ -7,8 +7,6 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { IMudMessage } from 'src/app/core/mud/types/mud-message';
 import { mudProcessData } from './utils/mud-process-data';
 
-const ECHO = true;
-
 @Injectable({
   providedIn: 'root',
 })
@@ -37,7 +35,9 @@ export class MudService {
   public sendMessage(message: string): void {
     this.socketsService.mudSendData(message);
 
-    if (ECHO) {
+    const useEcho = this.mudConfigService.webConfig.localEcho;
+
+    if (useEcho) {
       const echoLine: IMudMessage = {
         type: 'echo',
         text: wordWrap(message, 75) + '\r\n',

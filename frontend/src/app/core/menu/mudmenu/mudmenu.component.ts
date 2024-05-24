@@ -12,11 +12,16 @@ import { MenuState } from '../types/menu-state';
 export class MudmenuComponent {
   public readonly menuState$: Observable<MenuState>;
 
-  @Output() menuAction: EventEmitter<MenuItemCommandEvent>;
+  @Output()
+  public disconnectClicked: EventEmitter<MenuItemCommandEvent>;
 
-  constructor(private menuSrv: MenuService) {
-    this.menuState$ = this.menuSrv.menuState$;
+  @Output()
+  public connectClicked: EventEmitter<MenuItemCommandEvent>;
 
-    this.menuAction = this.menuSrv.menuItemClicked;
+  constructor(private menuService: MenuService) {
+    this.menuState$ = this.menuService.menuState$;
+
+    this.disconnectClicked = this.menuService.disconnectClicked;
+    this.connectClicked = this.menuService.connectClicked;
   }
 }

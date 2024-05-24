@@ -65,19 +65,12 @@ export class MudclientComponent implements AfterViewChecked {
     // }
   }
 
-  // Todo: Typisieren
-  protected menuAction(act: any) {
-    switch (act.item.id) {
-      case 'MUD:CONNECT':
-        this.mudService.connect();
-        return;
-      case 'MUD:DISCONNECT':
-        this.mudService.disconnect();
-        return;
-      default:
-        console.info('No registered menu entry for ', act.item.id);
-        return;
-    }
+  protected onDisconnectClicked() {
+    this.mudService.disconnect();
+  }
+
+  protected onConnectClicked() {
+    this.mudService.connect();
   }
 
   public tableOutput(words: string[], screen: number): string {
