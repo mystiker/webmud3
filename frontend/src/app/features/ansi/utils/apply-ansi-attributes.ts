@@ -1,21 +1,9 @@
 import { Ansi256Colors } from '../models/ansi256-colors';
+import { DefaultFormatData } from '../models/default-formatting-data';
 import { FormatData } from '../types/format-data';
 import { convertRgbToHex } from './colors/convert-rgb-to-hex';
 import { invColor } from './colors/inv-color';
 import { formatToHex } from './converter/format-to-hex';
-
-const defaultData: FormatData = {
-  bold: false,
-  faint: false,
-  italic: false,
-  underline: false,
-  blink: false,
-  reverse: false,
-  concealed: false,
-  crossedout: false,
-  fgcolor: '#ffffff',
-  bgcolor: '#000000',
-};
 
 /**
  * Applies ANSI escape codes to format data.
@@ -47,7 +35,7 @@ export function applyAnsiAttributes(
     // Apply text attributes
     switch (code) {
       case '0':
-        formattedData = { ...defaultData };
+        formattedData = { ...DefaultFormatData };
         continue;
       case '1':
         formattedData.bold = true;

@@ -1,4 +1,3 @@
-export { DefaultFormattingData } from './models/default-formatting-data';
 export { ESCAPE_SEQUENCES } from './models/escape-sequences';
 export { IAnsiData } from './types/ansi-data';
 export { invColor } from './utils/colors/inv-color';

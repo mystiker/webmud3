@@ -1,6 +1,6 @@
 import { FormatData } from '../types/format-data';
 
-export const DefaultFormattingData: FormatData = {
+export const DefaultFormatData: FormatData = {
   fgcolor: '#ffffff',
   bgcolor: '#000000',
   bold: false,

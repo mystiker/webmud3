@@ -1,4 +1,4 @@
-import { DefaultFormattingData } from '../models/default-formatting-data';
+import { DefaultFormatData } from '../models/default-formatting-data';
 import { IAnsiData } from '../types/ansi-data';
 import { processAnsiData } from './process-ansi-data';
 
@@ -21,7 +21,7 @@ describe('processAnsiData', () => {
       },
       // Command 0 resets everthing to default
       {
-        ...DefaultFormattingData,
+        ...DefaultFormatData,
         text: '\n',
       },
     ];
@@ -42,7 +42,7 @@ describe('processAnsiData', () => {
       },
       // Command 0 resets everthing to default
       {
-        ...DefaultFormattingData,
+        ...DefaultFormatData,
         text: '\r\n',
       },
     ];
