@@ -1,5 +1,6 @@
 import {
   AfterViewChecked,
+  AfterViewInit,
   Component,
   ElementRef,
   Input,
@@ -13,11 +14,13 @@ import { IMudMessage } from '../../types/mud-message';
   templateUrl: './mud-output.component.html',
   styleUrls: ['./mud-output.component.scss'],
 })
-export class MudOutputComponent implements AfterViewChecked {
+export class MudOutputComponent implements AfterViewChecked, AfterViewInit {
   private readonly linesSubject = new BehaviorSubject<IMudMessage[]>([]);
 
+  private canScrollToBottom = true;
+
   @ViewChild('container', { static: true })
-  private readonly outputContainer!: ElementRef;
+  private readonly outputContainer!: ElementRef<HTMLDivElement>;
 
   protected readonly lines$: Observable<IMudMessage[]> =
     this.linesSubject.asObservable();
@@ -38,7 +41,22 @@ export class MudOutputComponent implements AfterViewChecked {
   public backgroundColor!: string;
 
   public ngAfterViewChecked() {
-    this.scrollToBottom();
+    if (this.canScrollToBottom) {
+      this.scrollToBottom();
+    }
+  }
+
+  public ngAfterViewInit(): void {
+    this.outputContainer.nativeElement.onscroll = (event: Event) => {
+      this.onScroll(event);
+    };
+  }
+
+  private onScroll(event: Event): void {
+    const element = event.target as HTMLElement;
+    const atBottom =
+      element.scrollHeight - element.scrollTop === element.clientHeight;
+    this.canScrollToBottom = atBottom;
   }
 
   private scrollToBottom(): void {
