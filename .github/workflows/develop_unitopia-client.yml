@@ -1,0 +1,51 @@
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+
+name: Build and deploy container app to Azure Web App - unitopia-client
+
+on:
+  push:
+    branches:
+      - develop
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: 'ubuntu-latest'
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Log in to registry
+      uses: docker/login-action@v2
+      with:
+        registry: https://mcr.microsoft.com/
+        username: ${{ secrets.AzureAppService_ContainerUsername_998c68bc442b4e53b04e751f4f5ca44f }}
+        password: ${{ secrets.AzureAppService_ContainerPassword_4a30ead311c0451cb1b7a927f4351d24 }}
+
+    - name: Build and push container image to registry
+      uses: docker/build-push-action@v3
+      with:
+        push: true
+        tags: mcr.microsoft.com/${{ secrets.AzureAppService_ContainerUsername_998c68bc442b4e53b04e751f4f5ca44f }}/appsvc/staticsite:${{ github.sha }}
+        file: ./Dockerfile
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: 'production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+
+    steps:
+    - name: Deploy to Azure Web App
+      id: deploy-to-webapp
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: 'unitopia-client'
+        slot-name: 'production'
+        publish-profile: ${{ secrets.AzureAppService_PublishProfile_51cd2eb8220b4e08902b9d9a558210be }}
+        images: 'mcr.microsoft.com/${{ secrets.AzureAppService_ContainerUsername_998c68bc442b4e53b04e751f4f5ca44f }}/appsvc/staticsite:${{ github.sha }}'
