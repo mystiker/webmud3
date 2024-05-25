@@ -18,18 +18,18 @@ import { useStaticFiles } from './core/middleware/static-files.js';
 import { useRoutes } from './core/routes/routes.js';
 import { logger } from './features/logger/winston-logger.js';
 
+sourceMaps.install();
+
 const environment = Environment.getInstance();
 
-logger.info('Environment loaded', { environment });
-
-sourceMaps.install();
+logger.info('[Main] Environment loaded', { environment });
 
 const secretConfig = loadConfig(
   process.env.SECRET_CONFIG || '/run/secret_sauce.json',
   DefaultSecretConfig,
 );
 
-logger.info('Secret Config loaded', { secretConfig });
+logger.info('[Main] Secret Config loaded', { secretConfig });
 
 // Todo[myst] check this out
 if (typeof secretConfig.myLogDB !== 'undefined') {
@@ -41,7 +41,7 @@ const mudConfig = loadConfig(
   DefaultMudConfig,
 );
 
-logger.info('Mud Config loaded', { mudConfig });
+logger.info('[Main] Mud Config loaded', { mudConfig });
 
 const app = express();
 
@@ -77,7 +77,7 @@ setupSocketIO(httpServer, secretConfig, mudConfig, UNIQUE_SERVER_ID);
 // }
 
 httpServer.listen(5000, () => {
-  logger.info("INIT: Server'backend' started on port 5000", {
+  logger.info('[Main] Server started on port 5000', {
     UNIQUE_SERVER_ID,
   });
 });

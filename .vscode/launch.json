@@ -2,18 +2,29 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "type": "node",
+      "name": "[global] debug npm run start",
+      "command": "npm run start",
       "request": "launch",
-      "name": "Debug Backend",
-      "program": "${workspaceFolder}/backend/src/server.ts",
-      "outFiles": ["${workspaceFolder}/backend/dist/**/*.js"],
-      "sourceMaps": true
+      "type": "node-terminal"
     },
     {
+      "name": "[frontend] Launch Chrome Debugger",
+      "request": "launch",
+      "type": "chrome",
+      "url": "http://localhost:4200",
+      "webRoot": "${workspaceFolder}/frontend"
+    },
+    {
+      "name": "[backend] Attach node debugger",
       "type": "node",
       "request": "attach",
-      "name": "Attach to Backend",
       "processId": "${command:PickProcess}"
+    },
+    {
+      "name": "[backend] debug npm run start",
+      "command": "npm run start --workspace backend",
+      "request": "launch",
+      "type": "node-terminal"
     }
   ]
 }

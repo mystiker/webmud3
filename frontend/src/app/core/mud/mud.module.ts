@@ -1,23 +1,32 @@
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { NgModule } from '@angular/core';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { MudclientComponent } from './mudclient/mudclient.component';
-import { MudmenuComponent } from './mudmenu/mudmenu.component';
-import { MudspanComponent } from './mudspan/mudspan.component';
-import { PrimeModule } from '@mudlet3/frontend/shared';
 import { WidgetsModule } from '@mudlet3/frontend/features/widgets';
+import { PrimeModule } from '@mudlet3/frontend/shared';
+import { MenuModule } from '../menu/menu.module';
+import { MudInputComponent } from './components/mud-input/mud-input.component';
+import { MudOutputComponent } from './components/mud-output/mud-output.component';
+import { MudspanComponent } from './components/mud-span/mud-span.component';
+import { MudclientComponent } from './mud-client/mud-client.component';
 
 @NgModule({
-  declarations: [MudclientComponent, MudmenuComponent, MudspanComponent],
+  declarations: [
+    MudclientComponent,
+    MudspanComponent,
+    MudInputComponent,
+    MudOutputComponent,
+  ],
   imports: [
     CommonModule,
     BrowserModule,
     PrimeModule,
     BrowserAnimationsModule,
     FormsModule,
+    ReactiveFormsModule,
     WidgetsModule,
+    MenuModule,
   ],
   exports: [MudclientComponent],
 })

@@ -12,7 +12,9 @@ export const loadConfig = <T extends MudConfig | SecretConfig>(
 
     return JSON.parse(data) as T;
   } catch (error: unknown) {
-    logger.warn(`Could not load config at ${path} - revert to default.`);
+    logger.warn(
+      `[Config] Could not load config at ${path} - revert to default.`,
+    );
 
     return defaultConfig;
   }

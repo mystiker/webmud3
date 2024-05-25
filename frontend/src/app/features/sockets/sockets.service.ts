@@ -4,7 +4,9 @@ import { MudConfig } from '@mudlet3/frontend/features/mudconfig';
 import { MudListItem } from '@mudlet3/frontend/shared';
 import { Observable } from 'rxjs';
 import { ServerConfigService } from '../../shared/server-config.service';
-import { IoPlatform, IoResult, IoSocket } from './sockets-config';
+import { IoPlatform } from './io-platform';
+import { IoSocket } from './io-socket';
+import { IoResult } from './types/io-result';
 
 @Injectable({
   providedIn: 'root',
@@ -36,8 +38,8 @@ export class SocketsService {
       });
   }
 
-  public mudConnect(mudOb: MudConfig): Observable<IoResult> {
-    return this.ioSocket.addMud(mudOb, this.socketNsp);
+  public mudConnect(mudConfig: MudConfig): Observable<IoResult> {
+    return this.ioSocket.addMud(mudConfig, this.socketNsp);
   }
 
   public setMudOutputSize(_id: string, height: number, width: number) {
@@ -48,8 +50,8 @@ export class SocketsService {
     }
   }
 
-  public mudSendData(id: string, data: string) {
-    this.platform.mudSendData(id, data);
+  public mudSendData(data: string) {
+    this.platform.mudSendData(data);
   }
 
   public sendGMCP(id: string, mod: string, msg: string, data: any): boolean {

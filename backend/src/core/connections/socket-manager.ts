@@ -12,6 +12,7 @@ import { TelnetClient } from '../../features/telnet/telnet-client.js';
 import { MudConfig } from '../../shared/types/mud_config.js';
 import { SecretConfig } from '../../shared/types/secure_config.js';
 import { sizeToBuffer } from '../../shared/utils/size-to-buffer.js';
+import { Environment } from '../environment/environment.js';
 import { MudConnection } from './types/mud-connection.js';
 
 type MudConnectionsMap = {
@@ -62,28 +63,43 @@ export const setupSocketIO = (
       typeof Socket2Mud === 'undefined' ||
       typeof Socket2Mud[socket.id] === 'undefined'
     ) {
+      logger.info(`[Socket-Manager] [Client] emit message 'connecting'`, {
+        socketId: socket.id,
+        realIp: real_ip,
+        serverId,
+      });
+
       socket.emit(
         'connecting',
         socket.id,
         real_ip,
         serverId,
         function (action: string, oMudOb: string) {
-          logger.info(`SRV: ${real_ip} S02-connecting`, {
+          logger.info(`[Socket-Manager] [Client] responded to 'connecting'`, {
             action,
             oMudOb,
           });
         },
       );
     } else {
+      logger.info(`[Socket-Manager] [Client] emit message 'disconnecting'`, {
+        socketId: socket.id,
+        realIp: real_ip,
+        serverId,
+      });
+
       socket.emit(
         'disconnecting',
         socket.id,
         real_ip,
         serverId,
         function (action: string) {
-          logger.info(`SRV: ${real_ip} S02-disconnecting`, {
-            action,
-          });
+          logger.info(
+            `[Socket-Manager] [Client] responded to 'disconnecting'`,
+            {
+              action,
+            },
+          );
         },
       );
     }
@@ -165,10 +181,10 @@ export const setupSocketIO = (
 
       const mudSocket = mudConn.socket;
 
-      const mudOptions = mudSocket?.mudOptions;
-
       if (typeof inpline !== 'undefined' && inpline !== null) {
-        mudSocket.write(inpline.toString(mudOptions.charset) + '\r\n');
+        mudSocket.write(
+          inpline.toString(Environment.getInstance().charset) + '\r\n',
+        );
 
         logger.verbose(`SRV: ${real_ip} mud-input`, { inpline });
       }
@@ -249,9 +265,10 @@ export const setupSocketIO = (
       mudSocket.writeSub(31 /* TELOPT_NAWS */, buf);
     });
 
-    socket.on('mud-list', function (data, callback) {
-      callback(mudConfig.muds);
-    });
+    // Todo[myst]: Multi Mud Support is no longer supported
+    // socket.on('mud-list', function (data, callback) {
+    //   callback(mudConfig.muds);
+    // });
 
     socket.on('error', function (error) {
       logger.error(`SRV: ${real_ip} S01-socket error`, {
@@ -347,111 +364,98 @@ export const setupSocketIO = (
       delete Socket2Mud[socket.id];
     });
 
-    socket.on('mud-connect', function (mudOb, callback) {
-      const id = uuidv4(); // random, unique id!
+    // Todo[myst]: mudOb ist import { MudConfig } from '@mudlet3/frontend/features/mudconfig';
+    socket.on('mud-connect', (mudOb, callback) => {
+      const environment = Environment.getInstance();
 
-      let tsocket, mudcfg;
+      const connectionId = uuidv4(); // random, unique id!
 
-      logger.info(`SRV: ${real_ip} S02-socket mud-connect`, {
+      logger.info(`[Socket-Manager] [Client] received message 'mud-connect'`, {
         socketId: socket.id,
         mudOb,
       });
 
-      if (typeof mudOb.mudname === 'undefined') {
-        logger.error(`SRV: ${real_ip} Undefined mudname`, {
-          socketId: socket.id,
-          mudOb,
-        });
-
-        callback({ error: 'Missing mudname' });
-
-        return;
-      }
-
-      if (mudConfig.muds.hasOwnProperty(mudOb.mudname)) {
-        mudcfg = mudConfig.muds[mudOb.mudname as keyof typeof mudConfig.muds];
-      } else {
-        logger.error(`SRV: ${real_ip} Unknown mudnameUnknown mudname`, {
-          socketId: socket.id,
-          mudOb,
-        });
-
-        return;
-      }
-
-      mudOb.real_ip = real_ip;
-
-      let gmcp_support;
-      let charset = 'ascii';
-      if (mudcfg.hasOwnProperty('mudfamily')) {
-        if (
-          mudConfig.hasOwnProperty('mudfamilies') &&
-          typeof mudConfig.mudfamilies[
-            mudcfg.mudfamily as keyof typeof mudConfig.mudfamilies
-          ] !== 'undefined'
-        ) {
-          const fam =
-            mudConfig.mudfamilies[
-              mudcfg.mudfamily as keyof typeof mudConfig.mudfamilies
-            ];
-
-          if (
-            typeof fam.GMCP !== 'undefined' &&
-            fam.GMCP === true &&
-            typeof fam.GMCP_Support !== 'undefined'
-          ) {
-            gmcp_support = fam.GMCP_Support;
-
-            // Todo[myst]: was ist das für eine merkwürdige zuweisung - auskommentiert
-            // gmcp_support.mudfamily = mudcfg.mudfamily;
-          }
-
-          charset = fam.charset;
-        }
-      }
-
       try {
-        logger.info(`SRV: ${real_ip} S02-socket-open`, {
-          socketId: socket.id,
-          mudOb,
-          mudcfg,
-        });
+        const telnetConnection = createConnection(environment);
 
-        if (mudcfg.ssl === true) {
-          tsocket = tls.connect({
-            host: mudcfg.host,
-            port: mudcfg.port,
-            rejectUnauthorized: mudcfg.rejectUnauthorized,
-          });
-        } else {
-          tsocket = net.createConnection({
-            host: mudcfg.host,
-            port: mudcfg.port,
-          });
-        }
+        const unitopiaGmcpSupport = {
+          Sound: {
+            version: '1',
+            standard: true,
+            optional: false,
+          },
+          Char: {
+            version: '1',
+            standard: true,
+            optional: false,
+          },
+          'Char.Items': {
+            version: '1',
+            standard: true,
+            optional: false,
+          },
+          Comm: {
+            version: '1',
+            standard: true,
+            optional: false,
+          },
+          Playermap: {
+            version: '1',
+            standard: false,
+            optional: true,
+          },
+          Files: {
+            version: '1',
+            standard: true,
+            optional: false,
+          },
+        };
 
         const mudSocket = new TelnetClient(
-          tsocket,
+          telnetConnection,
           { bufferSize: 65536 },
           socket as unknown as Socket,
           {
             debugflag: true,
-            id,
-            gmcp_support,
-            charset,
+            id: connectionId,
+            gmcp_support: unitopiaGmcpSupport,
+            charset: environment.charset,
           },
         );
 
-        mudSocket.on('close', function () {
-          logger.debug(`SRV: ${real_ip} mud-disconnect=>close`, {
+        logger.info(`[Socket-Manager] created telnet connection`, {
+          host: environment.host,
+          port: environment.port,
+          gmcpSupport: unitopiaGmcpSupport,
+          charset: environment.charset,
+          debugflag: true,
+        });
+
+        mudSocket.on('close', () => {
+          logger.info(`[Socket-Manager] [Telnet] received message 'close'`, {
             socketId: socket.id,
           });
 
-          socket.emit('mud-disconnected', id);
+          logger.info(
+            `[Socket-Manager] [Client] emit message 'mud-disconnected'`,
+            {
+              socketId: socket.id,
+            },
+          );
+
+          socket.emit('mud-disconnected', connectionId);
         });
 
-        mudSocket.on('data', function (buffer) {
-          socket.emit('mud-output', id, buffer.toString('utf8'));
+        mudSocket.on('data', (buffer: string | Buffer) => {
+          logger.info(`[Socket-Manager] [Telnet] received message 'data'`, {
+            buffer,
+          });
+
+          logger.info(`[Socket-Manager] [Client] emit message 'mud-output'`, {
+            socketId: socket.id,
+          });
+
+          socket.emit('mud-output', connectionId, buffer.toString('utf8'));
         });
 
         // Todo[myst]: 'debug' event is not emitted by MudSocket any more
@@ -461,31 +465,26 @@ export const setupSocketIO = (
         //     dbgOb,
         //   ]);
         // });
-        MudConnections[id] = {
+
+        // Todo[myst]: Der ganze Block hier muss vereinfacht werden
+        MudConnections[connectionId] = {
           socket: mudSocket,
           mudOb,
           socketID: socket.id,
         };
 
         if (typeof Socket2Mud[socket.id] === 'undefined') {
-          Socket2Mud[socket.id] = [id];
+          Socket2Mud[socket.id] = [connectionId];
         } else {
           // Todo[myst]: Hier wurde vorher ein Array rein gepushed! Checken, ob das sinnig ist!
-          Socket2Mud[socket.id].push(id);
+          Socket2Mud[socket.id].push(connectionId);
         }
 
-        logger.info(`SRV: ${real_ip} S02-socket mud-connect`, {
-          socketId: socket.id,
-          mudOb,
-        });
-
-        callback({ id, socketID: socket.id, serverID: serverId });
+        callback({ id: connectionId, socketId: socket.id, serverId: serverId });
       } catch (error: unknown) {
-        // Todo[myst]: error soll ein string sein?!
-
-        logger.error(`SRV: ${real_ip} mud-connect catch`, {
+        logger.error(`[Socket-Manager] [Client] ERROR on 'mud-connect'`, {
           socketId: socket.id,
-          error: error as string,
+          error,
         });
 
         // Todo[myst]Aber hier ist es ein Buffer?!
@@ -493,13 +492,19 @@ export const setupSocketIO = (
       }
     });
 
+    logger.info(`[Socket-Manager] [Client] emit message 'connected'`, {
+      socketId: socket.id,
+      realIp: real_ip,
+      serverId,
+    });
+
     socket.emit(
       'connected',
       socket.id,
       real_ip,
       serverId,
-      function (action: string, oMudOb: string) {
-        logger.info(`SRV: ${real_ip} S02-connected`, {
+      (action: string, oMudOb: string) => {
+        logger.info(`[Socket-Manager] [Client] responed to 'connected'`, {
           action,
           oMudOb,
         });
@@ -509,3 +514,33 @@ export const setupSocketIO = (
 
   return io;
 };
+
+function createConnection(environment: Environment) {
+  let socket;
+
+  if (environment.tls !== undefined) {
+    socket = tls.connect({
+      host: environment.host,
+      port: environment.port,
+      rejectUnauthorized: true, //Todo[myst]: was mudcfg.rejectUnauthorized but true for unitopia,
+    });
+
+    logger.info(`[Socket-Manager] created https connection for telnet`, {
+      host: environment.host,
+      port: environment.port,
+      rejectUnauthorized: true,
+    });
+  } else {
+    socket = net.createConnection({
+      host: environment.host,
+      port: environment.port,
+    });
+
+    logger.info(`[Socket-Manager] created http connection for telnet`, {
+      host: environment.host,
+      port: environment.port,
+    });
+  }
+
+  return socket;
+}

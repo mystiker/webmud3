@@ -1,9 +1,11 @@
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MainMenuComponent } from './main-menu/main-menu.component';
+import { NgModule } from '@angular/core';
+import { PrimeModule } from '@mudlet3/frontend/shared';
+import { MudmenuComponent } from './mud-menu/mud-menu.component';
 
 @NgModule({
-  declarations: [MainMenuComponent],
-  imports: [CommonModule],
+  declarations: [MudmenuComponent],
+  imports: [CommonModule, PrimeModule],
+  exports: [MudmenuComponent],
 })
 export class MenuModule {}

@@ -1,2 +1,2 @@
+export { IoMud } from './io-mud';
 export { SocketsService } from './sockets.service';
-export { IoMud } from './sockets-config';
