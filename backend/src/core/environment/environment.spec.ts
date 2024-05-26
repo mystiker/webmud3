@@ -25,9 +25,9 @@ describe('Environment', () => {
   };
 
   it('should create an instance of Environment', async () => {
-    process.env.HOST = 'localhost';
+    process.env.TELNET_HOST = 'localhost';
 
-    process.env.PORT = '3000';
+    process.env.TELNET_PORT = '3000';
 
     process.env.CHARSET = 'utf8';
 
@@ -39,25 +39,25 @@ describe('Environment', () => {
   });
 
   it('should initialize environment variables correctly', async () => {
-    process.env.HOST = 'localhost';
+    process.env.TELNET_HOST = 'localhost';
 
-    process.env.PORT = '3000';
+    process.env.TELNET_PORT = '3000';
 
     process.env.CHARSET = 'utf8';
 
     const env = await getFreshEnvironmentInstance();
 
-    expect(env.host).toBe('localhost');
+    expect(env.telnetHost).toBe('localhost');
 
-    expect(env.port).toBe(3000);
+    expect(env.telnetPort).toBe(3000);
 
     expect(env.charset).toBe('utf8');
   });
 
   it('should handle optional TLS configuration', async () => {
-    process.env.HOST = 'localhost';
+    process.env.TELNET_HOST = 'localhost';
 
-    process.env.PORT = '3000';
+    process.env.TELNET_PORT = '3000';
 
     process.env.CHARSET = 'utf8';
 
@@ -74,9 +74,9 @@ describe('Environment', () => {
   });
 
   it('should handle missing TLS configuration gracefully', async () => {
-    process.env.HOST = 'localhost';
+    process.env.TELNET_HOST = 'localhost';
 
-    process.env.PORT = '3000';
+    process.env.TELNET_PORT = '3000';
 
     process.env.CHARSET = 'utf8';
 
@@ -86,9 +86,9 @@ describe('Environment', () => {
   });
 
   it('should use default charset if not set', async () => {
-    process.env.HOST = 'localhost';
+    process.env.TELNET_HOST = 'localhost';
 
-    process.env.PORT = '3000';
+    process.env.TELNET_PORT = '3000';
 
     const env = await getFreshEnvironmentInstance();
 
@@ -96,9 +96,9 @@ describe('Environment', () => {
   });
 
   it('should set projectRoot correctly', async () => {
-    process.env.HOST = 'localhost';
+    process.env.TELNET_HOST = 'localhost';
 
-    process.env.PORT = '3000';
+    process.env.TELNET_PORT = '3000';
 
     process.env.CHARSET = 'utf8';
 

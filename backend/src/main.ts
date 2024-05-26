@@ -43,6 +43,8 @@ const mudConfig = loadConfig(
 
 logger.info('[Main] Mud Config loaded', { mudConfig });
 
+const port = process.env.PORT || 3000;
+
 const app = express();
 
 const httpServer = createHttpServer(app, environment);
@@ -76,8 +78,8 @@ setupSocketIO(httpServer, secretConfig, mudConfig, UNIQUE_SERVER_ID);
 //   console.log('Cleanup ends.');
 // }
 
-httpServer.listen(5000, () => {
-  logger.info('[Main] Server started on port 5000', {
+httpServer.listen(port, () => {
+  logger.info(`[Main] Server started on port ${port}`, {
     UNIQUE_SERVER_ID,
   });
 });

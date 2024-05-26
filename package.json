@@ -14,7 +14,7 @@
     "build:backend": "npm run build --workspace backend",
     "integrate-client": "cpx frontend/dist/frontend/**/* backend/dist/wwwroot",
     "postbuild": "npm run integrate-client",
-    "start": "npm run build && npm run serve --workspace backend",
+    "start": "npm run build --workspaces && npm run start --workspace backend",
     "test": "npm run test --workspaces",
     "lint": "npm run lint --workspaces"
   },
