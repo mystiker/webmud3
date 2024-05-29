@@ -12,12 +12,12 @@
     "build": "npm run build --workspaces",
     "integrate-client": "ncp frontend/dist/frontend backend/dist/wwwroot",
     "postbuild": "npm run integrate-client",
-    "start": "npm run build && npm run serve:env --workspace backend",
+    "start": "npm run build && npm run serve --workspace backend",
     "test": "npm run test --workspaces",
-    "lint": "npm run lint --workspaces"
+    "lint": "npm run lint --workspaces",
+    "build:experimantal:prod": "npm run build --workspace frontend -- --configuration=production && npm run build --workspace backend"
   },
   "devDependencies": {
-    "cpx": "~1.5.0",
-    "ncp": "^2.0.0"
+    "ncp": "~2.0.0"
   }
 }

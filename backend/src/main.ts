@@ -43,7 +43,7 @@ const mudConfig = loadConfig(
 
 logger.info('[Main] Mud Config loaded', { mudConfig });
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 5000;
 
 const app = express();
 
