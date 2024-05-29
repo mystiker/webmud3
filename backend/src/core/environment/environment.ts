@@ -3,6 +3,8 @@ import { IEnvironment } from './types/environment.js';
 import { getEnvironmentVariable } from './utils/get-environment-variable.js';
 import { resolveModulePath } from './utils/resolve-modulepath.js';
 
+import { config as configureEnvironment } from 'dotenv';
+
 /**
  * Environment class to handle environment variables and application settings.
  * Reads the environment variables once oppon initialisation and provides them as properties.
@@ -24,6 +26,8 @@ export class Environment implements IEnvironment {
    * Initializes the environment variables.
    */
   private constructor() {
+    configureEnvironment();
+
     const tls_cert = getEnvironmentVariable('TLS_CERT', false);
 
     const tls_key = getEnvironmentVariable('TLS_KEY', false);

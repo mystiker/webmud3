@@ -20,10 +20,9 @@
     "format": "prettier --write \"src/**/*.ts\"",
     "lint": "eslint ./src --ext .ts",
     "lint:fix": "eslint ./src --ext .ts --fix",
-    "postbuild": "cpx package.json dist",
-    "start": "npm run build && node --env-file .env dist/main.js",
+    "postbuild": "cpx package.json dist && cpx package-lock.json dist",
+    "start": "npm run build && node dist/main.js",
     "serve": "node dist/main.js",
-    "serve:env": "node --env-file .env dist/main.js",
     "test": "jest --config=jest.config.cjs"
   },
   "dependencies": {
@@ -31,6 +30,7 @@
     "body-parser": "~1.20.2",
     "cookie-session": "~2.1.0",
     "cors": "~2.8.5",
+    "dotenv": "^16.4.5",
     "express": "~4.19.2",
     "socket.io": "~4.7.5",
     "socket.io-client": "~4.7.5",
@@ -57,9 +57,9 @@
     "rimraf": "~5.0.7",
     "source-map-support": "~0.5.21",
     "ts-jest": "~29.1.2",
+    "ts-jest-mock-import-meta": "^1.2.0",
     "typescript": "~5.4.5",
-    "winston": "~3.13.0",
-    "ts-jest-mock-import-meta": "^1.2.0"
+    "winston": "~3.13.0"
   },
   "type": "module",
   "author": "Myonara",
