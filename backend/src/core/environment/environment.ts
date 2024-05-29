@@ -10,8 +10,8 @@ import { resolveModulePath } from './utils/resolve-modulepath.js';
 export class Environment implements IEnvironment {
   private static instance: Environment;
 
-  public readonly host: string;
-  public readonly port: number;
+  public readonly telnetHost: string;
+  public readonly telnetPort: number;
   public readonly tls?: {
     cert: string;
     key: string;
@@ -35,9 +35,9 @@ export class Environment implements IEnvironment {
       };
     }
 
-    this.host = String(getEnvironmentVariable('HOST'));
+    this.telnetHost = String(getEnvironmentVariable('TELNET_HOST'));
 
-    this.port = Number(getEnvironmentVariable('PORT'));
+    this.telnetPort = Number(getEnvironmentVariable('TELNET_PORT'));
 
     this.charset = String(getEnvironmentVariable('CHARSET', false, 'utf8'));
 

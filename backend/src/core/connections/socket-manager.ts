@@ -424,8 +424,8 @@ export const setupSocketIO = (
         );
 
         logger.info(`[Socket-Manager] created telnet connection`, {
-          host: environment.host,
-          port: environment.port,
+          host: environment.telnetHost,
+          port: environment.telnetPort,
           gmcpSupport: unitopiaGmcpSupport,
           charset: environment.charset,
           debugflag: true,
@@ -520,25 +520,25 @@ function createConnection(environment: Environment) {
 
   if (environment.tls !== undefined) {
     socket = tls.connect({
-      host: environment.host,
-      port: environment.port,
+      host: environment.telnetHost,
+      port: environment.telnetPort,
       rejectUnauthorized: true, //Todo[myst]: was mudcfg.rejectUnauthorized but true for unitopia,
     });
 
     logger.info(`[Socket-Manager] created https connection for telnet`, {
-      host: environment.host,
-      port: environment.port,
+      host: environment.telnetHost,
+      port: environment.telnetPort,
       rejectUnauthorized: true,
     });
   } else {
     socket = net.createConnection({
-      host: environment.host,
-      port: environment.port,
+      host: environment.telnetHost,
+      port: environment.telnetPort,
     });
 
     logger.info(`[Socket-Manager] created http connection for telnet`, {
-      host: environment.host,
-      port: environment.port,
+      host: environment.telnetHost,
+      port: environment.telnetPort,
     });
   }
 

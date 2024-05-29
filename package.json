@@ -9,16 +9,15 @@
     "backend"
   ],
   "scripts": {
-    "build": "npm run build:frontend && npm run build:backend",
-    "build:frontend": "npm run build --workspace frontend",
-    "build:backend": "npm run build --workspace backend",
-    "integrate-client": "cpx frontend/dist/frontend/**/* backend/dist/wwwroot",
+    "build": "npm run build --workspaces",
+    "integrate-client": "ncp frontend/dist/frontend backend/dist/wwwroot",
     "postbuild": "npm run integrate-client",
-    "start": "npm run build && npm run serve --workspace backend",
+    "start": "npm run build && npm run serve:env --workspace backend",
     "test": "npm run test --workspaces",
     "lint": "npm run lint --workspaces"
   },
   "devDependencies": {
-    "cpx": "~1.5.0"
+    "cpx": "~1.5.0",
+    "ncp": "^2.0.0"
   }
 }

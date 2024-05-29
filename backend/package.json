@@ -22,7 +22,8 @@
     "lint:fix": "eslint ./src --ext .ts --fix",
     "postbuild": "cpx package.json dist",
     "start": "npm run build && node --env-file .env dist/main.js",
-    "serve": "node --env-file .env dist/main.js",
+    "serve": "node dist/main.js",
+    "serve:env": "node --env-file .env dist/main.js",
     "test": "jest --config=jest.config.cjs"
   },
   "dependencies": {
