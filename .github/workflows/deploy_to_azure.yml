@@ -1,12 +1,10 @@
 name: Build and deploy to azure
 
-on: [push]
-
-# on:
-#   push:
-#     branches:
-#       - master
-#   workflow_dispatch:
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
 
 env:
   AZURE_WEBAPP_NAME: unitopia-client # set this to your application's name
