@@ -3,6 +3,7 @@ import { Title } from '@angular/platform-browser';
 import { UUID } from 'angular2-uuid';
 import { CookieService } from 'ngx-cookie-service';
 import { MessageService } from 'primeng/api';
+
 import { WINDOW } from './WINDOW_PROVIDERS';
 import { WindowConfig } from './window-config';
 

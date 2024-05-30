@@ -1,6 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { WindowConfig } from '@mudlet3/frontend/shared';
-
 import * as ace from 'ace-builds';
 
 @Component({

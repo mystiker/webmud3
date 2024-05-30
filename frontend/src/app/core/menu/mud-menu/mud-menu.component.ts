@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Output } from '@angular/core';
 import { MenuItemCommandEvent } from 'primeng/api';
 import { Observable } from 'rxjs';
+
 import { MenuService } from '../menu.service';
 import { MenuState } from '../types/menu-state';
 

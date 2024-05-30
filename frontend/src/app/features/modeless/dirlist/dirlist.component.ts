@@ -48,11 +48,11 @@ export class DirlistComponent implements OnInit {
     console.debug('DirlistComponent-updateDirList', this.path);
   }
 
-  fileOpen(file: string, event = undefined) {
+  fileOpen(file: string) {
     this.config?.outGoingEvents.next('FileOpen:' + this.path + ':' + file);
   }
 
-  changeDir(dir: string, event = undefined) {
+  changeDir(dir: string) {
     this.config?.outGoingEvents.next('ChangeDir:' + this.path + ':' + dir);
   }
 

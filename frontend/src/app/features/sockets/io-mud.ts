@@ -1,8 +1,8 @@
+import { MudConfig } from '@mudlet3/frontend/features/mudconfig';
 import { FileInfo, MudSignals } from '@mudlet3/frontend/shared';
 import { Observer } from 'rxjs';
-import { OneKeypadData } from '../../shared/keypad-data';
 
-import { MudConfig } from '@mudlet3/frontend/features/mudconfig';
+import { OneKeypadData } from '../../shared/keypad-data';
 import { IoManager } from './io-manager';
 import { IoPlatform } from './io-platform';
 import { IoSocket } from './io-socket';

@@ -1,10 +1,11 @@
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { InventoryComponent } from './inventory/inventory.component';
 import { PrimeModule } from '@mudlet3/frontend/shared';
+
+import { InventoryComponent } from './inventory/inventory.component';
 
 @NgModule({
   declarations: [InventoryComponent],
@@ -17,4 +18,5 @@ import { PrimeModule } from '@mudlet3/frontend/shared';
   ],
   exports: [InventoryComponent],
 })
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class WidgetsModule {}

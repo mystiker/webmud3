@@ -1,6 +1,7 @@
 import { EventEmitter, Injectable, Output } from '@angular/core';
 import { MenuItem, MenuItemCommandEvent } from 'primeng/api';
 import { BehaviorSubject, Observable } from 'rxjs';
+
 import { MudService } from '../../core/mud/mud.service';
 import { MenuState, MenuType } from './types/menu-state';
 
@@ -41,7 +42,7 @@ export class MenuService {
       id: 'MUD:CONNECT',
       label: 'Verbinden',
       icon: 'pi pi-sign-in',
-      command: (event: MenuItemCommandEvent) => this.connectClicked.emit(event),
+      command: (event: MenuItemCommandEvent) => { this.connectClicked.emit(event); },
     };
 
     const disconnectItem: MenuItem = {
@@ -49,7 +50,7 @@ export class MenuService {
       label: 'Trennen',
       icon: 'pi pi-sign-out',
       command: (event: MenuItemCommandEvent) =>
-        this.disconnectClicked.emit(event),
+        { this.disconnectClicked.emit(event); },
     };
 
     const items: MenuItem[] = [
