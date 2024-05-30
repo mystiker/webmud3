@@ -5,8 +5,8 @@ import {
   KeypadData,
   WindowConfig,
 } from '@mudlet3/frontend/shared';
-
 import { Observable } from 'rxjs';
+
 import { MudService } from '../mud.service';
 import { IMudMessage } from '../types/mud-message';
 import { tableOutput } from '../utils/table-output';

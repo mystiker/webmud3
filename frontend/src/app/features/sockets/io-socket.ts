@@ -2,6 +2,7 @@ import { MudConfig } from '@mudlet3/frontend/features/mudconfig';
 import { MudListItem } from '@mudlet3/frontend/shared';
 import { Observable } from 'rxjs';
 import { Socket } from 'socket.io-client';
+
 import { IoManager } from './io-manager';
 import { IoMud } from './io-mud';
 import { IoPlatform } from './io-platform';
@@ -194,26 +195,28 @@ export class IoSocket {
 
   public reportId(type: string, id: string, ob: any) {
     if (
-      ob == null &&
-      type == 'IoMud' &&
+      ob === null &&
+      type === 'IoMud' &&
       Object.prototype.hasOwnProperty.call(this.MudIndex, id)
     ) {
       delete this.MudIndex[id];
       // console.log('Count IoMuds:', this.MudIndex.length, id);
-    } else if (ob != null && type == 'IoMud') {
+    } else if (ob !== null && type === 'IoMud') {
       this.MudIndex[id] = ob;
     }
 
     this.uplink?.reportId(type, id, ob);
   }
 
-  public getIdObject(
-    type: string,
-  ): IoSocket | IoManager | IoPlatform | undefined {
-    if (type == 'IoSocket') {
+  public getIdObject(type: string): this | IoManager | IoPlatform | undefined {
+    if (type === 'IoSocket') {
       return this;
     }
-    return this.uplink?.getIdObject(type);
+    return this.uplink?.getIdObject(type) as unknown as
+      | this
+      | IoManager
+      | IoPlatform
+      | undefined;
   }
 
   private compareSocketId(id: string): boolean {

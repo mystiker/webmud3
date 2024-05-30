@@ -1,5 +1,6 @@
 import { IAnsiData } from '@mudlet3/frontend/features/ansi';
 import { WithRequired } from '@mudlet3/frontend/shared';
+
 import { processAnsiSequences } from './process-ansi-sequences';
 
 function isAnsiDataWithText(

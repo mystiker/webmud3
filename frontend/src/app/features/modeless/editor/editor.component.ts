@@ -10,18 +10,17 @@ import {
   ViewChild,
 } from '@angular/core';
 import {
-  ConfirmationService,
-  MenuItem,
-  MenuItemCommandEvent,
-} from 'primeng/api';
-
-import {
   FileInfo,
   WindowConfig,
   WindowService,
 } from '@mudlet3/frontend/shared';
 import * as ace from 'ace-builds';
 import { CookieService } from 'ngx-cookie-service';
+import {
+  ConfirmationService,
+  MenuItem,
+  MenuItemCommandEvent,
+} from 'primeng/api';
 
 const ithemes: string[] = [
   'ambiance',

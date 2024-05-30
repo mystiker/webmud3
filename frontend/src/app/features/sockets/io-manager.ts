@@ -1,4 +1,5 @@
 import { Manager } from 'socket.io-client';
+
 import { IoPlatform } from './io-platform';
 import { IoSocket } from './io-socket';
 
@@ -66,7 +67,7 @@ export class IoManager {
       return;
     }
     Object.values(other.socketList).forEach((sock: IoSocket) => {
-      if (typeof sock !== 'undefined' && sock != null) {
+      if (typeof sock !== 'undefined') {
         sock.send2AllMuds(msg, action);
       } else {
         console.trace('send2AllMuds with empty sock', action, msg);
@@ -75,15 +76,15 @@ export class IoManager {
   }
 
   public reportId(type: string, id: string, ob: any) {
-    if (type == 'IoSocket') {
+    if (type === 'IoSocket') {
       this.socketList[id] = ob;
     }
     this.uplink.reportId(type, id, ob);
   }
 
-  public getIdObject(type: string): IoSocket | this | IoPlatform | IoManager {
-    if (type == 'IoManager') {
-      return this;
+  public getIdObject(type: string): IoSocket | IoManager | IoPlatform {
+    if (type === 'IoManager') {
+      return this as IoManager;
     }
     return this.uplink.getIdObject(type);
   }
@@ -92,7 +93,7 @@ export class IoManager {
     if (typeof this.serverID === 'undefined') {
       this.serverID = id;
       this.reportId('IoSocket', this.serverID, this);
-    } else if (this.serverID != id) {
+    } else if (this.serverID !== id) {
       console.warn('serverID-Change', this.serverID, id);
       this.reportId('IoManager', this.serverID, null);
       this.serverID = id;

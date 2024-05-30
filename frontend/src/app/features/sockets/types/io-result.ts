@@ -5,7 +5,7 @@ export interface IoResult {
   Id: string | null;
   MsgType: string | null;
   ErrorType: string | null;
-  Data: any;
+  Data: unknown;
   musi?: MudSignals;
   mudlist?: MudListItem[];
 }

@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@angular/core';
 import { UUID } from 'angular2-uuid';
 import { DeviceDetectorService, DeviceInfo } from 'ngx-device-detector';
+
 import { WINDOW } from './WINDOW_PROVIDERS';
 
 interface BrowserInfo {

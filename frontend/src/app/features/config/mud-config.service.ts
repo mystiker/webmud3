@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { IMudConfig } from './types/mud-config';
 
 import { DefaultWebmudConfig } from './models/default-webmud-config';
 import config from './models/mud_config.json';
+import { IMudConfig } from './types/mud-config';
 import { IWebmudConfig } from './types/webmud-config';
 
 @Injectable({

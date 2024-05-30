@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+
 import { GmcpConfig } from '../gmcp/gmcp-config';
 import { GmcpMenu } from '../gmcp/gmcp-menu';
 

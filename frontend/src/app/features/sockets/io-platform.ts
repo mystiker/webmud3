@@ -1,22 +1,22 @@
 import { GmcpService } from '@mudlet3/frontend/features/gmcp';
+
 import { ServerConfigService } from '../../shared/server-config.service';
 import { IoManager } from './io-manager';
 import { IoMud } from './io-mud';
 import { IoSocket } from './io-socket';
 
 export class IoPlatform {
-  private idLookup: Record<string, IoMud | IoSocket | IoManager | IoPlatform> =
-    {};
+  private idLookup: Record<string, IoMud | IoSocket | IoManager | this> = {};
   private managerList: Record<string, IoManager> = {};
   constructor(
     public srvcfg: ServerConfigService,
     public gmcpsrv: GmcpService,
   ) {}
   public reportId(type: string, id: string, ob: any) {
-    if (type == 'IoManager') {
+    if (type === 'IoManager') {
       this.managerList[id] = ob;
     }
-    if (ob == null) {
+    if (ob === null) {
       delete this.idLookup[type + ':' + id];
     }
     this.idLookup[type + ':' + id] = ob;
