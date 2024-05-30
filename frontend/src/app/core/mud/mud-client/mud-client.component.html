@@ -3,7 +3,8 @@
   (disconnectClicked)="this.onDisconnectClicked()"
 ></app-mud-menu>
 <app-mud-output
-  [lines]="this.output$ | async"
+  *ngIf="this.output$ | async as lines"
+  [lines]="lines"
   [foregroundColor]="this.v.stdfg"
   [backgroundColor]="this.v.stdbg"
 ></app-mud-output>
