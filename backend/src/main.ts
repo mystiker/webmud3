@@ -1,17 +1,15 @@
+import express from 'express';
+import sourceMaps from 'source-map-support';
 import { v4 as uuidv4 } from 'uuid';
 
-import express from 'express';
-
-// loads module and registers app specific cleanup callback...
-// const cleanup = require('./cleanup').Cleanup(myCleanup);
-import { Environment } from './core/environment/environment.js';
-
-import sourceMaps from 'source-map-support';
 import { loadConfig } from './core/config/load-config.js';
 import { DefaultMudConfig } from './core/config/models/default-mud-config.js';
 import { DefaultSecretConfig } from './core/config/models/default-secret-config.js';
 import { createHttpServer } from './core/connections/http-server.js';
-import { setupSocketIO } from './core/connections/socket-manager.js';
+import { SocketManager } from './core/connections/socket-manager.js';
+// loads module and registers app specific cleanup callback...
+// const cleanup = require('./cleanup').Cleanup(myCleanup);
+import { Environment } from './core/environment/environment.js';
 import { useBodyParser } from './core/middleware/body-parser.js';
 import { useCookieSession } from './core/middleware/cookie-session.js';
 import { useStaticFiles } from './core/middleware/static-files.js';
@@ -59,7 +57,7 @@ useStaticFiles(app, 'wwwroot');
 
 useRoutes(app, mudConfig);
 
-setupSocketIO(httpServer, secretConfig, mudConfig, UNIQUE_SERVER_ID);
+new SocketManager(httpServer, secretConfig.mySocketPath);
 
 // function myCleanup() {
 //   console.log('Cleanup starts.');
