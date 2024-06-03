@@ -1,3 +1,4 @@
+// Currently not used?!
 export const TelnetCommands = {
   IAC: '/* interpret as command: */',
   DONT: '/* you are not to use option */',

@@ -1,13 +1,14 @@
 import { Express, Request, Response } from 'express';
 import fs from 'fs';
 import path from 'path';
-import authRoutes from '../../features/auth/auth-routes.js';
+
+// import authRoutes from '../../features/auth/auth-routes.js';
 import { logger } from '../../features/logger/winston-logger.js';
 import { MudConfig } from '../../shared/types/mud_config.js';
 import { Environment } from '../environment/environment.js';
 
 export const useRoutes = (app: Express, mudConfig: MudConfig) => {
-  app.use('/api/auth', authRoutes);
+  // app.use('/api/auth', authRoutes);
 
   app.get('/socket.io-client/dist/*', (req: Request, res: Response) => {
     const mypath = req.path.substr(0);

@@ -1,3 +1,5 @@
+// Todo: Schauen, ob wir das entfernt bekommen. Der Client connected sich nicht zu Muds. Er connected sich ausschließlich zum Server.
+// Todo: Löschen
 export interface MudListItem {
   key: string;
   name: string;

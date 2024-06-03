@@ -1,9 +1,7 @@
+import { Express } from 'express';
 import fs from 'fs';
-
 import { Server as HttpServer } from 'http';
 import { Server as HttpsServer } from 'https';
-
-import { Express } from 'express';
 
 import { logger } from '../../features/logger/winston-logger.js';
 import { IEnvironment } from '../environment/types/environment.js';

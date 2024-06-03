@@ -1,6 +1,5 @@
-import { Express } from 'express';
-
 import session from 'cookie-session';
+import { Express } from 'express';
 
 export const useCookieSession = (app: Express, secret: string) => {
   app.use(

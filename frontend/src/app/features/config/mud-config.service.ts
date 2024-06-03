@@ -13,8 +13,6 @@ export class MudConfigService {
 
   public data: IMudConfig = {};
 
-  constructor() {}
-
   load(): Promise<IMudConfig> {
     return new Promise<IMudConfig>((resolve) => {
       this.data = config;

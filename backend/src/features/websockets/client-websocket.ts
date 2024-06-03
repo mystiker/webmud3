@@ -8,6 +8,7 @@ import net from 'net';
 // Antwort: [ Request, ID, Fehlertext bzw. Rueckgabewert ]
 // Fuer die Authentifizierung haben wir "mud", "password"
 
+// Todo[myst]: This class is unused at the moment.
 export class ClientWebSocket extends EventEmitter {
   private readonly client: net.Socket;
   private buffer: string = '';

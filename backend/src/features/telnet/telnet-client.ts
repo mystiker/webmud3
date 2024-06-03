@@ -1,252 +1,198 @@
+import EventEmitter from 'events';
 import { Socket } from 'net';
 import { TelnetSocket, TelnetSocketOptions } from 'telnet-stream';
-import { sizeToBuffer } from '../../shared/utils/size-to-buffer.js';
+
 import { logger } from '../logger/winston-logger.js';
-import { TelnetCommands } from './models/telnet-commands.js';
 import { TelnetOptions } from './models/telnet-options.js';
-import { MudOptions } from './types/mud-options.js';
-import { TelnetState } from './types/telnet-state.js';
+import { TelnetNegotiations } from './types/telnet-negotiations.js';
+
+type TelnetClientEvents = {
+  data: [string | Buffer];
+};
 
 /**
  * Represents a client for handling telnet communication tailored for MUD games.
  */
-export class TelnetClient extends TelnetSocket {
-  private state: TelnetState = {};
+export class TelnetClient extends EventEmitter<TelnetClientEvents> {
+  private negotiations: TelnetNegotiations = {};
 
-  private readonly telnetConfig = {
-    ...TelnetOptions,
-    opt2com: TelnetCommands,
-  };
+  private readonly telnetSocket: TelnetSocket;
 
-  private debugflag: boolean;
+  private connected: boolean = false;
 
-  private readonly mudOptions: MudOptions;
+  public get isConnected(): boolean {
+    return this.connected;
+  }
+
+  public get getNegotiations(): TelnetNegotiations {
+    return { ...this.negotiations };
+  }
 
   /**
    * Constructs a TelnetClient instance.
    * @param telnetConnection - The socket connection to the MUD server.
    * @param telnetSocketOptions - Options for the Telnet socket.
    * @param clientConnection - The client socket connection.
-   * @param mudOptions - Optional settings for the MUD client.
    */
   constructor(
     telnetConnection: Socket,
     telnetSocketOptions: TelnetSocketOptions,
-    // Todo[myst]: Remove this dependency
-    clientConnection: Socket,
-    // Todo[myst]: Remove this dependency
-    mudOptions: MudOptions,
   ) {
-    super(telnetConnection, telnetSocketOptions);
+    super();
 
-    // Todo[myst]: Remove this dependency
-    this.mudOptions = mudOptions;
+    this.telnetSocket = new TelnetSocket(telnetConnection, telnetSocketOptions);
 
-    this.debugflag = this.mudOptions?.debugflag || false;
+    this.telnetSocket.on('close', () => this.handleClose());
 
-    this.setupEventHandlers(clientConnection);
+    this.telnetSocket.on('command', () => this.handleCommand());
+
+    this.telnetSocket.on('do', (chunkData) => this.handleDo(chunkData));
+
+    this.telnetSocket.on('dont', (chunkData) => this.handleDont(chunkData));
+
+    this.telnetSocket.on('will', (chunkData) => this.handleWill(chunkData));
+
+    this.telnetSocket.on('wont', (chunkData) => this.handleWont(chunkData));
+
+    this.telnetSocket.on('sub', (optin, chunkData) =>
+      this.handleSub(optin, chunkData),
+    );
+
+    this.telnetSocket.on('error', (chunkData) => this.handleError(chunkData));
+
+    this.telnetSocket.on('data', (chunkData: string | Buffer) => {
+      this.emit('data', chunkData);
+    });
 
     logger.info(`[Telnet-Client] Created`, {
-      ...telnetSocketOptions,
-      ...mudOptions,
+      telnetSocketOptions,
     });
+
+    this.connected = true;
   }
 
-  /**
-   * Handles the telnet option based on the action type.
-   * @param chunkData - The data chunk received from the telnet stream.
-   * @param clientConnection - The socket connection to the client.
-   * @param action - The telnet action to be handled.
-   * @param additionalLogic - Additional logic to be executed for certain telnet options.
-   */
-  private handleTelnetOption(
+  public sendMessage(data: string): void {
+    this.telnetSocket.write(data);
+  }
+
+  public disconnect(): void {
+    this.telnetSocket.end();
+
+    this.connected = false;
+  }
+
+  // Todo[myst]: Establish connection here and do not accept it from outside via ctor
+  // public connect(): void {
+  //   this.telnetSocket.connect();
+  // }
+
+  private updateNegotiations(
     chunkData: number,
-    clientConnection: Socket,
-    action: 'will' | 'do' | 'wont' | 'dont' | 'sub',
-    additionalLogic?: (opt: string, socket_io: Socket) => void,
-  ): void {
-    const opt = this.telnetConfig.num2opt[chunkData.toString()];
+    action: 'will' | 'do' | 'wont' | 'dont',
+  ): string {
+    const opt = TelnetOptions.num2opt[chunkData.toString()];
 
-    // Logik zur Debug-Ausgabe
-    if (this.debugflag) {
-      const logType = action; // 'do', 'will', etc.
-
-      logger.info(`[Telnet-Client] [Client] Emit 'mud.debug'`, {
-        id: this.mudOptions?.id,
-        type: logType,
-        data: opt,
-      });
-
-      clientConnection.emit('mud.debug', {
-        id: this.mudOptions?.id,
-        type: logType,
-        data: opt,
-      });
-    }
-
-    // Standardaktionen für den Zustand setzen
     const stateAction = action === 'do' || action === 'will' ? 'do' : 'dont';
 
-    this.state[opt] = { server: stateAction, client: 'wont' };
+    this.negotiations[opt] = { server: stateAction, client: 'wont' };
 
-    // Ausführen zusätzlicher Logik, falls vorhanden
-    if (additionalLogic) {
-      additionalLogic(opt, clientConnection);
-    }
+    return opt;
   }
 
-  /**
-   * Sets up event handlers for the socket.
-   * @param clientConnection - The socket connection to the client.
-   */
-  private setupEventHandlers(clientConnection: Socket): void {
-    this.on('close', () => this.handleClose(clientConnection));
-
-    this.on('command', (chunkData) =>
-      this.handleCommand(chunkData, clientConnection),
-    );
-
-    this.on('do', (chunkData) => this.handleDo(chunkData, clientConnection));
-
-    this.on('dont', (chunkData) =>
-      this.handleDont(chunkData, clientConnection),
-    );
-
-    this.on('will', (chunkData) =>
-      this.handleWill(chunkData, clientConnection),
-    );
-
-    this.on('wont', (chunkData) =>
-      this.handleWont(chunkData, clientConnection),
-    );
-
-    this.on('sub', (optin, chunkData) =>
-      this.handleSub(optin, chunkData, clientConnection),
-    );
-
-    this.on('error', (chunkData) =>
-      this.handleError(chunkData, clientConnection),
-    );
-  }
-
-  private handleClose(socket_io: Socket): void {
+  private handleClose(): void {
     logger.info(`[Telnet-Client] [Telnet] Received message 'close'`);
 
-    if (this.debugflag) {
-      socket_io.emit('mud.debug', {
-        id: this.mudOptions?.id,
-        type: 'close',
-        data: '',
-      });
-    }
+    this.connected = false;
   }
 
-  private handleCommand(chunkData: number, socket_io: Socket): void {
+  private handleCommand(): void {
     logger.info(`[Telnet-Client] [Telnet] Received message 'command'`);
+  }
 
-    const cmd = this.telnetConfig.num2opt[chunkData.toString()];
+  private handleDo(chunkData: number): void {
+    logger.verbose(`[Telnet-Client] [Telnet] Received message 'do'`);
 
-    if (this.debugflag) {
-      socket_io.emit('mud.debug', {
-        id: this.mudOptions?.id,
-        type: 'command',
-        data: cmd,
-      });
+    const opt = this.updateNegotiations(chunkData, 'do');
+
+    if (opt === 'TELOPT_TM') {
+      // Timing Mark
+      this.telnetSocket.writeWill(chunkData);
+    } else if (opt === 'TELOPT_NAWS') {
+      // Window size
+      this.negotiations[opt] = { server: 'do', client: 'will' };
+
+      this.telnetSocket.writeWill(chunkData);
+
+      // Spezielle Logik für NAWS
+      // socket_io.emit(
+      //   'mud-get-naws',
+      //   this.mudOptions?.id,
+      //   (sizeOb: { width: number; height: number }) => {
+      //     const buf = sizeToBuffer(sizeOb.width, sizeOb.height);
+      //     this.writeSub(chunkData, buf);
+      //   },
+      // );
+    } else {
+      this.telnetSocket.writeWont(chunkData);
     }
   }
 
-  private handleDo(chunkData: number, socket_io: Socket): void {
-    logger.info(`[Telnet-Client] [Telnet] Received message 'do'`);
+  private handleDont(chunkData: number): void {
+    logger.verbose(`[Telnet-Client] [Telnet] Received message 'dont'`);
 
-    this.handleTelnetOption(chunkData, socket_io, 'do', (opt, socket_io) => {
-      if (opt === 'TELOPT_TM') {
-        // Timing Mark
-        this.writeWill(chunkData);
-      } else if (opt === 'TELOPT_NAWS') {
-        // Window size
-        this.state[opt] = { server: 'do', client: 'will' };
-
-        this.writeWill(chunkData);
-
-        // Spezielle Logik für NAWS
-        socket_io.emit(
-          'mud-get-naws',
-          this.mudOptions?.id,
-          (sizeOb: { width: number; height: number }) => {
-            const buf = sizeToBuffer(sizeOb.width, sizeOb.height);
-
-            this.writeSub(chunkData, buf);
-          },
-        );
-      } else {
-        this.writeWont(chunkData);
-      }
-    });
+    this.updateNegotiations(chunkData, 'dont');
   }
 
-  private handleDont(chunkData: number, socket_io: Socket): void {
-    logger.info(`[Telnet-Client] [Telnet] Received message 'dont'`);
+  private handleWill(chunkData: number): void {
+    logger.verbose(`[Telnet-Client] [Telnet] Received message 'will'`);
 
-    this.handleTelnetOption(chunkData, socket_io, 'dont');
-  }
+    const opt = this.updateNegotiations(chunkData, 'will');
 
-  private handleWill(chunkData: number, socket_io: Socket): void {
-    logger.info(`[Telnet-Client] [Telnet] Received message 'will'`);
+    if (opt === 'TELOPT_ECHO') {
+      this.telnetSocket.writeDo(chunkData);
 
-    this.handleTelnetOption(chunkData, socket_io, 'will', (opt, socket_io) => {
-      if (opt === 'TELOPT_ECHO') {
-        this.writeDo(chunkData);
+      this.negotiations[opt].client = 'do';
 
-        this.state[opt].client = 'do';
+      // socket_io.emit('mud-signal', {
+      //   signal: 'NOECHO-START',
+      //   id: this.mudOptions?.id,
+      // });
+    } else if (opt === 'TELOPT_GMCP') {
+      this.telnetSocket.writeDo(chunkData);
 
-        socket_io.emit('mud-signal', {
-          signal: 'NOECHO-START',
-          id: this.mudOptions?.id,
-        });
-      } else if (
-        opt === 'TELOPT_GMCP' &&
-        typeof this.mudOptions?.gmcp_support !== 'undefined'
-      ) {
-        this.writeDo(chunkData);
+      this.negotiations[opt].client = 'do';
 
-        this.state[opt].client = 'do';
-
-        socket_io.emit(
-          'mud-gmcp-start',
-          this.mudOptions.id,
-          this.mudOptions.gmcp_support,
-        );
-      } else {
-        this.writeDont(chunkData);
-      }
-    });
-  }
-
-  private handleWont(chunkData: number, socket_io: Socket): void {
-    logger.info(`[Telnet-Client] [Telnet] Received message 'wont'`);
-
-    this.handleTelnetOption(chunkData, socket_io, 'wont', (opt, socket_io) => {
-      if (opt === 'TELOPT_ECHO') {
-        this.writeDont(chunkData);
-
-        socket_io.emit('mud-signal', {
-          signal: 'NOECHO-END',
-          id: this.mudOptions?.id,
-        });
-      } else {
-        this.writeDont(chunkData);
-      }
-    });
-  }
-
-  private handleSub(optin: number, chunkData: Buffer, socket_io: Socket): void {
-    logger.info(`[Telnet-Client] [Telnet] Received message 'sub'`);
-
-    const opt = this.telnetConfig.num2opt[optin.toString()];
-
-    if (this.debugflag) {
-      console.log('MUDSOCKET: sub:' + opt + '|' + new Uint8Array(chunkData));
+      // socket_io.emit(
+      //   'mud-gmcp-start',
+      //   this.mudOptions.id,
+      //   this.mudOptions.gmcp_support,
+      // );
+    } else {
+      this.telnetSocket.writeDont(chunkData);
     }
+  }
+
+  private handleWont(chunkData: number): void {
+    logger.verbose(`[Telnet-Client] [Telnet] Received message 'wont'`);
+
+    const opt = this.updateNegotiations(chunkData, 'wont');
+
+    if (opt === 'TELOPT_ECHO') {
+      this.telnetSocket.writeDont(chunkData);
+
+      // socket_io.emit('mud-signal', {
+      //   signal: 'NOECHO-END',
+      //   id: this.mudOptions?.id,
+      // });
+    } else {
+      this.telnetSocket.writeDont(chunkData);
+    }
+  }
+
+  private handleSub(optin: number, chunkData: Buffer): void {
+    logger.verbose(`[Telnet-Client] [Telnet] Received message 'sub'`);
+
+    const opt = TelnetOptions.num2opt[optin.toString()];
 
     // Keine weitere Standardlogik; direkt die spezifische Logik implementieren
     if (opt === 'TELOPT_TTYPE' && new Uint8Array(chunkData)[0] === 1) {
@@ -256,7 +202,7 @@ export class TelnetClient extends TelnetSocket {
 
       const sendBuf = Buffer.concat([nullBuf, buf], buf.length + 1);
 
-      this.writeSub(optin, sendBuf);
+      this.telnetSocket.writeSub(optin, sendBuf);
     } else if (opt === 'TELOPT_CHARSET' && new Uint8Array(chunkData)[0] === 1) {
       const nullBuf = Buffer.alloc(1, 2); // ACCEPTED
 
@@ -264,38 +210,30 @@ export class TelnetClient extends TelnetSocket {
 
       const sendBuf = Buffer.concat([nullBuf, buf], buf.length + 1);
 
-      this.writeSub(optin, sendBuf);
+      this.telnetSocket.writeSub(optin, sendBuf);
     } else if (opt === 'TELOPT_GMCP') {
       const tmpstr = chunkData.toString();
 
       const ix = tmpstr.indexOf(' ');
 
-      const jx = tmpstr.indexOf('.');
+      // const jx = tmpstr.indexOf('.');
 
       let jsdata = tmpstr.substr(ix + 1);
       if (ix < 0 || jsdata === '') jsdata = '{}';
 
-      socket_io.emit(
-        'mud-gmcp-incoming',
-        this.mudOptions?.id,
-        tmpstr.substr(0, jx),
-        tmpstr.substr(jx + 1, ix - jx),
-        JSON.parse(jsdata),
-      );
+      // socket_io.emit(
+      //   'mud-gmcp-incoming',
+      //   this.mudOptions?.id,
+      //   tmpstr.substr(0, jx),
+      //   tmpstr.substr(jx + 1, ix - jx),
+      //   JSON.parse(jsdata),
+      // );
     }
   }
 
-  private handleError(chunkData: Error, socket_io: Socket): void {
-    logger.info(`[Telnet-Client] [Telnet] Received message 'error'`);
-
-    console.log('mudSocket-error:' + chunkData);
-
-    if (this.debugflag) {
-      socket_io.emit('mud.debug', {
-        id: this.mudOptions?.id,
-        type: 'error',
-        data: chunkData,
-      });
-    }
+  private handleError(chunkData: Error): void {
+    logger.error(`[Telnet-Client] [Telnet] Received message 'error'`, {
+      chunkData,
+    });
   }
 }

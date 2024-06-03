@@ -23,7 +23,7 @@ export function processAnsiData(
   }
 
   const results = parts
-    .filter((part) => part !== '' && part !== undefined)
+    .filter((part) => part !== '')
     .map((part) => processAnsiSequences(part))
     .filter((part) => part !== null) as Partial<IAnsiData>[];
 
