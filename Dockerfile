@@ -1,46 +1,19 @@
-# based on node 10, alpine for least resource requirements.
-FROM node:20-alpine3.18 AS ng-build-stage
+FROM node:20.12.2
 
-# working dir in build stage
-WORKDIR /app
+# Setze das Arbeitsverzeichnis im Container
+WORKDIR /usr/src/app
 
-# fetching packages and...
-COPY UI17/package*.json /app/
+# Kompilat kopieren
+COPY backend/dist ./
 
-RUN echo https://alpine.mirror.wearetriple.com/v3.18/main > /etc/apk/repositories; \
-    echo https://alpine.mirror.wearetriple.com/v3.18/community >> /etc/apk/repositories
+# Installiere die Abhängigkeiten
+RUN npm install --no-package-lock --include=prod
 
-# ... install them together with angular-cli, prequisite git included.
-RUN apk update && apk upgrade && \
-    apk add --no-cache bash git openssh \
-    && npm install --location=global @angular/cli \
-    && npm install
+# Setze die Umgebungsvariable PORT
+ENV PORT=5000
 
-# fetch the angular sources and stuff
-COPY ./UI17/ /app/
+# Exponiere den Port, auf dem die Anwendung läuft
+EXPOSE 5000
 
-# ok may be we have to do more with the environment...
-ARG configuration=production
-
-# create the output of the angular app
-RUN ng build --configuration production --output-path=dist/out
-
-# produces the final node.js immage.
-FROM node:20-alpine3.18 AS webmud3
-
-# again a working dir...
-WORKDIR /app
-
-# fetch the backend source files...
-COPY ./backend/ /app/
-
-#fetch the angular distribution for serving from node.js
-COPY --from=ng-build-stage /app/dist/out/ /app/dist/
-
-# mkdir runs
-RUN mkdir /run/secrets \
-    && mkdir /run/db \
-    && npm install --only=prod 
-
-CMD node server.js
-
+# Starte die Anwendung
+CMD ["node", "main.js"]

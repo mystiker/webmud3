@@ -1,0 +1,14 @@
+<form [formGroup]="form">
+  <textarea
+    id="mud-input"
+    pFocusTrap
+    pInputTextarea
+    class="mud-input"
+    (keydown)="onKeyDown($event)"
+    (keyup)="onKeyUp($event)"
+    formControlName="inpmessage"
+    [autoResize]="true"
+    placeholder="Gib hier deine Befehle ein!"
+  >
+  </textarea>
+</form>

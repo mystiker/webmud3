@@ -1,0 +1,35 @@
+{
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "extends": ["plugin:@typescript-eslint/recommended"],
+  "parserOptions": { "ecmaVersion": 2020, "sourceType": "module" },
+  "plugins": ["@typescript-eslint", "simple-import-sort", "import"],
+  "rules": {
+    "simple-import-sort/imports": "warn",
+    "simple-import-sort/exports": "warn",
+    "import/extensions": [
+      "error",
+      "ignorePackages",
+      {
+        "js": "always",
+        "ts": "never"
+      }
+    ],
+    "padding-line-between-statements": [
+      "warn",
+      { "blankLine": "always", "prev": "expression", "next": "*" },
+      { "blankLine": "always", "prev": "const", "next": "*" },
+      { "blankLine": "always", "prev": "if", "next": "*" },
+      { "blankLine": "always", "prev": "block-like", "next": "*" }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["**/*.test.js", "**/*.test.ts", "**/*.spec.js", "**/*.spec.ts"],
+      "rules": {
+        // This is very important since tests do not use the same import extensions as the rest of the codebase
+        "import/extensions": "off"
+      }
+    }
+  ]
+}
