@@ -21,6 +21,7 @@ const metadataFormat = winston.format((info) => {
  * - silly
  **/
 const logger = winston.createLogger({
+  level: 'debug',
   levels: winston.config.npm.levels,
   format: winston.format.combine(
     winston.format.timestamp({
