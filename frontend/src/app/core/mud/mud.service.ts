@@ -12,31 +12,18 @@ import { mudProcessData } from './utils/mud-process-data';
 })
 export class MudService {
   private readonly outputLines = new BehaviorSubject<IMudMessage[]>([]);
-  private readonly connected$ = new BehaviorSubject<boolean>(false);
 
   public readonly outputLines$: Observable<IMudMessage[]> =
     this.outputLines.asObservable();
 
-  public readonly connectedStatus$: Observable<boolean> =
-    this.connected$.asObservable();
+  public readonly connectedToMud$: Observable<boolean>;
 
   constructor(
     private readonly socketsService: SocketsService,
     private readonly mudConfigService: MudConfigService,
   ) {
-    socketsService.mudConnectEvent.subscribe(() => {
-      console.info('Connected to MUD');
-      this.connected$.next(true);
-    });
-
-    socketsService.mudDisconnectEvent.subscribe((ioResult) => {
-      console.info('Disconnected from MUD');
-      this.connected$.next(false);
-      mudProcessData(ioResult.ErrorType ?? '');
-    });
-
-    socketsService.mudOutputEvent.subscribe((ioResult) => {
-      const ansiData = mudProcessData(ioResult.ErrorType ?? '');
+    socketsService.onMudOutput.subscribe(({ data }) => {
+      const ansiData = mudProcessData(data);
 
       const mudLines: IMudMessage[] = ansiData.map((ansi) => ({
         ...ansi,
@@ -45,6 +32,8 @@ export class MudService {
 
       this.addOutputLine(...mudLines);
     });
+
+    this.connectedToMud$ = this.socketsService.connectedToMud$;
   }
 
   public addOutputLine(...line: IMudMessage[]): void {
@@ -71,7 +60,6 @@ export class MudService {
   }
 
   public disconnect(): void {
-    this.socketsService.disconnect();
-    this.connected$.next(false);
+    this.socketsService.disconnectFromMud();
   }
 }

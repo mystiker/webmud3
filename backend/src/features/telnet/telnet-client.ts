@@ -73,8 +73,6 @@ export class TelnetClient extends EventEmitter<TelnetClientEvents> {
 
   public sendMessage(data: string): void {
     this.telnetSocket.write(data);
-
-    logger.info(`[Telnet-Client] [Telnet] TEST`, { test: this.negotiations });
   }
 
   public disconnect(): void {

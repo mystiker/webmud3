@@ -1,10 +1,14 @@
 import { EventEmitter, Injectable } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
 import { Manager, Socket } from 'socket.io-client';
 
 import { ServerConfigService } from '../../shared/server-config.service';
 import { ClientToServerEvents } from './types/client-to-server-events';
-import { IoResult } from './types/io-result';
 import { ServerToClientEvents } from './types/server-to-client-events';
+
+type MudOutputEventArgs = {
+  data: string;
+};
 
 @Injectable({
   providedIn: 'root',
@@ -12,10 +16,15 @@ import { ServerToClientEvents } from './types/server-to-client-events';
 export class SocketsService {
   private readonly manager: Manager;
   private readonly socket: Socket<ServerToClientEvents, ClientToServerEvents>;
+  private readonly connectedToServer = new BehaviorSubject<boolean>(false);
+  private readonly connectedToMud = new BehaviorSubject<boolean>(false);
 
-  public mudConnectEvent = new EventEmitter<IoResult>();
-  public mudDisconnectEvent = new EventEmitter<IoResult>();
-  public mudOutputEvent = new EventEmitter<IoResult>();
+  public onMudConnect = new EventEmitter();
+  public onMudDisconnect = new EventEmitter();
+  public onMudOutput = new EventEmitter<MudOutputEventArgs>();
+
+  public readonly connectedToServer$ = this.connectedToServer.asObservable();
+  public readonly connectedToMud$ = this.connectedToMud.asObservable();
 
   public constructor(serverConfigService: ServerConfigService) {
     const socketUrl = serverConfigService.getBackend();
@@ -81,8 +90,7 @@ export class SocketsService {
     this.socket.emit('mudConnect');
   }
 
-  // Todo: Wohl eher 'disconnectFromMud'
-  public disconnect() {
+  public disconnectFromMud() {
     console.log(`[Sockets] Socket Service 'disconnect`);
     throw new Error('Method not implemented.');
   }
@@ -98,7 +106,9 @@ export class SocketsService {
   }
 
   private handleMudConnect = () => {
-    this.mudConnectEvent.emit({
+    this.connectedToMud.next(true);
+
+    this.onMudConnect.emit({
       IdType: 'IoMud',
       Id: 'UNKNOWN',
       MsgType: 'mud-connect',
@@ -108,7 +118,9 @@ export class SocketsService {
   };
 
   private handleMudDisconnect = () => {
-    this.mudDisconnectEvent.emit({
+    this.connectedToMud.next(false);
+
+    this.onMudDisconnect.emit({
       IdType: 'IoMud',
       Id: 'REMOVE THIS PROPERTY',
       MsgType: 'mud-disconnect',
@@ -118,12 +130,8 @@ export class SocketsService {
   };
 
   private handleMudOutput = (output: string) => {
-    this.mudOutputEvent.emit({
-      IdType: 'IoMud',
-      Id: 'REMOVE THIS PROPERTY',
-      MsgType: 'mud-output',
-      ErrorType: output,
-      Data: this,
+    this.onMudOutput.emit({
+      data: output,
     });
   };
 
@@ -144,6 +152,8 @@ export class SocketsService {
   };
 
   private handleReconnectFailed = () => {
+    this.connectedToServer.next(false);
+
     console.error('[Sockets] Socket Service Reconnect Failed');
   };
 
@@ -152,10 +162,14 @@ export class SocketsService {
   };
 
   private handleConnect = () => {
+    this.connectedToServer.next(true);
+
     console.info('[Sockets] Socket Service Socket Connected');
   };
 
   private handleDisconnect = (reason: string) => {
+    this.connectedToServer.next(false);
+
     console.info('[Sockets] Socket Service Socket Disconnected:', reason);
   };
 }

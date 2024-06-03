@@ -43,14 +43,14 @@ export class ServerConfigService {
     const l_path = this.window.location.pathname;
 
     if (
-      l_origin == 'https://www.unitopia.de' &&
+      l_origin === 'https://www.unitopia.de' &&
       l_path.startsWith('/webmud3/')
     ) {
       return 'https://www.unitopia.de/mysocket.io/';
     }
 
     if (
-      l_origin == 'https://www.unitopia.de' &&
+      l_origin === 'https://www.unitopia.de' &&
       l_path.startsWith('/webmud3test/')
     ) {
       return 'https://www.unitopia.de/mysocket-test.io/';
@@ -74,48 +74,48 @@ export class ServerConfigService {
     const l_path = this.window.location.pathname;
 
     if (
-      l_origin == 'https://www.unitopia.de' &&
+      l_origin === 'https://www.unitopia.de' &&
       l_path.startsWith('/webmud3/')
     ) {
       return 1;
     }
 
     if (
-      l_origin == 'https://www.unitopia.de' &&
+      l_origin === 'https://www.unitopia.de' &&
       l_path.startsWith('/webmud3test/')
     ) {
       return 3;
     }
 
     if (
-      l_origin == 'https://www.seifenblase.de' &&
+      l_origin === 'https://www.seifenblase.de' &&
       l_path.startsWith('/webmud3/')
     ) {
       return 4;
     }
 
     if (
-      l_origin == 'https://seifenblase.de' &&
+      l_origin === 'https://seifenblase.de' &&
       l_path.startsWith('/webmud3/')
     ) {
       return 4;
     }
 
     if (
-      l_origin == 'https://mud.seifenblase.de' &&
+      l_origin === 'https://mud.seifenblase.de' &&
       l_path.startsWith('/webmud3/')
     ) {
       return 4;
     }
 
     if (
-      l_origin == 'https://seifenblase.mud.de' &&
+      l_origin === 'https://seifenblase.mud.de' &&
       l_path.startsWith('/webmud3/')
     ) {
       return 4;
     }
 
-    if (l_origin == 'https://seife.mud.de' && l_path.startsWith('/webmud3/')) {
+    if (l_origin === 'https://seife.mud.de' && l_path.startsWith('/webmud3/')) {
       return 4;
     }
 

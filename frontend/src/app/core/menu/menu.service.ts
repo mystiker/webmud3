@@ -24,9 +24,9 @@ export class MenuService {
   @Output()
   public readonly connectClicked = new EventEmitter<MenuItemCommandEvent>();
 
-  constructor(private readonly mudService: MudService) {
+  constructor(mudService: MudService) {
     // Todo[myst]: Entweder direkt berechnen ohne Subscribe oder Unsubscribe onDestroy
-    this.mudService.connectedStatus$.subscribe((connected) => {
+    mudService.connectedToMud$.subscribe((connected) => {
       this.updateMenuItems(connected);
     });
   }
@@ -42,15 +42,18 @@ export class MenuService {
       id: 'MUD:CONNECT',
       label: 'Verbinden',
       icon: 'pi pi-sign-in',
-      command: (event: MenuItemCommandEvent) => { this.connectClicked.emit(event); },
+      command: (event: MenuItemCommandEvent) => {
+        this.connectClicked.emit(event);
+      },
     };
 
     const disconnectItem: MenuItem = {
       id: 'MUD:DISCONNECT',
       label: 'Trennen',
       icon: 'pi pi-sign-out',
-      command: (event: MenuItemCommandEvent) =>
-        { this.disconnectClicked.emit(event); },
+      command: (event: MenuItemCommandEvent) => {
+        this.disconnectClicked.emit(event);
+      },
     };
 
     const items: MenuItem[] = [
