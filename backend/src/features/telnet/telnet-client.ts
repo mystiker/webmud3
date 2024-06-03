@@ -6,6 +6,18 @@ import { logger } from '../logger/winston-logger.js';
 import { TelnetOptions } from './models/telnet-options.js';
 import { TelnetNegotiations } from './types/telnet-negotiations.js';
 
+const logNegotiation = (
+  perspective: 'Received' | 'Send',
+  action: string,
+  option: number,
+  data?: Buffer,
+) => {
+  logger.verbose(
+    `[Telnet-Socket] ${perspective} ${action} for option ${TelnetOptions.num2opt[option]}`,
+    data ? { data: data.toString() } : {},
+  );
+};
+
 type TelnetClientEvents = {
   data: [string | Buffer];
 };
@@ -40,25 +52,24 @@ export class TelnetClient extends EventEmitter<TelnetClientEvents> {
   ) {
     super();
 
-    this.telnetSocket = new TelnetSocket(telnetConnection, telnetSocketOptions);
+    this.telnetSocket = new TelnetSocketWrapper(
+      telnetConnection,
+      telnetSocketOptions,
+    );
 
     this.telnetSocket.on('close', () => this.handleClose());
 
-    this.telnetSocket.on('command', () => this.handleCommand());
+    this.telnetSocket.on('do', (option) => this.handleDo(option));
 
-    this.telnetSocket.on('do', (chunkData) => this.handleDo(chunkData));
+    this.telnetSocket.on('dont', (option) => this.handleDont(option));
 
-    this.telnetSocket.on('dont', (chunkData) => this.handleDont(chunkData));
+    this.telnetSocket.on('will', (option) => this.handleWill(option));
 
-    this.telnetSocket.on('will', (chunkData) => this.handleWill(chunkData));
+    this.telnetSocket.on('wont', (option) => this.handleWont(option));
 
-    this.telnetSocket.on('wont', (chunkData) => this.handleWont(chunkData));
-
-    this.telnetSocket.on('sub', (optin, chunkData) =>
-      this.handleSub(optin, chunkData),
+    this.telnetSocket.on('sub', (option, chunkData) =>
+      this.handleSub(option, chunkData),
     );
-
-    this.telnetSocket.on('error', (chunkData) => this.handleError(chunkData));
 
     this.telnetSocket.on('data', (chunkData: string | Buffer) => {
       this.emit('data', chunkData);
@@ -72,10 +83,16 @@ export class TelnetClient extends EventEmitter<TelnetClientEvents> {
   }
 
   public sendMessage(data: string): void {
+    logger.info(`[Telnet-Client] Send message`, {
+      data,
+    });
+
     this.telnetSocket.write(data);
   }
 
   public disconnect(): void {
+    logger.info(`[Telnet-Client] Disconnect`);
+
     this.telnetSocket.end();
 
     this.connected = false;
@@ -87,10 +104,10 @@ export class TelnetClient extends EventEmitter<TelnetClientEvents> {
   // }
 
   private updateNegotiations(
-    chunkData: number,
+    option: number,
     action: 'will' | 'do' | 'wont' | 'dont',
   ): string {
-    const opt = TelnetOptions.num2opt[chunkData.toString()];
+    const opt = TelnetOptions.num2opt[option.toString()];
 
     const stateAction = action === 'do' || action === 'will' ? 'do' : 'dont';
 
@@ -100,28 +117,27 @@ export class TelnetClient extends EventEmitter<TelnetClientEvents> {
   }
 
   private handleClose(): void {
-    logger.info(`[Telnet-Client] [Telnet] Received message 'close'`);
-
     this.connected = false;
   }
 
-  private handleCommand(): void {
-    logger.info(`[Telnet-Client] [Telnet] Received message 'command'`);
-  }
+  private handleDo(option: number): void {
+    const opt = this.updateNegotiations(option, 'do');
 
-  private handleDo(chunkData: number): void {
-    logger.verbose(`[Telnet-Client] [Telnet] Received message 'do'`);
+    if (opt === 'TELOPT_CHARSET') {
+      this.telnetSocket.writeWill(option);
 
-    const opt = this.updateNegotiations(chunkData, 'do');
+      return;
+    }
 
     if (opt === 'TELOPT_TM') {
       // Timing Mark
-      this.telnetSocket.writeWill(chunkData);
+
+      this.telnetSocket.writeWill(option);
     } else if (opt === 'TELOPT_NAWS') {
       // Window size
       this.negotiations[opt] = { server: 'do', client: 'will' };
 
-      this.telnetSocket.writeWill(chunkData);
+      this.telnetSocket.writeWill(option);
 
       // Spezielle Logik für NAWS
       // socket_io.emit(
@@ -133,23 +149,27 @@ export class TelnetClient extends EventEmitter<TelnetClientEvents> {
       //   },
       // );
     } else {
-      this.telnetSocket.writeWont(chunkData);
+      this.telnetSocket.writeWont(option);
     }
   }
 
-  private handleDont(chunkData: number): void {
-    logger.verbose(`[Telnet-Client] [Telnet] Received message 'dont'`);
-
-    this.updateNegotiations(chunkData, 'dont');
+  private handleDont(option: number): void {
+    this.updateNegotiations(option, 'dont');
   }
 
-  private handleWill(chunkData: number): void {
-    logger.verbose(`[Telnet-Client] [Telnet] Received message 'will'`);
+  private handleWill(option: number): void {
+    const opt = this.updateNegotiations(option, 'will');
 
-    const opt = this.updateNegotiations(chunkData, 'will');
+    if (opt === 'TELOPT_CHARSET') {
+      this.telnetSocket.writeDo(option);
+
+      this.negotiations[opt].client = 'do';
+
+      return;
+    }
 
     if (opt === 'TELOPT_ECHO') {
-      this.telnetSocket.writeDo(chunkData);
+      this.telnetSocket.writeDo(option);
 
       this.negotiations[opt].client = 'do';
 
@@ -158,7 +178,7 @@ export class TelnetClient extends EventEmitter<TelnetClientEvents> {
       //   id: this.mudOptions?.id,
       // });
     } else if (opt === 'TELOPT_GMCP') {
-      this.telnetSocket.writeDo(chunkData);
+      this.telnetSocket.writeDo(option);
 
       this.negotiations[opt].client = 'do';
 
@@ -168,33 +188,28 @@ export class TelnetClient extends EventEmitter<TelnetClientEvents> {
       //   this.mudOptions.gmcp_support,
       // );
     } else {
-      this.telnetSocket.writeDont(chunkData);
+      this.telnetSocket.writeDont(option);
     }
   }
 
-  private handleWont(chunkData: number): void {
-    logger.verbose(`[Telnet-Client] [Telnet] Received message 'wont'`);
-
-    const opt = this.updateNegotiations(chunkData, 'wont');
+  private handleWont(option: number): void {
+    const opt = this.updateNegotiations(option, 'wont');
 
     if (opt === 'TELOPT_ECHO') {
-      this.telnetSocket.writeDont(chunkData);
+      this.telnetSocket.writeDont(option);
 
       // socket_io.emit('mud-signal', {
       //   signal: 'NOECHO-END',
       //   id: this.mudOptions?.id,
       // });
     } else {
-      this.telnetSocket.writeDont(chunkData);
+      this.telnetSocket.writeDont(option);
     }
   }
 
-  private handleSub(optin: number, chunkData: Buffer): void {
-    logger.verbose(`[Telnet-Client] [Telnet] Received message 'sub'`);
+  private handleSub(option: number, chunkData: Buffer): void {
+    const opt = TelnetOptions.num2opt[option.toString()];
 
-    const opt = TelnetOptions.num2opt[optin.toString()];
-
-    // Keine weitere Standardlogik; direkt die spezifische Logik implementieren
     if (opt === 'TELOPT_TTYPE' && new Uint8Array(chunkData)[0] === 1) {
       const nullBuf = Buffer.alloc(1, 0); // TELQUAL_IS
 
@@ -202,7 +217,7 @@ export class TelnetClient extends EventEmitter<TelnetClientEvents> {
 
       const sendBuf = Buffer.concat([nullBuf, buf], buf.length + 1);
 
-      this.telnetSocket.writeSub(optin, sendBuf);
+      this.telnetSocket.writeSub(option, sendBuf);
     } else if (opt === 'TELOPT_CHARSET' && new Uint8Array(chunkData)[0] === 1) {
       const nullBuf = Buffer.alloc(1, 2); // ACCEPTED
 
@@ -210,7 +225,7 @@ export class TelnetClient extends EventEmitter<TelnetClientEvents> {
 
       const sendBuf = Buffer.concat([nullBuf, buf], buf.length + 1);
 
-      this.telnetSocket.writeSub(optin, sendBuf);
+      this.telnetSocket.writeSub(option, sendBuf);
     } else if (opt === 'TELOPT_GMCP') {
       const tmpstr = chunkData.toString();
 
@@ -230,10 +245,56 @@ export class TelnetClient extends EventEmitter<TelnetClientEvents> {
       // );
     }
   }
+}
 
-  private handleError(chunkData: Error): void {
-    logger.error(`[Telnet-Client] [Telnet] Received message 'error'`, {
-      chunkData,
-    });
+class TelnetSocketWrapper extends TelnetSocket {
+  public override writeDo(option: number): void {
+    logNegotiation('Send', 'do', option);
+
+    super.writeDo(option);
+  }
+
+  public override writeDont(option: number): void {
+    logNegotiation('Send', 'dont', option);
+
+    super.writeDont(option);
+  }
+
+  public override writeWill(option: number): void {
+    logNegotiation('Send', 'will', option);
+
+    super.writeWill(option);
+  }
+
+  public override writeWont(option: number): void {
+    logNegotiation('Send', 'wont', option);
+
+    super.writeWont(option);
+  }
+
+  public override writeSub(option: number, buffer: Buffer): void {
+    logNegotiation('Send', 'sub', option, buffer);
+
+    super.writeSub(option, buffer);
+  }
+
+  constructor(socket: Socket, options?: TelnetSocketOptions) {
+    super(socket, options);
+
+    this.on('will', (option) => logNegotiation('Received', 'will', option));
+
+    this.on('wont', (option) => logNegotiation('Received', 'wont', option));
+
+    this.on('do', (option) => logNegotiation('Received', 'do', option));
+
+    this.on('dont', (option) => logNegotiation('Received', 'dont', option));
+
+    this.on('sub', (option, chunkData) =>
+      logNegotiation('Received', 'sub', option, chunkData),
+    );
+
+    this.on('command', (command) =>
+      logNegotiation('Received', 'command', command),
+    );
   }
 }
