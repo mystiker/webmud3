@@ -34,7 +34,7 @@ jobs:
       - name: Install raw dependencies for backend
         run: |
           cd ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
-          npm ci --production
+          npm install --omit=dev
 
       - name: "Deploy to Azure Web App"
         id: deploy-to-webapp
