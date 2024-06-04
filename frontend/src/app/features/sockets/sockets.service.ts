@@ -86,47 +86,35 @@ export class SocketsService {
   }
 
   public connectToMud(): void {
-    console.log(`[Sockets] Socket Service 'connectToMud`);
+    console.log(`[Sockets] Socket Service 'connectToMud'`);
     this.socket.emit('mudConnect');
   }
 
   public disconnectFromMud() {
-    console.log(`[Sockets] Socket Service 'disconnect`);
-    throw new Error('Method not implemented.');
+    console.log(`[Sockets] Socket Service 'disconnect'`);
+    this.socket.emit('mudDisconnect');
   }
 
   public sendMessage(message: string) {
-    console.log(`[Sockets] Socket Service 'sendMessage`, { message });
+    console.log(`[Sockets] Socket Service 'sendMessage'`, { message });
     this.socket.emit('mudInput', message);
   }
 
   public sendGmcp(/*id: string, mod: string, msg: string, data: any*/): boolean {
-    console.log(`[Sockets] Socket Service 'sendGmcp`);
+    console.log(`[Sockets] Socket Service 'sendGmcp'`);
     throw new Error('Method not implemented.');
   }
 
   private handleMudConnect = () => {
     this.connectedToMud.next(true);
 
-    this.onMudConnect.emit({
-      IdType: 'IoMud',
-      Id: 'UNKNOWN',
-      MsgType: 'mud-connect',
-      ErrorType: null,
-      Data: this,
-    });
+    this.onMudConnect.emit();
   };
 
   private handleMudDisconnect = () => {
     this.connectedToMud.next(false);
 
-    this.onMudDisconnect.emit({
-      IdType: 'IoMud',
-      Id: 'REMOVE THIS PROPERTY',
-      MsgType: 'mud-disconnect',
-      ErrorType: '\r\n [Verbindung getrennt]\r\n',
-      Data: this,
-    });
+    this.onMudDisconnect.emit();
   };
 
   private handleMudOutput = (output: string) => {

@@ -140,6 +140,18 @@ export class SocketManager {
         return;
       }
     });
+
+    socket.on('mudDisconnect', () => {
+      logger.info(`[Socket-Manager] [Client] ${socket.id} mudDisconnect`);
+
+      const telnetClient = this.mudConnections[socket.id];
+
+      if (telnetClient !== undefined && telnetClient.isConnected) {
+        telnetClient.disconnect();
+
+        this.clientWebSocket.emit('mudDisconnected');
+      }
+    });
   }
 }
 

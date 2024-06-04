@@ -1,3 +1,8 @@
+// Das siegreiche Gnomi sagt: Es gibt so ein paar Telnet-Optionen, die m.E.
+//         jeder Client unterstuetzen sollte: NAWS, CHARSET, EOR, ECHO,
+//         STARTTLS.
+// Das siegreiche Gnomi sagt: Ah, und SGA oder LINEMODE
+
 import EventEmitter from 'events';
 import { Socket } from 'net';
 import { TelnetSocket, TelnetSocketOptions } from 'telnet-stream';
@@ -138,6 +143,9 @@ export class TelnetClient extends EventEmitter<TelnetClientEvents> {
       this.negotiations[opt] = { server: 'do', client: 'will' };
 
       this.telnetSocket.writeWill(option);
+
+      // Todo[myst]: Re-Enable NAWS. See https://github.com/mystiker/webmud3/issues/33
+      // this.telnetSocket.writeSub(option, sizeToBuffer(100, 2));
 
       // Spezielle Logik für NAWS
       // socket_io.emit(
