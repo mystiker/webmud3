@@ -25,6 +25,7 @@ const logNegotiation = (
 
 type TelnetClientEvents = {
   data: [string | Buffer];
+  close: [boolean];
 };
 
 /**
