@@ -15,8 +15,8 @@ export class MudInputComponent {
 
   protected readonly form: FormGroup;
 
-  constructor(private fb: FormBuilder) {
-    this.form = this.fb.group({
+  constructor(fb: FormBuilder) {
+    this.form = fb.group({
       inpmessage: [''],
     });
   }
@@ -37,10 +37,11 @@ export class MudInputComponent {
   }
 
   private sendMessage() {
-    const message = this.form.get('inpmessage')?.value;
+    const message = this.form.get('inpmessage')?.value as string;
+
     this.messageSent.emit(message);
     if (
-      this.inpHistory.length == 0 ||
+      this.inpHistory.length === 0 ||
       (this.inpHistory.length > 0 && this.inpHistory[0] !== message)
     ) {
       this.inpHistory.unshift(message);

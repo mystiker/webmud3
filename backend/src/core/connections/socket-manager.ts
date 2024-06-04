@@ -16,16 +16,10 @@ type MudConnections = {
 };
 
 export class SocketManager {
-  private readonly clientWebSocket: Server<
-    ClientToServerEvents,
-    ServerToClientEvents,
-    InterServerEvents
-  >;
-
   private readonly mudConnections: MudConnections = {};
 
   public constructor(server: HttpServer | HttpsServer, socketPath: string) {
-    this.clientWebSocket = new Server<
+    const clientWebSockets = new Server<
       ClientToServerEvents,
       ServerToClientEvents,
       InterServerEvents
@@ -34,7 +28,7 @@ export class SocketManager {
       transports: ['websocket'],
     });
 
-    this.clientWebSocket.on('connection', (socket) => {
+    clientWebSockets.on('connection', (socket) => {
       logger.info(`[Socket-Manager] [Client] ${socket.id} connected`, {
         socketId: socket.id,
       });
@@ -49,7 +43,7 @@ export class SocketManager {
           },
         );
 
-        this.clientWebSocket.emit('mudConnected');
+        socket.emit('mudConnected');
       }
     });
   }
@@ -126,7 +120,7 @@ export class SocketManager {
 
         // Todo[myst]: Refactor to proper event handling - this is a very important event routing here!
         telnetClient.on('data', (data: string | Buffer) => {
-          this.clientWebSocket.emit('mudOutput', data.toString('utf8'));
+          socket.emit('mudOutput', data.toString('utf8'));
         });
 
         this.mudConnections[socket.id] = telnetClient;
@@ -135,7 +129,7 @@ export class SocketManager {
           `[Socket-Manager] [Client] ${socket.id} .. telnet connection established. Emitting 'mudConnected'`,
         );
 
-        this.clientWebSocket.emit('mudConnected');
+        socket.emit('mudConnected');
 
         return;
       }
@@ -149,7 +143,7 @@ export class SocketManager {
       if (telnetClient !== undefined && telnetClient.isConnected) {
         telnetClient.disconnect();
 
-        this.clientWebSocket.emit('mudDisconnected');
+        socket.emit('mudDisconnected');
       }
     });
   }
