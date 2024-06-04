@@ -90,6 +90,6 @@ export class MenuService {
 
     this.updateMenuState({ items });
 
-    console.log('[myst] MenuService: Menu items updated', items);
+    console.log('[Menu-Service] Menu items updated', items);
   }
 }
