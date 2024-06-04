@@ -63,7 +63,7 @@ export class TelnetClient extends EventEmitter<TelnetClientEvents> {
       telnetSocketOptions,
     );
 
-    this.telnetSocket.on('close', () => this.handleClose());
+    this.telnetSocket.on('close', (hadErrors) => this.handleClose(hadErrors));
 
     this.telnetSocket.on('do', (option) => this.handleDo(option));
 
@@ -122,8 +122,10 @@ export class TelnetClient extends EventEmitter<TelnetClientEvents> {
     return opt;
   }
 
-  private handleClose(): void {
+  private handleClose(hadErrors: boolean): void {
     this.connected = false;
+
+    this.emit('close', hadErrors);
   }
 
   private handleDo(option: number): void {
