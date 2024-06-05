@@ -1,5 +1,6 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Output, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
+import { InputTextarea } from 'primeng/inputtextarea';
 
 @Component({
   selector: 'app-mud-input',
@@ -10,6 +11,9 @@ export class MudInputComponent {
   private inpHistory: string[] = [];
   private inpPointer = -1;
 
+  @ViewChild(InputTextarea, { static: true })
+  private textarea!: InputTextarea;
+
   @Output()
   public readonly messageSent = new EventEmitter<string>();
 
@@ -19,6 +23,10 @@ export class MudInputComponent {
     this.form = fb.group({
       inpmessage: [''],
     });
+  }
+
+  public focus() {
+    (this.textarea.el.nativeElement as HTMLTextAreaElement).focus();
   }
 
   protected onKeyDown(event: KeyboardEvent) {
