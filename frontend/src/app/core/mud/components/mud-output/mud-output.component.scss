@@ -23,7 +23,7 @@
   flex-direction: column;
   flex-wrap: wrap;
   font-family: monospace;
-  font-size: 14px;
+  font-size: 1rem;
   margin-top: 0;
   margin-bottom: 0;
 
@@ -33,20 +33,26 @@
   }
 }
 
-@media (max-width: 650px) {
+// @media (max-width: 650px) {
+//   .mud-output {
+//     font-size: 0.8rem;
+//   }
+// }
+
+@media (max-width: 700px) {
   .mud-output {
-    font-size: 12px;
+    font-size: 0.85rem;
   }
 }
 
-@media (max-width: 550px) {
+@media (max-width: 580px) {
   .mud-output {
-    font-size: 10px;
+    font-size: 0.75rem;
   }
 }
 
-@media (max-width: 450px) {
+@media (max-width: 500px) {
   .mud-output {
-    font-size: 8px;
+    font-size: 0.65rem;
   }
 }
