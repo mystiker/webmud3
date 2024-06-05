@@ -26,6 +26,7 @@
   font-size: 1rem;
   margin-top: 0;
   margin-bottom: 0;
+  padding: 4px;
 
   .mud-message {
     max-width: 100%;
@@ -54,5 +55,11 @@
 @media (max-width: 500px) {
   .mud-output {
     font-size: 0.65rem;
+  }
+}
+
+@media (max-width: 450px) {
+  .mud-output {
+    font-size: 0.5rem;
   }
 }
