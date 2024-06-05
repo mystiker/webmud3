@@ -24,12 +24,8 @@
   flex-wrap: wrap;
   font-family: monospace;
   font-size: 14px;
-  padding: 0.5ex;
   margin-top: 0;
   margin-bottom: 0;
-  border-style: solid;
-  border-color: grey;
-  border-bottom-width: thin;
 
   .mud-message {
     max-width: 100%;
@@ -37,21 +33,18 @@
   }
 }
 
-/* If the width of the viewport is less than 900px, set the font size to 1em */
 @media (max-width: 650px) {
   .mud-output {
     font-size: 12px;
   }
 }
 
-/* If the width of the viewport is less than 700px, set the font size to 0.9em */
 @media (max-width: 550px) {
   .mud-output {
     font-size: 10px;
   }
 }
 
-/* If the width of the viewport is less than 500px, set the font size to 0.8em */
 @media (max-width: 450px) {
   .mud-output {
     font-size: 8px;

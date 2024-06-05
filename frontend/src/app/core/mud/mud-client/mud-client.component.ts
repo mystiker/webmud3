@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, HostListener, ViewChild } from '@angular/core';
 import {
   CharacterData,
   InventoryList,
@@ -7,9 +7,9 @@ import {
 } from '@mudlet3/frontend/shared';
 import { Observable } from 'rxjs';
 
+import { MudInputComponent } from '../components/mud-input/mud-input.component';
 import { MudService } from '../mud.service';
 import { IMudMessage } from '../types/mud-message';
-import { tableOutput } from '../utils/table-output';
 
 @Component({
   selector: 'app-mud-client',
@@ -18,6 +18,9 @@ import { tableOutput } from '../utils/table-output';
 })
 export class MudclientComponent {
   protected readonly output$: Observable<IMudMessage[]>;
+
+  @ViewChild(MudInputComponent, { static: true })
+  private mudInputComponent!: MudInputComponent;
 
   public v = {
     scrollLock: true,
@@ -35,7 +38,7 @@ export class MudclientComponent {
   public filesWindow: WindowConfig = new WindowConfig(); // Todo[myst]: nonsense;
   public charStatsWindow: WindowConfig = new WindowConfig(); // Todo[myst]: nonsense;
   public charData: CharacterData = new CharacterData(''); // Todo[myst]: nonsense
-  public invlist: InventoryList;
+  public invlist: InventoryList; // Todo[myst]: nonsense
 
   constructor(
     private readonly mudService: MudService,
@@ -71,12 +74,25 @@ export class MudclientComponent {
     this.mudService.connect();
   }
 
-  public tableOutput(words: string[], screen: number): string {
-    return tableOutput(words, screen);
-  }
+  // public tableOutput(words: string[], screen: number): string {
+  //   return tableOutput(words, screen);
+  // }
 
   protected onInputReceived(message: string) {
     this.mudService.sendMessage(message);
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  protected handleKeyboardEvent(event: KeyboardEvent) {
+    if (
+      !event.ctrlKey &&
+      !event.altKey &&
+      !event.shiftKey &&
+      !event.metaKey &&
+      !event.key.includes('Tab')
+    ) {
+      this.mudInputComponent.focus();
+    }
   }
 
   // Old Features
