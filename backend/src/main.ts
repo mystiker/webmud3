@@ -18,8 +18,6 @@ const environment = Environment.getInstance();
 
 logger.info('[Main] Environment loaded', { environment });
 
-const port = process.env.PORT || '5000';
-
 const app = express();
 
 const httpServer = createHttpServer(app, environment);
@@ -54,8 +52,8 @@ new SocketManager(httpServer, SOCKET_PATH);
 //   console.log('Cleanup ends.');
 // }
 
-httpServer.listen(parseInt(port), '0.0.0.0', 10000, () => {
-  logger.info(`[Main] Server started on port ${port}`, {
+httpServer.listen(environment.port, environment.host, 10000, () => {
+  logger.info(`[Main] Server started on port ${environment.port}`, {
     UNIQUE_SERVER_ID,
   });
 });

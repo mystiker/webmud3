@@ -12,6 +12,8 @@ import { resolveModulePath } from './utils/resolve-modulepath.js';
 export class Environment implements IEnvironment {
   private static instance: Environment;
 
+  public readonly host: string;
+  public readonly port: number;
   public readonly telnetHost: string;
   public readonly telnetPort: number;
   public readonly tls?: {
@@ -38,6 +40,10 @@ export class Environment implements IEnvironment {
         key: tls_key,
       };
     }
+
+    this.host = String(getEnvironmentVariable('HOST', false, '0.0.0.0'));
+
+    this.port = Number(getEnvironmentVariable('PORT', false, '5000'));
 
     this.telnetHost = String(getEnvironmentVariable('TELNET_HOST'));
 
