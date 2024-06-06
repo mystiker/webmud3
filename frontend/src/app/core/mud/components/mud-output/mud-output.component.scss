@@ -12,32 +12,22 @@
 :host {
   display: flex;
   flex-direction: column;
-  overflow: auto;
 }
 
 .mud-output {
   flex: 0 1 100%;
 
-  overflow-x: auto;
-  overflow-y: auto;
+  overflow: auto;
   flex-direction: column;
   flex-wrap: wrap;
   font-family: monospace;
   font-size: 1rem;
-  margin-top: 0;
-  margin-bottom: 0;
+  padding: 4px;
 
   .mud-message {
-    max-width: 100%;
-    display: inline;
+    display: contents;
   }
 }
-
-// @media (max-width: 650px) {
-//   .mud-output {
-//     font-size: 0.8rem;
-//   }
-// }
 
 @media (max-width: 700px) {
   .mud-output {
@@ -54,5 +44,11 @@
 @media (max-width: 500px) {
   .mud-output {
     font-size: 0.65rem;
+  }
+}
+
+@media (max-width: 450px) {
+  .mud-output {
+    font-size: 0.5rem;
   }
 }

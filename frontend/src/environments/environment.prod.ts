@@ -1,6 +1,6 @@
-import { Environment } from "./environment.interface";
+import { Environment } from './environment.interface';
 
 export const environment: Environment = {
   production: true,
-  backendUrl: '/',
+  backendUrl: () => window.location.origin,
 };

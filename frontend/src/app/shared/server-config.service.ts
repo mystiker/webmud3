@@ -3,6 +3,7 @@ import { UUID } from 'angular2-uuid';
 import { DeviceDetectorService, DeviceInfo } from 'ngx-device-detector';
 
 import { WINDOW } from './WINDOW_PROVIDERS';
+import { environment } from '../../environments/environment';
 
 interface BrowserInfo {
   browser: string;
@@ -39,28 +40,30 @@ export class ServerConfigService {
    * @depreceated not valid, see full source code
    */
   getBackend(): string {
-    const l_origin = this.window.location.origin;
-    const l_path = this.window.location.pathname;
+    return environment.backendUrl();
 
-    if (
-      l_origin === 'https://www.unitopia.de' &&
-      l_path.startsWith('/webmud3/')
-    ) {
-      return 'https://www.unitopia.de/mysocket.io/';
-    }
+    // const l_origin = this.window.location.origin;
+    // const l_path = this.window.location.pathname;
 
-    if (
-      l_origin === 'https://www.unitopia.de' &&
-      l_path.startsWith('/webmud3test/')
-    ) {
-      return 'https://www.unitopia.de/mysocket-test.io/';
-    }
+    // if (
+    //   l_origin === 'https://www.unitopia.de' &&
+    //   l_path.startsWith('/webmud3/')
+    // ) {
+    //   return 'https://www.unitopia.de/mysocket.io/';
+    // }
 
-    if (Object.prototype.hasOwnProperty.call(this.originMap, l_origin)) {
-      return this.originMap[l_origin as keyof typeof this.originMap];
-    }
+    // if (
+    //   l_origin === 'https://www.unitopia.de' &&
+    //   l_path.startsWith('/webmud3test/')
+    // ) {
+    //   return 'https://www.unitopia.de/mysocket-test.io/';
+    // }
 
-    return l_origin;
+    // if (Object.prototype.hasOwnProperty.call(this.originMap, l_origin)) {
+    //   return this.originMap[l_origin as keyof typeof this.originMap];
+    // }
+
+    // return l_origin;
   }
 
   /**

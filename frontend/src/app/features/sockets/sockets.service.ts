@@ -30,6 +30,11 @@ export class SocketsService {
     const socketUrl = serverConfigService.getBackend();
     const socketNamespace = serverConfigService.getSocketNamespace();
 
+    console.log('[Sockets] Socket Service init socket', {
+      socketUrl,
+      socketNamespace,
+    });
+
     this.manager = new Manager(socketUrl, {
       path: socketNamespace,
       transports: ['websocket'],

@@ -7,9 +7,9 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_WEBAPP_NAME: unitopia-client # set this to your application's name
-  AZURE_WEBAPP_PACKAGE_PATH: "backend/dist" # set this to the path to your web app project, defaults to the repository root
-  NODE_VERSION: "20.12.2" # set this to the node version to use
+  AZURE_WEBAPP_NAME: unitopia-client
+  AZURE_WEBAPP_PACKAGE_PATH: "backend/dist"
+  NODE_VERSION: "20.12.2"
 
 jobs:
   deploy:
@@ -29,7 +29,7 @@ jobs:
       - name: Install all dependencies and build everything
         run: |
           npm ci
-          npm run build --if-present
+          npm run build:prod --if-present
 
       - name: Install raw dependencies for backend
         run: |
