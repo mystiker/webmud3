@@ -2,15 +2,13 @@ import express from 'express';
 import sourceMaps from 'source-map-support';
 import { v4 as uuidv4 } from 'uuid';
 
-import { SocketManager } from './core/connections/socket-manager.js';
-import { createHttpServer } from './core/connections/utils/create-http-server.js';
 import { Environment } from './core/environment/environment.js';
 import { useBodyParser } from './core/middleware/body-parser.js';
 import { useStaticFiles } from './core/middleware/static-files.js';
 import { useRoutes } from './core/routes/routes.js';
-import { logger } from './features/logger/winston-logger.js';
-
-const SOCKET_PATH = '/socket.io';
+import { SocketManager } from './features/websockets/socket-manager.js';
+import { createHttpServer } from './shared/utils/create-http-server.js';
+import { logger } from './shared/utils/logger.js';
 
 sourceMaps.install();
 
@@ -33,7 +31,11 @@ useStaticFiles(app, 'wwwroot');
 
 useRoutes(app);
 
-new SocketManager(httpServer, SOCKET_PATH);
+new SocketManager(httpServer, {
+  telnetHost: environment.telnetHost,
+  telnetPort: environment.telnetPort,
+  useTls: environment.tls !== undefined,
+});
 
 // function myCleanup() {
 //   console.log('Cleanup starts.');

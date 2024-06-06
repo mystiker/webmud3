@@ -1,4 +1,4 @@
-import { logger } from '../../../features/logger/winston-logger.js';
+import { logger } from '../../../shared/utils/logger.js';
 import { EnvironmentKeys } from '../types/environment-keys.js';
 
 /**

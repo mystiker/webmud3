@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 
 // import authRoutes from '../../features/auth/auth-routes.js';
-import { logger } from '../../features/logger/winston-logger.js';
+import { logger } from '../../shared/utils/logger.js';
 import { Environment } from '../environment/environment.js';
 
 export const useRoutes = (app: Express) => {

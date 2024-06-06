@@ -1,6 +1,6 @@
 import { config as configureEnvironment } from 'dotenv';
 
-import { logger } from '../../features/logger/winston-logger.js';
+import { logger } from '../../shared/utils/logger.js';
 import { IEnvironment } from './types/environment.js';
 import { getEnvironmentVariable } from './utils/get-environment-variable.js';
 import { resolveModulePath } from './utils/resolve-modulepath.js';
