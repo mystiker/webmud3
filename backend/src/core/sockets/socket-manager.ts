@@ -2,20 +2,18 @@ import { Server as HttpServer } from 'http';
 import { Server as HttpsServer } from 'https';
 import { Server, Socket } from 'socket.io';
 
+import { TelnetClient } from '../../features/telnet/telnet-client.js';
 import { logger } from '../../shared/utils/logger.js';
-// Todo: Refactor Dependency
-import { TelnetClient } from '../telnet/telnet-client.js';
 import { ClientToServerEvents } from './types/client-to-server-events.js';
 import { InterServerEvents } from './types/inter-server-events.js';
+import { MudConnections } from './types/mud-connections.js';
 import { ServerToClientEvents } from './types/server-to-client-events.js';
 
-type MudConnections = {
-  [socketId: string]: {
-    telnet: TelnetClient | undefined;
-  };
-};
-
-export class SocketManager {
+export class SocketManager extends Server<
+  ClientToServerEvents,
+  ServerToClientEvents,
+  InterServerEvents
+> {
   private readonly mudConnections: MudConnections = {};
 
   public constructor(
@@ -26,17 +24,13 @@ export class SocketManager {
       useTls: boolean;
     },
   ) {
-    const clientWebSockets = new Server<
-      ClientToServerEvents,
-      ServerToClientEvents,
-      InterServerEvents
-    >(server, {
+    super(server, {
       path: '/socket.io',
       transports: ['websocket'],
       connectionStateRecovery: {},
     });
 
-    clientWebSockets.on('connection', (socket) => {
+    this.on('connection', (socket) => {
       logger.info(`[Socket-Manager] [Client] ${socket.id} connected`, {
         socketId: socket.id,
       });

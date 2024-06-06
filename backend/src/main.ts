@@ -3,10 +3,10 @@ import sourceMaps from 'source-map-support';
 import { v4 as uuidv4 } from 'uuid';
 
 import { Environment } from './core/environment/environment.js';
-import { useBodyParser } from './core/middleware/body-parser.js';
-import { useStaticFiles } from './core/middleware/static-files.js';
+import { useBodyParser } from './core/middleware/use-body-parser.js';
+import { useSockets } from './core/middleware/use-sockets.js';
+import { useStaticFiles } from './core/middleware/use-static-files.js';
 import { useRoutes } from './core/routes/routes.js';
-import { SocketManager } from './features/websockets/socket-manager.js';
 import { createHttpServer } from './shared/utils/create-http-server.js';
 import { logger } from './shared/utils/logger.js';
 
@@ -18,9 +18,11 @@ logger.info('[Main] Environment loaded', { environment });
 
 const app = express();
 
-const httpServer = createHttpServer(app, environment);
-
 const UNIQUE_SERVER_ID = uuidv4();
+
+const httpServer = createHttpServer(app, {
+  tls: environment.tls,
+});
 
 useBodyParser(app);
 
@@ -31,11 +33,7 @@ useStaticFiles(app, 'wwwroot');
 
 useRoutes(app);
 
-new SocketManager(httpServer, {
-  telnetHost: environment.telnetHost,
-  telnetPort: environment.telnetPort,
-  useTls: environment.tls !== undefined,
-});
+useSockets(httpServer, environment);
 
 // function myCleanup() {
 //   console.log('Cleanup starts.');
