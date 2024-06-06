@@ -3,7 +3,6 @@ import sourceMaps from 'source-map-support';
 import { v4 as uuidv4 } from 'uuid';
 
 import { loadConfig } from './core/config/load-config.js';
-import { DefaultMudConfig } from './core/config/models/default-mud-config.js';
 import { DefaultSecretConfig } from './core/config/models/default-secret-config.js';
 import { SocketManager } from './core/connections/socket-manager.js';
 import { createHttpServer } from './core/connections/utils/create-http-server.js';
@@ -32,13 +31,6 @@ if (typeof secretConfig.myLogDB !== 'undefined') {
   process.env.MY_LOG_DB = secretConfig.myLogDB;
 }
 
-const mudConfig = loadConfig(
-  process.env.MUD_CONFIG || '/run/mud_config.json',
-  DefaultMudConfig,
-);
-
-logger.info('[Main] Mud Config loaded', { mudConfig });
-
 const port = process.env.PORT || '5000';
 
 const app = express();
@@ -53,7 +45,7 @@ useCookieSession(app, secretConfig.mySessionKey);
 
 useStaticFiles(app, 'wwwroot');
 
-useRoutes(app, mudConfig);
+useRoutes(app);
 
 new SocketManager(httpServer, secretConfig.mySocketPath);
 

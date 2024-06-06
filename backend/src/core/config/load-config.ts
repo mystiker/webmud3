@@ -1,10 +1,9 @@
 import fs from 'fs';
 
 import { logger } from '../../features/logger/winston-logger.js';
-import { MudConfig } from '../../shared/types/mud_config.js';
 import { SecretConfig } from '../../shared/types/secure_config.js';
 
-export const loadConfig = <T extends MudConfig | SecretConfig>(
+export const loadConfig = <T extends SecretConfig>(
   path: fs.PathOrFileDescriptor,
   defaultConfig: T,
 ): T => {

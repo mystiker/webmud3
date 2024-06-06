@@ -4,10 +4,9 @@ import path from 'path';
 
 // import authRoutes from '../../features/auth/auth-routes.js';
 import { logger } from '../../features/logger/winston-logger.js';
-import { MudConfig } from '../../shared/types/mud_config.js';
 import { Environment } from '../environment/environment.js';
 
-export const useRoutes = (app: Express, mudConfig: MudConfig) => {
+export const useRoutes = (app: Express) => {
   // app.use('/api/auth', authRoutes);
 
   app.get('/socket.io-client/dist/*', (req: Request, res: Response) => {
@@ -58,20 +57,6 @@ export const useRoutes = (app: Express, mudConfig: MudConfig) => {
         res.send(data);
       }
     });
-  });
-
-  app.get('/config/mud_config.json', (req: Request, res: Response) => {
-    const ip =
-      req.headers['x-forwarded-for'] ||
-      req.connection.remoteAddress ||
-      req.socket.remoteAddress ||
-      (req.socket ? req.socket.remoteAddress : null);
-
-    logger.debug('mud_config.json', { real_ip: ip });
-
-    res.json(mudConfig);
-
-    res.status(200);
   });
 
   app.get('/ace/*', (req: Request, res: Response) => {
