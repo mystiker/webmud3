@@ -10,39 +10,18 @@ export const useRoutes = (app: Express) => {
   // app.use('/api/auth', authRoutes);
 
   app.get('/manifest.webmanifest', function (req: Request, res: Response) {
-    const ip =
-      req.headers['x-forwarded-for'] ||
-      req.connection.remoteAddress ||
-      req.socket.remoteAddress ||
-      (req.socket ? req.socket.remoteAddress : null);
+    logger.info(`[Routes] requested manifest.webmanifest`);
 
-    let manif = 'manifest.webmanifest';
-
-    switch (process.env.WEBMUD3_DISTRIBUTION_TYPE) {
-      case 'unitopia-prod':
-        manif = 'manifest.unitopia.webmanifest';
-
-        break;
-      case 'unitopia-test':
-        manif = 'manifest.unitopia-test.webmanifest';
-
-        break;
-      case 'seifenblase':
-        manif = 'manifest.seifenblase.webmanifest';
-
-        break;
-      default:
-    }
-
-    logger.debug('Manifest:', { real_ip: ip, manifest: manif });
-
-    fs.readFile(path.join(__dirname, 'dist', manif), function (err, data) {
-      if (err) {
-        res.sendStatus(404);
-      } else {
-        res.send(data);
-      }
-    });
+    fs.readFile(
+      path.join(__dirname, 'dist', 'manifest.webmanifest'),
+      function (err, data) {
+        if (err) {
+          res.sendStatus(404);
+        } else {
+          res.send(data);
+        }
+      },
+    );
   });
 
   app.get('/ace/*', (req: Request, res: Response) => {
@@ -65,13 +44,7 @@ export const useRoutes = (app: Express) => {
   });
 
   app.get('*', (req: Request, res: Response) => {
-    const ip =
-      req.headers['x-forwarded-for'] ||
-      req.connection.remoteAddress ||
-      req.socket.remoteAddress ||
-      (req.socket ? req.socket.remoteAddress : null);
-
-    logger.debug('wwwroot/index.html Path:', { real_ip: ip, path: req.path });
+    logger.info(`[Routes] requested * - delivering index.html`);
 
     res.sendFile(
       path.join(Environment.getInstance().projectRoot, 'wwwroot/index.html'),
