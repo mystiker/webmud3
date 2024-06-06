@@ -9,20 +9,6 @@ import { Environment } from '../environment/environment.js';
 export const useRoutes = (app: Express) => {
   // app.use('/api/auth', authRoutes);
 
-  app.get('/socket.io-client/dist/*', (req: Request, res: Response) => {
-    const mypath = req.path.substr(0);
-
-    const ip =
-      req.headers['x-forwarded-for'] ||
-      req.connection.remoteAddress ||
-      req.socket.remoteAddress ||
-      (req.socket ? req.socket.remoteAddress : null);
-
-    logger.debug('Socket-Path:', { real_ip: ip, path: mypath });
-
-    res.sendFile(path.join(__dirname, 'node_modules' + mypath));
-  });
-
   app.get('/manifest.webmanifest', function (req: Request, res: Response) {
     const ip =
       req.headers['x-forwarded-for'] ||
