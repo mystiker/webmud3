@@ -1,4 +1,6 @@
 export type EnvironmentKeys =
+  | 'HOST'
+  | 'PORT'
   | 'TELNET_HOST'
   | 'TELNET_PORT'
   | 'TLS'

@@ -5,9 +5,11 @@
 
 import EventEmitter from 'events';
 import { Socket } from 'net';
+import net from 'net';
 import { TelnetSocket, TelnetSocketOptions } from 'telnet-stream';
+import tls from 'tls';
 
-import { logger } from '../logger/winston-logger.js';
+import { logger } from '../../shared/utils/logger.js';
 import { TelnetOptions } from './models/telnet-options.js';
 import { TelnetNegotiations } from './types/telnet-negotiations.js';
 
@@ -49,19 +51,20 @@ export class TelnetClient extends EventEmitter<TelnetClientEvents> {
   /**
    * Constructs a TelnetClient instance.
    * @param telnetConnection - The socket connection to the MUD server.
-   * @param telnetSocketOptions - Options for the Telnet socket.
    * @param clientConnection - The client socket connection.
    */
-  constructor(
-    telnetConnection: Socket,
-    telnetSocketOptions: TelnetSocketOptions,
-  ) {
+  constructor(telnetHost: string, telnetPort: number, useTls: boolean) {
     super();
 
-    this.telnetSocket = new TelnetSocketWrapper(
-      telnetConnection,
-      telnetSocketOptions,
+    const telnetConnection = createTelnetConnection(
+      useTls,
+      telnetHost,
+      telnetPort,
     );
+
+    this.telnetSocket = new TelnetSocketWrapper(telnetConnection, {
+      bufferSize: 65536,
+    });
 
     this.telnetSocket.on('close', (hadErrors) => this.handleClose(hadErrors));
 
@@ -81,9 +84,7 @@ export class TelnetClient extends EventEmitter<TelnetClientEvents> {
       this.emit('data', chunkData);
     });
 
-    logger.info(`[Telnet-Client] Created`, {
-      telnetSocketOptions,
-    });
+    logger.info(`[Telnet-Client] Created`);
 
     this.connected = true;
   }
@@ -308,4 +309,38 @@ class TelnetSocketWrapper extends TelnetSocket {
       logNegotiation('Received', 'command', command),
     );
   }
+}
+
+function createTelnetConnection(
+  useTls: boolean,
+  telnetHost: string,
+  telnetPort: number,
+) {
+  let socket;
+
+  if (useTls) {
+    socket = tls.connect({
+      host: telnetHost,
+      port: telnetPort,
+      rejectUnauthorized: true,
+    });
+
+    logger.info(`[Socket-Manager] created https connection for telnet`, {
+      host: telnetHost,
+      port: telnetPort,
+      rejectUnauthorized: true,
+    });
+  } else {
+    socket = net.createConnection({
+      host: telnetHost,
+      port: telnetPort,
+    });
+
+    logger.info(`[Socket-Manager] created http connection for telnet`, {
+      host: telnetHost,
+      port: telnetPort,
+    });
+  }
+
+  return socket;
 }

@@ -1,37 +1,36 @@
 import { Server as HttpServer } from 'http';
 import { Server as HttpsServer } from 'https';
-import net from 'net';
 import { Server, Socket } from 'socket.io';
-import tls from 'tls';
 
-import { logger } from '../../features/logger/winston-logger.js';
 import { TelnetClient } from '../../features/telnet/telnet-client.js';
-import { Environment } from '../environment/environment.js';
+import { logger } from '../../shared/utils/logger.js';
 import { ClientToServerEvents } from './types/client-to-server-events.js';
 import { InterServerEvents } from './types/inter-server-events.js';
+import { MudConnections } from './types/mud-connections.js';
 import { ServerToClientEvents } from './types/server-to-client-events.js';
 
-type MudConnections = {
-  [socketId: string]: {
-    telnet: TelnetClient | undefined;
-  };
-};
-
-export class SocketManager {
+export class SocketManager extends Server<
+  ClientToServerEvents,
+  ServerToClientEvents,
+  InterServerEvents
+> {
   private readonly mudConnections: MudConnections = {};
 
-  public constructor(server: HttpServer | HttpsServer, socketPath: string) {
-    const clientWebSockets = new Server<
-      ClientToServerEvents,
-      ServerToClientEvents,
-      InterServerEvents
-    >(server, {
-      path: socketPath,
+  public constructor(
+    server: HttpServer | HttpsServer,
+    private readonly telnetOptions: {
+      telnetHost: string;
+      telnetPort: number;
+      useTls: boolean;
+    },
+  ) {
+    super(server, {
+      path: '/socket.io',
       transports: ['websocket'],
       connectionStateRecovery: {},
     });
 
-    clientWebSockets.on('connection', (socket) => {
+    this.on('connection', (socket) => {
       logger.info(`[Socket-Manager] [Client] ${socket.id} connected`, {
         socketId: socket.id,
       });
@@ -96,8 +95,6 @@ export class SocketManager {
     socket.on('mudConnect', () => {
       logger.info(`[Socket-Manager] [Client] ${socket.id} mudConnect`);
 
-      const environment = Environment.getInstance();
-
       const telnetClient = this.mudConnections[socket.id]?.telnet;
 
       if (telnetClient === undefined || telnetClient.isConnected === false) {
@@ -105,13 +102,12 @@ export class SocketManager {
           `[Socket-Manager] [Client] ${socket.id} had no active telnet connection .. creating new one..`,
         );
 
-        const telnetConnection = createTelnetConnection(environment);
+        const telnetClient = new TelnetClient(
+          this.telnetOptions.telnetHost,
+          this.telnetOptions.telnetPort,
+          this.telnetOptions.useTls,
+        );
 
-        const telnetClient = new TelnetClient(telnetConnection, {
-          bufferSize: 65536,
-        });
-
-        // Todo[myst]: Refactor to proper event handling - this is a very important event routing here!
         telnetClient.on('data', (data: string | Buffer) => {
           socket.emit('mudOutput', data.toString('utf8'));
         });
@@ -150,34 +146,4 @@ export class SocketManager {
       }
     });
   }
-}
-
-function createTelnetConnection(environment: Environment) {
-  let socket;
-
-  if (environment.tls !== undefined) {
-    socket = tls.connect({
-      host: environment.telnetHost,
-      port: environment.telnetPort,
-      rejectUnauthorized: true, //Todo[myst]: was mudcfg.rejectUnauthorized but true for unitopia,
-    });
-
-    logger.info(`[Socket-Manager] created https connection for telnet`, {
-      host: environment.telnetHost,
-      port: environment.telnetPort,
-      rejectUnauthorized: true,
-    });
-  } else {
-    socket = net.createConnection({
-      host: environment.telnetHost,
-      port: environment.telnetPort,
-    });
-
-    logger.info(`[Socket-Manager] created http connection for telnet`, {
-      host: environment.telnetHost,
-      port: environment.telnetPort,
-    });
-  }
-
-  return socket;
 }

@@ -3,17 +3,16 @@ import fs from 'fs';
 import { Server as HttpServer } from 'http';
 import { Server as HttpsServer } from 'https';
 
-import { logger } from '../../../features/logger/winston-logger.js';
-import { IEnvironment } from '../../environment/types/environment.js';
+import { logger } from './logger.js';
 
 export function createHttpServer(
   app: Express,
-  environment: IEnvironment,
+  settings: { tls?: { cert: string; key: string } },
 ): HttpServer | HttpsServer {
-  if (environment.tls !== undefined) {
+  if (settings.tls !== undefined) {
     const options = {
-      key: fs.readFileSync(environment.tls.key),
-      cert: fs.readFileSync(environment.tls.cert),
+      key: fs.readFileSync(settings.tls.key),
+      cert: fs.readFileSync(settings.tls.cert),
     };
 
     console.log('INIT: https active');
