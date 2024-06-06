@@ -2,34 +2,21 @@ import express from 'express';
 import sourceMaps from 'source-map-support';
 import { v4 as uuidv4 } from 'uuid';
 
-import { loadConfig } from './core/config/load-config.js';
-import { DefaultSecretConfig } from './core/config/models/default-secret-config.js';
 import { SocketManager } from './core/connections/socket-manager.js';
 import { createHttpServer } from './core/connections/utils/create-http-server.js';
 import { Environment } from './core/environment/environment.js';
 import { useBodyParser } from './core/middleware/body-parser.js';
-import { useCookieSession } from './core/middleware/cookie-session.js';
 import { useStaticFiles } from './core/middleware/static-files.js';
 import { useRoutes } from './core/routes/routes.js';
 import { logger } from './features/logger/winston-logger.js';
+
+const SOCKET_PATH = '/socket.io';
 
 sourceMaps.install();
 
 const environment = Environment.getInstance();
 
 logger.info('[Main] Environment loaded', { environment });
-
-const secretConfig = loadConfig(
-  process.env.SECRET_CONFIG || '/run/secret_sauce.json',
-  DefaultSecretConfig,
-);
-
-logger.info('[Main] Secret Config loaded', { secretConfig });
-
-// Todo[myst] check this out
-if (typeof secretConfig.myLogDB !== 'undefined') {
-  process.env.MY_LOG_DB = secretConfig.myLogDB;
-}
 
 const port = process.env.PORT || '5000';
 
@@ -41,13 +28,14 @@ const UNIQUE_SERVER_ID = uuidv4();
 
 useBodyParser(app);
 
-useCookieSession(app, secretConfig.mySessionKey);
+// Todo[myst]: What does this bring to the table?
+// useCookieSession(app, secretConfig.mySessionKey);
 
 useStaticFiles(app, 'wwwroot');
 
 useRoutes(app);
 
-new SocketManager(httpServer, secretConfig.mySocketPath);
+new SocketManager(httpServer, SOCKET_PATH);
 
 // function myCleanup() {
 //   console.log('Cleanup starts.');
