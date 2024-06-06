@@ -3,6 +3,43 @@ module.exports = {
   plugins: ["simple-import-sort", "import"],
   overrides: [
     {
+      files: ["*.spec.ts"],
+      parserOptions: {
+        project: ["./tsconfig.spec.json"],
+        tsconfigRootDir: __dirname,
+        sourceType: "module",
+        ecmaVersion: "latest",
+      },
+      extends: [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/recommended-type-checked",
+        "plugin:@angular-eslint/recommended",
+        "plugin:prettier/recommended",
+      ],
+      rules: {
+        eqeqeq: "error",
+        "grouped-accessor-pairs": "warn",
+        "guard-for-in": "error",
+        "no-alert": "warn",
+        "no-delete-var": "error",
+        "no-duplicate-imports": "error",
+        "no-empty-function": "warn",
+        "no-implicit-coercion": "error",
+        "no-implicit-globals": "error",
+        "no-labels": "error",
+        "no-shadow": "error",
+        "no-unused-vars": "warn",
+        "no-use-before-define": "error",
+        "no-var": "error",
+        "prefer-const": "warn",
+        "simple-import-sort/imports": "warn",
+        "simple-import-sort/exports": "warn",
+        "import/first": "warn",
+        "import/newline-after-import": "warn",
+        "import/no-duplicates": "warn",
+      },
+    },
+    {
       files: ["*.ts"],
       parserOptions: {
         project: ["./tsconfig.app.json"],
@@ -12,8 +49,9 @@ module.exports = {
       },
       extends: [
         "eslint:recommended",
-        "plugin:@typescript-eslint/strict-type-checked",
+        "plugin:@typescript-eslint/recommended-type-checked",
         "plugin:@angular-eslint/recommended",
+        "plugin:prettier/recommended",
         "plugin:@angular-eslint/template/process-inline-templates",
       ],
       rules: {
@@ -60,8 +98,16 @@ module.exports = {
       extends: [
         "plugin:@angular-eslint/template/recommended",
         "plugin:@angular-eslint/template/accessibility",
+        "plugin:prettier/recommended",
       ],
-      rules: {},
+      rules: {
+        "prettier/prettier": [
+          "error",
+          {
+            parser: "angular",
+          },
+        ],
+      },
     },
   ],
 };
