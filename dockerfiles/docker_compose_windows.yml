@@ -1,0 +1,59 @@
+version: "3.7"
+services:
+  wm3testmud:
+    hostname: testmud
+    image:  myonara/webmud3:testmud
+    environment:
+      - HOSTNAME=testmud
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Berlin
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "0.1"
+          memory: 50M
+      restart_policy:
+        condition: on-failure
+        delay: 20s
+        max_attempts: 2 
+        window: 3600s
+    volumes:
+      - /c/_W/webmud0003/testmud/mud/lib:/mud/lib
+    ports:
+      - 3333:3333
+      - 4242:4242
+    networks:
+      - wm3net
+  webmud3:
+    image: myonara/webmud3:wm3test
+    hostname: wm3test
+    environment: 
+      NODE_ENV: 'development'
+      HOST: wm3test
+      TELNET_HOST: testmud
+      TELNET_PORT: '3333'
+    depends_on:
+      - wm3testmud
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "0.1"
+          memory: 50M
+      restart_policy:
+        condition: on-failure
+        delay: 20s
+        max_attempts: 2 
+        window: 3600s
+    ports:
+      - "5000:5000"
+    links:
+      - wm3testmud
+    networks:
+      - wm3net
+networks:
+  wm3net:
+    driver: overlay
+    attachable: true
