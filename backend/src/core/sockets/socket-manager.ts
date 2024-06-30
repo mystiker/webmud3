@@ -4,12 +4,11 @@ import { Server, Socket } from 'socket.io';
 
 import { TelnetClient } from '../../features/telnet/telnet-client.js';
 import { logger } from '../../shared/utils/logger.js';
+import { Environment } from '../environment/environment.js';
 import { ClientToServerEvents } from './types/client-to-server-events.js';
 import { InterServerEvents } from './types/inter-server-events.js';
 import { MudConnections } from './types/mud-connections.js';
 import { ServerToClientEvents } from './types/server-to-client-events.js';
-
-const CONNECTION_TIMEOUT = 60 * 3 * 1000; //900_000; // 15 minutes
 
 export class SocketManager extends Server<
   ClientToServerEvents,
@@ -30,7 +29,7 @@ export class SocketManager extends Server<
       path: '/socket.io',
       transports: ['websocket'],
       connectionStateRecovery: {
-        maxDisconnectionDuration: CONNECTION_TIMEOUT,
+        maxDisconnectionDuration: Environment.getInstance().socketTimeout,
       },
     });
 
@@ -93,7 +92,7 @@ export class SocketManager extends Server<
       });
 
       logger.info(
-        `[Socket-Manager] [Client] ${socket.id} starting timer to close telnet connection in ${CONNECTION_TIMEOUT}ms`,
+        `[Socket-Manager] [Client] ${socket.id} starting timer to close telnet connection in ${Environment.getInstance().socketTimeout}ms`,
         {
           socketId: socket.id,
         },
@@ -101,7 +100,7 @@ export class SocketManager extends Server<
 
       this.mudConnections[socket.id].timer = setTimeout(() => {
         this.closeTelnetConnections(socket.id);
-      }, CONNECTION_TIMEOUT);
+      }, Environment.getInstance().socketTimeout);
     });
 
     socket.on('mudInput', (data: string) => {

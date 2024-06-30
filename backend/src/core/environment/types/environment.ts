@@ -11,6 +11,8 @@ export interface IEnvironment {
 
   readonly charset: string;
 
+  readonly socketTimeout: number;
+
   // backend: {
   //   host: string;
   //   port: number;

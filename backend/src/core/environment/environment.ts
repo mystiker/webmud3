@@ -22,6 +22,7 @@ export class Environment implements IEnvironment {
   };
   public readonly charset: string;
   public readonly projectRoot: string;
+  public readonly socketTimeout: number;
 
   /**
    * Private constructor to enforce singleton pattern.
@@ -50,6 +51,10 @@ export class Environment implements IEnvironment {
     this.telnetPort = Number(getEnvironmentVariable('TELNET_PORT'));
 
     this.charset = String(getEnvironmentVariable('CHARSET', false, 'utf8'));
+
+    this.socketTimeout = Number(
+      getEnvironmentVariable('SOCKET_TIMEOUT', false, '900000'),
+    );
 
     this.projectRoot = resolveModulePath('../../../main.js');
 
