@@ -9,6 +9,8 @@ import { InterServerEvents } from './types/inter-server-events.js';
 import { MudConnections } from './types/mud-connections.js';
 import { ServerToClientEvents } from './types/server-to-client-events.js';
 
+const CONNECTION_TIMEOUT = 60 * 3 * 1000; //900_000; // 15 minutes
+
 export class SocketManager extends Server<
   ClientToServerEvents,
   ServerToClientEvents,
@@ -27,7 +29,9 @@ export class SocketManager extends Server<
     super(server, {
       path: '/socket.io',
       transports: ['websocket'],
-      connectionStateRecovery: {},
+      connectionStateRecovery: {
+        maxDisconnectionDuration: CONNECTION_TIMEOUT,
+      },
     });
 
     this.on('connection', (socket) => {
@@ -38,14 +42,33 @@ export class SocketManager extends Server<
       this.handleClientConnection(socket);
 
       if (this.mudConnections[socket.id] !== undefined) {
+        logger.info(`[Socket-Manager] [Client] ${socket.id} was reconnecting`, {
+          socketId: socket.id,
+        });
+
+        if (this.mudConnections[socket.id].telnet !== undefined) {
+          logger.info(
+            `[Socket-Manager] [Client] ${socket.id} allready got an established telnet connection. Emitting 'mudConnected'`,
+            {
+              socketId: socket.id,
+            },
+          );
+
+          socket.emit('mudConnected');
+        }
+
         logger.info(
-          `[Socket-Manager] [Client] ${socket.id} allready got an established telnet connection. Emitting 'mudConnected'`,
+          `[Socket-Manager] [Client] ${socket.id} resetting logout (statue in mud) timer`,
           {
             socketId: socket.id,
           },
         );
 
-        socket.emit('mudConnected');
+        if (this.mudConnections[socket.id].timer !== undefined) {
+          clearTimeout(this.mudConnections[socket.id].timer);
+
+          this.mudConnections[socket.id].timer = undefined;
+        }
       }
     });
   }
@@ -64,8 +87,21 @@ export class SocketManager extends Server<
       });
     });
 
-    socket.on('disconnect', () => {
-      logger.info(`[Socket-Manager] [Client] ${socket.id} disconnect`, {});
+    socket.on('disconnect', (reason: string) => {
+      logger.info(`[Socket-Manager] [Client] ${socket.id} disconnect`, {
+        reason,
+      });
+
+      logger.info(
+        `[Socket-Manager] [Client] ${socket.id} starting timer to close telnet connection in ${CONNECTION_TIMEOUT}ms`,
+        {
+          socketId: socket.id,
+        },
+      );
+
+      this.mudConnections[socket.id].timer = setTimeout(() => {
+        this.closeTelnetConnections(socket.id);
+      }, CONNECTION_TIMEOUT);
     });
 
     socket.on('mudInput', (data: string) => {
@@ -124,6 +160,7 @@ export class SocketManager extends Server<
 
         this.mudConnections[socket.id] = {
           telnet: telnetClient,
+          timer: undefined,
         };
 
         logger.info(
@@ -139,11 +176,17 @@ export class SocketManager extends Server<
     socket.on('mudDisconnect', () => {
       logger.info(`[Socket-Manager] [Client] ${socket.id} mudDisconnect`);
 
-      const telnetClient = this.mudConnections[socket.id]?.telnet;
-
-      if (telnetClient !== undefined && telnetClient.isConnected) {
-        telnetClient.disconnect();
-      }
+      this.closeTelnetConnections(socket.id);
     });
+  }
+
+  private closeTelnetConnections(socketId: string) {
+    const telnetClient = this.mudConnections[socketId]?.telnet;
+
+    if (telnetClient !== undefined && telnetClient.isConnected) {
+      telnetClient.disconnect();
+
+      this.mudConnections[socketId].telnet = undefined;
+    }
   }
 }
