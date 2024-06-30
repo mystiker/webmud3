@@ -2,8 +2,8 @@
 FROM node:20.12.2 AS ng-build-stage
 
 # how to use this file in dir webmud3!:
-# docker build --progress=plain -f dockerfiles/wm3test_myonara.dockerfile -t myonara/webmud3:unitopiatest .
-# docker build --no-cache --progress=plain -f dockerfiles/wm3test_myonara.dockerfile -t myonara/webmud3:unitopiatest .
+# docker build --progress=plain -f dockerfiles/wm3local_myonara.dockerfile -t myonara/webmud3:local .
+# docker build --no-cache --progress=plain -f dockerfiles/wm3local_myonara.dockerfile -t myonara/webmud3:local .
 
 # obsolete href repelacement from initial file:
 # RUN sed -i 's-%%BASEREF%%-/webmud3test/-' /webmud3/frontend/src/index.html
@@ -13,7 +13,7 @@ RUN apt-get update -y \
  && apt upgrade -y \
  && apt-get install -y --no-install-recommends bash git \
  && git clone -b dev2_rework https://github.com/myonara/webmud3.git \
- && sed -i 's-%%BASEREF%%-/webmud3test/-' /webmud3/frontend/src/index.html \
+ && sed -i 's-%%BASEREF%%-/-' /webmud3/frontend/src/index.html \
  && cd webmud3 \
  && npm install \
  && npm run build:dev

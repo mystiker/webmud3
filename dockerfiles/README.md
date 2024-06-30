@@ -49,7 +49,9 @@ podman-compose -f dockerfiles/w3_docker_compose_sb.yml -p webmud_seifenblase dow
 podman-compose -f dockerfiles/w3_docker_compose_test.yml -p webmud_test down
     
 podman-compose -f dockerfiles/w3_docker_compose_test_neu.yml -p webmud_test down
-    
+
+podman logs webmud_test_web_1
+
 ####  to get new imges:
 
 podman pull myonara/webmud3:latest

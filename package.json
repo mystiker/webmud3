@@ -10,6 +10,7 @@
   ],
   "scripts": {
     "build": "npm run build --workspaces",
+    "build:dev": "npm run build:dev --workspace frontend && npm run build --workspace backend && npm run postbuild",
     "build:prod": "npm run build:prod --workspace frontend && npm run build --workspace backend && npm run postbuild",
     "integrate-client": "ncp frontend/dist/frontend backend/dist/wwwroot",
     "postbuild": "npm run integrate-client",
