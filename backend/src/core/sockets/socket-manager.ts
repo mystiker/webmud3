@@ -63,10 +63,10 @@ export class SocketManager extends Server<
           },
         );
 
-        if (this.mudConnections[socket.id].timer !== undefined) {
-          clearTimeout(this.mudConnections[socket.id].timer);
+        if (this.mudConnections[socket.id].connectionTimer !== undefined) {
+          clearTimeout(this.mudConnections[socket.id].connectionTimer);
 
-          this.mudConnections[socket.id].timer = undefined;
+          this.mudConnections[socket.id].connectionTimer = undefined;
         }
       }
     });
@@ -98,7 +98,7 @@ export class SocketManager extends Server<
         },
       );
 
-      this.mudConnections[socket.id].timer = setTimeout(() => {
+      this.mudConnections[socket.id].connectionTimer = setTimeout(() => {
         this.closeTelnetConnections(socket.id);
       }, Environment.getInstance().socketTimeout);
     });
@@ -159,7 +159,7 @@ export class SocketManager extends Server<
 
         this.mudConnections[socket.id] = {
           telnet: telnetClient,
-          timer: undefined,
+          connectionTimer: undefined,
         };
 
         logger.info(

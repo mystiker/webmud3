@@ -58,7 +58,7 @@ export class Environment implements IEnvironment {
 
     this.projectRoot = resolveModulePath('../../../main.js');
 
-    logger.info('Environment initialized:', this);
+    logger.info('[Environment] initialized', this);
   }
 
   /**

@@ -61,13 +61,6 @@ export class MudOutputComponent implements AfterViewChecked, AfterViewInit {
         element.scrollHeight - element.scrollTop - element.clientHeight,
       ) <= tolerance;
 
-    console.log('Test', {
-      scrollTop: element.scrollTop,
-      scrollHeight: element.scrollHeight,
-      clientHeight: element.clientHeight,
-      atBottom,
-    });
-
     this.canScrollToBottom = atBottom;
   }
 
