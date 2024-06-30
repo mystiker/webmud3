@@ -1,5 +1,8 @@
 FROM node:20.12.2
 
+# docker build --no-cache --progress=plain -f Dockerfile -t myonara/webmud3:local .
+# docker build --no-cache --progress=plain -f Dockerfile -t myonara/webmud3:webmud3test .
+
 # Setze das Arbeitsverzeichnis im Container
 WORKDIR /usr/src/app
 
