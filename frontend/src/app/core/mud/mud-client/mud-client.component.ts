@@ -85,7 +85,10 @@ export class MudclientComponent {
   // }
 
   protected onInputReceived(message: string) {
-    this.mudService.sendMessage(message);
+    // This is a workaround for the first letter being capitalized - remove this line after implementation in the mud
+    const workaround = message.charAt(0).toLowerCase() + message.slice(1);
+
+    this.mudService.sendMessage(workaround);
   }
 
   @HostListener('document:keydown', ['$event'])
