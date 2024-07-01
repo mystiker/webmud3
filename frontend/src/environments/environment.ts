@@ -6,7 +6,8 @@ import { Environment } from './environment.interface';
 
 export const environment: Environment = {
   production: false,
-  backendUrl: () => 'http://192.168.178.76:5000',
+  // Change this to your local IP if you want to test on a mobile device in the same network
+  backendUrl: () => 'http://localhost:5000',
 };
 
 /*

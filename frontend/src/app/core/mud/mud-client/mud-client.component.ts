@@ -19,8 +19,10 @@ import { IMudMessage } from '../types/mud-message';
 export class MudclientComponent {
   protected readonly output$: Observable<IMudMessage[]>;
 
-  @ViewChild(MudInputComponent, { static: true })
-  private mudInputComponent!: MudInputComponent;
+  protected readonly isConnected$: Observable<boolean>;
+
+  @ViewChild(MudInputComponent, { static: false })
+  private mudInputComponent?: MudInputComponent;
 
   public v = {
     scrollLock: true,
@@ -50,6 +52,10 @@ export class MudclientComponent {
   ) {
     this.output$ = this.mudService.outputLines$;
 
+    this.isConnected$ = this.mudService.connectedToMud$;
+
+    this.mudService.connect();
+
     this.invlist = new InventoryList();
 
     // Todo[myst]: Herausfinden, was der cookieService alles unter 'mudcolors' gespeichert hat
@@ -66,9 +72,9 @@ export class MudclientComponent {
     // }
   }
 
-  protected onDisconnectClicked() {
-    this.mudService.disconnect();
-  }
+  // protected onDisconnectClicked() {
+  //   this.mudService.disconnect();
+  // }
 
   protected onConnectClicked() {
     this.mudService.connect();
@@ -91,7 +97,7 @@ export class MudclientComponent {
       !event.metaKey &&
       !event.key.includes('Tab')
     ) {
-      this.mudInputComponent.focus();
+      this.mudInputComponent?.focus();
     }
   }
 

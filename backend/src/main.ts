@@ -14,8 +14,6 @@ sourceMaps.install();
 
 const environment = Environment.getInstance();
 
-logger.info('[Main] Environment loaded', { environment });
-
 const app = express();
 
 const UNIQUE_SERVER_ID = uuidv4();

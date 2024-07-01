@@ -38,10 +38,9 @@ export class SocketsService {
     this.manager = new Manager(socketUrl, {
       path: socketNamespace,
       transports: ['websocket'],
+      reconnectionAttempts: Infinity,
+      reconnection: true,
     });
-
-    this.manager.reconnection(true);
-    this.manager.reconnectionAttempts(10);
 
     this.manager.on('error', (error: Error) => {
       this.handleError(error);
@@ -61,6 +60,10 @@ export class SocketsService {
 
     this.manager.on('reconnect_failed', () => {
       this.handleReconnectFailed();
+    });
+
+    this.manager.on('close', () => {
+      this.handleClose();
     });
 
     this.manager.on('ping', () => {
@@ -117,6 +120,8 @@ export class SocketsService {
   };
 
   private handleMudDisconnect = () => {
+    console.log(`[Sockets] Socket Service received 'mudDisconnected'`);
+
     this.connectedToMud.next(false);
 
     this.onMudDisconnect.emit();
@@ -127,6 +132,14 @@ export class SocketsService {
       data: output,
     });
   };
+
+  private handleClose() {
+    console.log('[Sockets] Socket Service Close');
+
+    this.connectedToMud.next(false);
+
+    this.onMudConnect.emit();
+  }
 
   private handleError = (error: Error) => {
     console.error('[Sockets] Socket Service Error:', error);

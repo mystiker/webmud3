@@ -32,4 +32,12 @@
     display: flex;
     flex-direction: column;
   }
+
+  #disconnected-panel {
+    display: flex;
+    gap: 32px;
+    padding: 4px;
+    align-items: center;
+    align-self: center;
+  }
 }
