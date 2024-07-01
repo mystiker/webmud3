@@ -6,7 +6,7 @@ import { Environment } from './environment.interface';
 
 export const environment: Environment = {
   production: false,
-  backendUrl: () => 'http://192.168.178.76:5000',
+  backendUrl: () => window.location.origin,
 };
 
 /*
