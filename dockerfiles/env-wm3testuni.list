@@ -4,3 +4,4 @@ NODE_ENV=development
 HOST=wm3test
 TELNET_HOST=unitopia.de
 TELNET_PORT=9988
+SOCKET_ROOT=/mysocket-test.io

@@ -44,6 +44,12 @@ export const useRoutes = (app: Express) => {
   });
 
   app.get('*', (req: Request, res: Response) => {
+    const allip =
+      req.headers['x-forwarded-for'] ||
+      req.connection.remoteAddress ||
+      req.socket.remoteAddress ||
+      (req.socket ? req.socket.remoteAddress : null);    const reqpath = req.path.substr(5);
+    logger.debug('ACE Path:', { real_ip: allip, path: reqpath });
     logger.info(`[Routes] requested * - delivering index.html`);
 
     res.sendFile(
