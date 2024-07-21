@@ -7,4 +7,5 @@ export type EnvironmentKeys =
   | 'TLS'
   | 'TLS_CERT'
   | 'TLS_KEY'
-  | 'CHARSET';
+  | 'CHARSET'
+  | 'SOCKET_ROOT';
