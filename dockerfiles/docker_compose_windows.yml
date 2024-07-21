@@ -2,7 +2,7 @@ version: "3.7"
 services:
   wm3testmud:
     hostname: testmud
-    image:  myonara/webmud3:testmud
+    image:  unitestmud
     environment:
       - HOSTNAME=testmud
       - PUID=1000

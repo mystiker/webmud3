@@ -1,0 +1,67 @@
+d/Arktis/Vandras/room/lab/ein.c://            Anin  23.03.19 desc ist nie leer sondern MSG_REXPIRE falls leer
+d/Arktis/Vandras/room/lab/ein.c:        if(sizeof(desc) && (desc != MSG_REXPIRE))
+i/living/eyes.c:    string * exit_lst = map(exits, (: MSG_REXIT(capitalize($1)) :) );
+i/living/eyes.c:                lines = map(lines, (: MSG_LRCONTENT(sizeof(items), $1) :));
+i/living/eyes.c:                lines = map(lines, (: MSG_IRCONTENT(sizeof(items), $1) :));
+i/living/eyes.c:    ret=MSG_REXPIRE;
+i/living/eyes.c:          ret += MSG_RLONG(longtxt);
+i/living/eyes.c:               ret += wrap_say(MSG_RSHORT(add_dot_to_msg(tmp)),"", width);
+i/living/eyes.c:               ret += wrap_say(MSG_RSHORT(add_dot_to_msg(tmp)),"", width);
+i/living/eyes.c:           ret += MSG_RLONG(longtxt);
+i/living/eyes.c:               ret += wrap_say(MSG_RSHORT(add_dot_to_msg(tmp)),"", width);
+i/player/mxp.c:            VT_MXP_TEMP_SECURE_MODE "<!ENTITY ap    \"%d\" DESC=\"Ausdauerpunkte\"          PUBLISH>"
+i/player/mxp.c:            VT_MXP_TEMP_SECURE_MODE "<!ENTITY maxap \"%d\" DESC=\"maximale Ausdauerpunkte\" PUBLISH>"
+i/player/mxp.c:            VT_MXP_TEMP_SECURE_MODE "<!ENTITY zp    \"%d\" DESC=\"%s\"                      PUBLISH>"
+i/player/mxp.c:            VT_MXP_TEMP_SECURE_MODE "<!ENTITY maxzp \"%d\" DESC=\"maximale %s\"             PUBLISH>"
+i/player/mxp.c:            , (needs_mxp_workaround ? VT_MXP_LOCK_LOCKED_MODE : "")
+i/player/mxp.c:        VT_MXP_LINE_SECURE_MODE         // Activate secure mode until newline
+i/player/mxp.c:        VT_MXP_LOCK_LOCKED_MODE         // Lock to locked mode.
+i/player/mxp.c:    VT_MXP_RSHORT: "rshort"; 0,                // Raum-Short
+i/player/mxp.c:    VT_MXP_RLONG: "rlong"; 0,                  // Raum-Long
+i/player/mxp.c:    VT_MXP_REXIT: "rexit"; 0,                  // Raum-Ausgang
+i/player/mxp.c:    VT_MXP_REXPIRE: "rexpire"; 0,              // Raum-Expire
+i/player/mxp.c:    VT_MXP_IROOMCONTENT: "ircontent"; 0,       // Gegenstand im Raum
+i/player/mxp.c:    VT_MXP_LROOMCONTENT: "lrcontent"; 0,       // Lebewesen im Raum
+i/player/mxp.c:    VT_MXP_IINVENTORY: "iinventory"; 0,        // Gegenstand im Spieler
+i/player/mxp.c:            if (typ_char == VT_MXP_OPEN_CHAR)
+i/player/mxp.c:            else if (typ_char == VT_MXP_CLOSE_CHAR)
+i/player/mxp.c:            string ret = VT_MXP_TEMP_SECURE_MODE
+i/player/mxp.c:                ret += VT_MXP_LOCK_LOCKED_MODE;
+i/player/mxp.c:            msg = VT_MXP_TEMP_SECURE_MODE "<sound \"" + sound + "\">"
+i/player/mxp.c:                + (needs_mxp_workaround ? VT_MXP_LOCK_LOCKED_MODE : "")
+i/player/mxp.c:    mxp_tag_names[VT_MXP_IROOMCONTENT,1] = #'calc_item_id;
+i/player/mxp.c:    mxp_tag_names[VT_MXP_LROOMCONTENT,1] = #'calc_item_id;
+i/player/mxp.c:    mxp_tag_names[VT_MXP_IINVENTORY,1] = #'calc_item_id;
+p/Plugins/zteste.c:#include <term.h>        // MSG_REXIT
+sys/term.h:#define VT_MXP_OPEN_CHAR 's'
+sys/term.h:#define VT_MXP_CLOSE_CHAR 't'
+sys/term.h:#define VT_MXP_OPEN(n) VT_ESC "[!"+(n)+"s"
+sys/term.h:#define VT_MXP_OPEN_ARG(n, arg) VT_ESC "[!"+(n)+";" + (arg) + "s"
+sys/term.h:#define VT_MXP_CLOSE(n) VT_ESC "[!"+(n)+"t"
+sys/term.h:#define VT_MXP_LINE_SECURE_MODE VT_ESC "[1z"
+sys/term.h:#define VT_MXP_TEMP_SECURE_MODE VT_ESC "[4z"
+sys/term.h:#define VT_MXP_LOCK_LOCKED_MODE VT_ESC "[7z"
+sys/term.h:#define VT_MXP_RSHORT            1
+sys/term.h:#define VT_MXP_RLONG             2
+sys/term.h:#define VT_MXP_REXIT             3
+sys/term.h:#define VT_MXP_REXPIRE           4
+sys/term.h:#define VT_MXP_IROOMCONTENT     11
+sys/term.h:#define VT_MXP_LROOMCONTENT     12
+sys/term.h:#define VT_MXP_IINVENTORY       13
+sys/term.h:#define MSG_MXP(n, txt)             (VT_MXP_OPEN(n) + txt + VT_MXP_CLOSE(n))
+sys/term.h:#define MSG_MXP_ARG(n, arg, txt )   (VT_MXP_OPEN_ARG(n, arg) + txt + VT_MXP_CLOSE(n))
+sys/term.h:#define MSG_REXIT(dir)                  MSG_MXP(VT_MXP_REXIT, dir)
+sys/term.h:#define MSG_RSHORT(dir)                 MSG_MXP(VT_MXP_RSHORT, dir)
+sys/term.h:#define MSG_RLONG(dir)                  MSG_MXP(VT_MXP_RLONG, dir)
+sys/term.h:#define MSG_REXPIRE                     VT_MXP_OPEN(VT_MXP_REXPIRE)
+sys/term.h:#define MSG_IRCONTENT(num, desc)        MSG_MXP_ARG(VT_MXP_IROOMCONTENT, num, desc)
+sys/term.h:#define MSG_LRCONTENT(num, desc)        MSG_MXP_ARG(VT_MXP_LROOMCONTENT, num, desc)
+sys/term.h:#define MSG_IINVENTORY(num, desc)       MSG_MXP_ARG(VT_MXP_IINVENTORY, num, desc)
+z/Gilden/Hexenvolk/i/classify_contents.c:#include <term.h>				// MSG_RLONG, 
+z/Gilden/Hexenvolk/i/classify_contents.c:    string * exit_lst = map(exits, (: MSG_REXIT(capitalize($1)) :) );
+z/Gilden/Hexenvolk/i/classify_contents.c:    string ret = MSG_REXPIRE;
+z/Gilden/Hexenvolk/i/classify_contents.c:        ret += MSG_RLONG(longtxt);	 		  	   
+z/Gilden/Hexenvolk/i/classify_contents.c:            ret += wrap_say(MSG_RSHORT(add_dot_to_msg(tmp)),"");
+z/Gilden/Hexenvolk/i/classify_contents.c:            ret += MSG_RLONG(longtxt);
+z/Gilden/Hexenvolk/i/classify_contents.c:           	ret += wrap_say(MSG_RSHORT(add_dot_to_msg(tmp)),"");
+z/Gilden/Hexenvolk/i/classify_contents.c:        ret += MSG_RLONG(longtxt);

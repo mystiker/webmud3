@@ -1,0 +1,6 @@
+# env file for webmud3 local 
+# docker run -d --env-file dockerfiles/env-wm3local.list -p 5000:5000 --name wm3local myonara/webmud3:local
+NODE_ENV=development
+HOST=wm3test
+TELNET_HOST=172.17.0.2
+TELNET_PORT=3333

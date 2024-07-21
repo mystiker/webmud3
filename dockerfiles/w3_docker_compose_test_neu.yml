@@ -3,7 +3,9 @@ services:
   web:
     image: myonara/webmud3:unitopiatest
     environment: 
-      NODE_ENV: 'production'
+      NODE_ENV: 'development'
+      TELNET_HOST: unitopia.de
+      TELNET_PORT: 9988
       SECRET_CONFIG: '/run/webmud3test.json'
       MUD_CONFIG: '/run/mud_config_unitopia_test.json'
       WEBMUD3_DISTRIBUTION_TYPE: 'unitopia-test'

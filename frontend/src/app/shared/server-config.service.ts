@@ -136,7 +136,7 @@ export class ServerConfigService {
       case 1:
         return '/mysocket.io';
       case 3:
-        return '/mysocket-test.io';
+        return '/webmud3test/mysocket-test.io';
       case 4:
         return '/sbsocket.io';
       default:
