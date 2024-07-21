@@ -16,6 +16,7 @@ export class Environment implements IEnvironment {
   public readonly port: number;
   public readonly telnetHost: string;
   public readonly telnetPort: number;
+  public readonly telnetTLS: boolean;
   public readonly tls?: {
     cert: string;
     key: string;
@@ -50,6 +51,8 @@ export class Environment implements IEnvironment {
     this.telnetHost = String(getEnvironmentVariable('TELNET_HOST'));
 
     this.telnetPort = Number(getEnvironmentVariable('TELNET_PORT'));
+
+    this.telnetTLS =Boolean(getEnvironmentVariable('TELNET_TLS',false,'false'));
 
     this.charset = String(getEnvironmentVariable('CHARSET', false, 'utf8'));
 
