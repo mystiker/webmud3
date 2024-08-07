@@ -1,6 +1,6 @@
 {
   "name": "webmud3",
-  "version": "1.0.0-alpha",
+  "version": "1.0.0-beta",
   "engines": {
     "node": "20.12.2"
   },
